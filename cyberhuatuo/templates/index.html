@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberHuaTuo 赛博华佗</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+SC:wght@300;400;500;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0a0a;
+            --surface: #141414;
+            --surface-hover: #1a1a1a;
+            --border: #262626;
+            --border-active: #404040;
+            --text: #fafafa;
+            --text-2: #a1a1aa;
+            --text-3: #52525b;
+            --green: #22c55e;
+            --green-dim: rgba(34, 197, 94, 0.12);
+            --blue: #60a5fa;
+            --orange: #fb923c;
+            --red: #f87171;
+            --purple: #a78bfa;
+            --sans: 'Inter', 'Noto Sans SC', -apple-system, system-ui, sans-serif;
+            --mono: 'JetBrains Mono', 'Cascadia Code', monospace;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            height: 100%;
+        }
+
+        body {
+            font-family: var(--sans);
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* ===== Header ===== */
+        .header {
+            width: 100%;
+            max-width: 720px;
+            padding: 48px 24px 0;
+            text-align: center;
+        }
+
+        .logo {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--green);
+            letter-spacing: -0.01em;
+            margin-bottom: 6px;
+        }
+
+        .tagline {
+            font-size: 0.8rem;
+            color: var(--text-3);
+            font-weight: 400;
+        }
+
+        /* ===== Search Box ===== */
+        .search-wrap {
+            width: 100%;
+            max-width: 720px;
+            padding: 28px 24px 0;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background: linear-gradient(var(--bg) 80%, transparent);
+        }
+
+        .search-box {
+            position: relative;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .search-box:focus-within {
+            border-color: var(--border-active);
+            box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.08);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.1rem;
+            opacity: 0.4;
+            pointer-events: none;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 16px 120px 16px 48px;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--text);
+            font-family: var(--sans);
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .search-input::placeholder {
+            color: var(--text-3);
+        }
+
+        .search-meta {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .search-badge {
+            font-size: 0.65rem;
+            color: var(--text-3);
+            background: var(--bg);
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-family: var(--mono);
+        }
+
+        .search-badge em {
+            font-style: normal;
+            color: var(--green);
+        }
+
+        .loading-line {
+            position: absolute;
+            bottom: -1px;
+            left: 16px;
+            right: 16px;
+            height: 2px;
+            border-radius: 1px;
+            overflow: hidden;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .loading-line.active {
+            opacity: 1;
+        }
+
+        .loading-line::after {
+            content: '';
+            display: block;
+            width: 40%;
+            height: 100%;
+            background: var(--green);
+            border-radius: 1px;
+            animation: slide 0.8s ease-in-out infinite;
+        }
+
+        @keyframes slide {
+            0% {
+                transform: translateX(-100%)
+            }
+
+            100% {
+                transform: translateX(300%)
+            }
+        }
+
+        /* ===== Filters (subtle) ===== */
+        .filters {
+            width: 100%;
+            max-width: 720px;
+            padding: 10px 24px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .chip {
+            padding: 4px 12px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text-3);
+            font-family: var(--sans);
+            font-size: 0.72rem;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .chip:hover {
+            color: var(--text-2);
+            border-color: var(--border-active);
+        }
+
+        .chip.active {
+            color: var(--green);
+            border-color: rgba(34, 197, 94, 0.3);
+            background: var(--green-dim);
+        }
+
+        .filter-sep {
+            flex: 1;
+        }
+
+        .link-btn {
+            color: var(--text-3);
+            font-size: 0.72rem;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.15s;
+        }
+
+        .link-btn:hover {
+            color: var(--green);
+        }
+
+        /* ===== Results ===== */
+        .results {
+            width: 100%;
+            max-width: 720px;
+            padding: 0 24px 60px;
+        }
+
+        .results-status {
+            font-size: 0.75rem;
+            color: var(--text-3);
+            padding: 4px 0 12px;
+            font-family: var(--mono);
+        }
+
+        .results-status strong {
+            color: var(--green);
+        }
+
+        /* Case Card */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            margin-bottom: 8px;
+            transition: border-color 0.15s;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            border-color: var(--border-active);
+        }
+
+        .card-head {
+            padding: 14px 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .card-body {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .card-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            line-height: 1.4;
+            margin-bottom: 2px;
+        }
+
+        .card-subtitle {
+            font-size: 0.75rem;
+            color: var(--text-3);
+            margin-bottom: 8px;
+        }
+
+        .card-tags {
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+        }
+
+        .t {
+            padding: 2px 8px;
+            border-radius: 8px;
+            font-size: 0.65rem;
+            font-weight: 500;
+            border: 1px solid;
+        }
+
+        .t-fw {
+            color: var(--blue);
+            border-color: rgba(96, 165, 250, 0.2);
+            background: rgba(96, 165, 250, 0.06);
+        }
+
+        .t-sv-low {
+            color: #4ade80;
+            border-color: rgba(74, 222, 128, 0.2);
+            background: rgba(74, 222, 128, 0.06);
+        }
+
+        .t-sv-medium {
+            color: var(--orange);
+            border-color: rgba(251, 146, 60, 0.2);
+            background: rgba(251, 146, 60, 0.06);
+        }
+
+        .t-sv-high {
+            color: var(--red);
+            border-color: rgba(248, 113, 113, 0.2);
+            background: rgba(248, 113, 113, 0.06);
+        }
+
+        .t-sv-critical {
+            color: #fca5a5;
+            border-color: rgba(252, 165, 165, 0.25);
+            background: rgba(252, 165, 165, 0.08);
+        }
+
+        .t-cx {
+            color: var(--purple);
+            border-color: rgba(167, 139, 250, 0.2);
+            background: rgba(167, 139, 250, 0.06);
+        }
+
+        .t-k {
+            color: var(--text-3);
+            border-color: var(--border);
+            background: transparent;
+        }
+
+        .card-score {
+            flex-shrink: 0;
+            padding: 3px 9px;
+            border-radius: 8px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            font-family: var(--mono);
+        }
+
+        .s-hi {
+            color: var(--green);
+            background: var(--green-dim);
+        }
+
+        .s-md {
+            color: var(--blue);
+            background: rgba(96, 165, 250, 0.1);
+        }
+
+        .s-lo {
+            color: var(--text-3);
+            background: rgba(82, 82, 91, 0.2);
+        }
+
+        .card-detail {
+            display: none;
+            border-top: 1px solid var(--border);
+        }
+
+        .card-detail.open {
+            display: block;
+        }
+
+        .card-detail pre {
+            padding: 14px 16px;
+            font-family: var(--mono);
+            font-size: 0.78rem;
+            line-height: 1.7;
+            color: var(--text-2);
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        /* AI Diagnosis */
+        .ai-card {
+            background: var(--surface);
+            border: 1px solid rgba(34, 197, 94, 0.25);
+            border-radius: 12px;
+            margin-bottom: 12px;
+            overflow: hidden;
+        }
+
+        .ai-header {
+            padding: 10px 16px;
+            background: var(--green-dim);
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--green);
+            border-bottom: 1px solid rgba(34, 197, 94, 0.12);
+        }
+
+        .ai-body {
+            padding: 16px;
+            font-size: 0.85rem;
+            line-height: 1.8;
+            white-space: pre-wrap;
+        }
+
+        .ai-body code {
+            background: rgba(96, 165, 250, 0.1);
+            padding: 1px 5px;
+            border-radius: 4px;
+            font-family: var(--mono);
+            font-size: 0.8rem;
+            color: var(--blue);
+        }
+
+        /* Empty */
+        .empty {
+            text-align: center;
+            padding: 80px 24px;
+            color: var(--text-3);
+        }
+
+        .empty-icon {
+            font-size: 2.2rem;
+            margin-bottom: 12px;
+            opacity: 0.4;
+        }
+
+        .empty-text {
+            font-size: 0.85rem;
+            line-height: 1.7;
+        }
+
+        .empty-hint {
+            font-size: 0.72rem;
+            margin-top: 8px;
+            font-family: var(--mono);
+        }
+
+        .kbd {
+            display: inline-block;
+            padding: 1px 6px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-family: var(--mono);
+            font-size: 0.65rem;
+            color: var(--text-3);
+            background: var(--surface);
+            vertical-align: 1px;
+        }
+
+        ::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="header">
+        <div class="logo">🩺 CyberHuaTuo</div>
+        <div class="tagline">望闻问切，药到病除 · Diagnose. Prescribe. Cure.</div>
+    </div>
+
+    <div class="search-wrap">
+        <div class="search-box">
+            <span class="search-icon">🔍</span>
+            <input id="q" class="search-input" type="text" placeholder="描述你遇到的问题，或粘贴报错信息 ..." autocomplete="off"
+                autofocus />
+            <div class="search-meta">
+                <span class="search-badge">知识库 <em>{{ case_count }}</em></span>
+            </div>
+            <div class="loading-line" id="loader"></div>
+        </div>
+    </div>
+
+    <div class="filters" id="filtersBar">
+        <button class="chip active" data-fw="all" onclick="setFilter(this)">全部</button>
+        {% for fw in frameworks %}
+        <button class="chip" data-fw="{{ fw }}" onclick="setFilter(this)">{{ fw }}</button>
+        {% endfor %}
+        <div class="filter-sep"></div>
+        {% if has_llm %}
+        <button class="chip" id="aiChip" onclick="doDiagnose()">🩺 AI 诊断</button>
+        {% endif %}
+        <a href="/contribute" class="link-btn">+ 开药方</a>
+    </div>
+
+    <div class="results" id="results">
+        <div class="empty" id="empty">
+            <div class="empty-icon">🩺</div>
+            <div class="empty-text">
+                输入问题描述后自动检索匹配病例
+            </div>
+            <div class="empty-hint">
+                <span class="kbd">Enter</span> 搜索 · 支持中英文语义匹配
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SV_CLS = { low: 't-sv-low', medium: 't-sv-medium', high: 't-sv-high', critical: 't-sv-critical' };
+        const cxEmoji = {{ complexity_emoji | tojson }};
+        let currentFw = 'all';
+        let debounceTimer = null;
+
+        function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+        function sClass(v) { return v >= 65 ? 's-hi' : v >= 35 ? 's-md' : 's-lo'; }
+
+        function setFilter(el) {
+            document.querySelectorAll('.chip[data-fw]').forEach(c => c.classList.remove('active'));
+            el.classList.add('active');
+            currentFw = el.dataset.fw;
+            const q = document.getElementById('q').value.trim();
+            if (q) doSearch();
+        }
+
+        function showLoader() { document.getElementById('loader').classList.add('active'); }
+        function hideLoader() { document.getElementById('loader').classList.remove('active'); }
+
+        function renderResults(data, diagnosisHtml) {
+            const box = document.getElementById('results');
+            let html = '';
+
+            if (diagnosisHtml) {
+                html += `<div class="ai-card">
+            <div class="ai-header">🩺 AI 望闻问切</div>
+            <div class="ai-body">${esc(diagnosisHtml)}</div>
+        </div>`;
+            }
+
+            if (!data.results || data.results.length === 0) {
+                if (!diagnosisHtml) {
+                    box.innerHTML = `<div class="empty"><div class="empty-icon">💊</div>
+                <div class="empty-text">未找到匹配病例</div>
+                <div class="empty-hint">试试其他关键词，或 <a href="/contribute" style="color:var(--green)">贡献新药方</a></div>
+            </div>`;
+                    return;
+                }
+                box.innerHTML = html;
+                return;
+            }
+
+            html += `<div class="results-status">匹配 <strong>${data.results.length}</strong> 个病例</div>`;
+
+            html += data.results.map((r, i) => {
+                const tags = r.tags ? r.tags.split(',').filter(Boolean) : [];
+                return `<div class="card">
+            <div class="card-head" onclick="toggle(${i})">
+                <div class="card-body">
+                    <div class="card-title">${esc(r.title || r.case_id)}</div>
+                    ${r.title_en ? `<div class="card-subtitle">${esc(r.title_en)}</div>` : ''}
+                    <div class="card-tags">
+                        <span class="t t-fw">${r.framework}</span>
+                        <span class="t ${SV_CLS[r.severity] || 't-sv-medium'}">${r.severity}</span>
+                        <span class="t t-cx">${cxEmoji[r.complexity] || ''} ${r.complexity}</span>
+                        ${tags.map(t => `<span class="t t-k">${t.trim()}</span>`).join('')}
+                    </div>
+                </div>
+                <span class="card-score ${sClass(r.relevance)}">${r.relevance}%</span>
+            </div>
+            <div class="card-detail" id="d${i}">
+                <pre>${esc(r.content || '')}</pre>
+            </div>
+        </div>`;
+            }).join('');
+
+            box.innerHTML = html;
+        }
+
+        function toggle(i) { document.getElementById('d' + i).classList.toggle('open'); }
+
+        async function doSearch() {
+            const q = document.getElementById('q').value.trim();
+            if (!q) return;
+            showLoader();
+            try {
+                const p = new URLSearchParams({ q });
+                if (currentFw !== 'all') p.set('framework', currentFw);
+                const r = await fetch('/api/search?' + p);
+                const d = await r.json();
+                hideLoader();
+                renderResults(d);
+            } catch (e) { hideLoader(); }
+        }
+
+        async function doDiagnose() {
+            const q = document.getElementById('q').value.trim();
+            if (!q) { alert('请先输入问题描述'); return; }
+            showLoader();
+            try {
+                const fd = new FormData();
+                fd.append('q', q);
+                if (currentFw !== 'all') fd.append('framework', currentFw);
+                const r = await fetch('/api/diagnose', { method: 'POST', body: fd });
+                const d = await r.json();
+                hideLoader();
+                const results = (d.matched_cases || []).map(c => ({ ...c, content: null, tags: '', severity: 'medium', complexity: 'moderate', title_en: '' }));
+                renderResults({ results }, d.diagnosis);
+            } catch (e) { hideLoader(); }
+        }
+
+        // 输入时自动搜索（防抖 600ms）
+        document.getElementById('q').addEventListener('input', () => {
+            clearTimeout(debounceTimer);
+            const q = document.getElementById('q').value.trim();
+            if (!q) {
+                document.getElementById('results').innerHTML = `<div class="empty"><div class="empty-icon">🩺</div>
+            <div class="empty-text">输入问题描述后自动检索匹配病例</div>
+            <div class="empty-hint"><span class="kbd">Enter</span> 搜索 · 支持中英文语义匹配</div></div>`;
+                return;
+            }
+            debounceTimer = setTimeout(doSearch, 600);
+        });
+
+        document.getElementById('q').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') { e.preventDefault(); clearTimeout(debounceTimer); doSearch(); }
+        });
+    </script>
+</body>
+
+</html>

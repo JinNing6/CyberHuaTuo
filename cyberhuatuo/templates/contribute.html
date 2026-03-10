@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>👨‍⚕️ 开药方 — CyberHuaTuo 赛博华佗</title>
+    <meta name="description" content="贡献你的 AI Agent 问题解决方案">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+SC:wght@300;400;500;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-card: #1a1a2e;
+            --bg-card-hover: #222240;
+            --border: #2a2a4a;
+            --border-glow: #ffaa00;
+            --text-primary: #e0e0e8;
+            --text-secondary: #8888a0;
+            --text-muted: #555570;
+            --accent-primary: #00ffa3;
+            --accent-secondary: #00ccff;
+            --accent-warm: #ffaa00;
+            --accent-danger: #ff4466;
+            --gradient-warm: linear-gradient(135deg, #ffaa00, #ff6644);
+            --gradient-main: linear-gradient(135deg, #00ffa3, #00ccff);
+            --shadow-warm: 0 0 20px rgba(255, 170, 0, 0.15);
+            --radius: 12px;
+            --radius-sm: 8px;
+            --font-sans: 'Inter', 'Noto Sans SC', system-ui, sans-serif;
+            --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background:
+                linear-gradient(rgba(255, 170, 0, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 170, 0, 0.02) 1px, transparent 1px);
+            background-size: 60px 60px;
+            pointer-events: none;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 24px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            padding: 40px 0 24px;
+        }
+
+        .header__back {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.85rem;
+            margin-bottom: 16px;
+            transition: color 0.2s;
+        }
+
+        .header__back:hover {
+            color: var(--accent-primary);
+        }
+
+        .header__title {
+            font-size: 2rem;
+            font-weight: 700;
+            background: var(--gradient-warm);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header__subtitle {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-top: 6px;
+        }
+
+        /* Form */
+        .form-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 28px;
+            margin-bottom: 20px;
+        }
+
+        .form-card__title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--accent-warm);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+        }
+
+        .form-label .required {
+            color: var(--accent-danger);
+            margin-left: 2px;
+        }
+
+        .form-input,
+        .form-select,
+        .form-textarea {
+            width: 100%;
+            padding: 10px 14px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+            font-family: var(--font-sans);
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-input:focus,
+        .form-select:focus,
+        .form-textarea:focus {
+            border-color: var(--accent-warm);
+        }
+
+        .form-textarea {
+            font-family: var(--font-mono);
+            min-height: 100px;
+            resize: vertical;
+            line-height: 1.6;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+
+        .form-row-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 14px;
+        }
+
+        .form-hint {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 10px 24px;
+            border-radius: var(--radius-sm);
+            font-family: var(--font-sans);
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-preview {
+            background: var(--bg-primary);
+            color: var(--accent-secondary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-preview:hover {
+            border-color: var(--accent-secondary);
+        }
+
+        .btn-save {
+            background: var(--gradient-warm);
+            color: #000;
+        }
+
+        .btn-save:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 16px rgba(255, 170, 0, 0.3);
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 24px;
+        }
+
+        /* Preview */
+        .preview-panel {
+            background: var(--bg-card);
+            border: 1px solid var(--accent-secondary);
+            border-radius: var(--radius);
+            padding: 24px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .preview-panel.active {
+            display: block;
+        }
+
+        .preview-panel__title {
+            color: var(--accent-secondary);
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .preview-panel pre {
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 16px;
+            overflow-x: auto;
+            font-family: var(--font-mono);
+            font-size: 0.82rem;
+            line-height: 1.6;
+            color: var(--text-secondary);
+            white-space: pre-wrap;
+        }
+
+        /* Success */
+        .success-panel {
+            background: var(--bg-card);
+            border: 1px solid var(--accent-primary);
+            border-radius: var(--radius);
+            padding: 24px;
+            margin-bottom: 20px;
+            display: none;
+            box-shadow: 0 0 20px rgba(0, 255, 163, 0.15);
+        }
+
+        .success-panel.active {
+            display: block;
+        }
+
+        .success-panel__title {
+            color: var(--accent-primary);
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .success-panel code {
+            display: block;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 12px;
+            margin: 4px 0;
+            font-family: var(--font-mono);
+            font-size: 0.82rem;
+            color: var(--accent-secondary);
+        }
+
+        .footer {
+            text-align: center;
+            padding: 32px 0;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+
+        .footer a {
+            color: var(--accent-primary);
+            text-decoration: none;
+        }
+
+        @media (max-width: 640px) {
+
+            .form-row,
+            .form-row-3 {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <a href="/" class="header__back">← 返回诊断搜索</a>
+            <h1 class="header__title">👨‍⚕️ 我来开药方</h1>
+            <p class="header__subtitle">解决了 Agent 问题？在这里快速贡献你的药方</p>
+        </header>
+
+        <!-- Form -->
+        <form id="contributeForm" onsubmit="return false;">
+            <!-- 基本信息 -->
+            <div class="form-card">
+                <div class="form-card__title">📋 基本信息</div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">框架 <span class="required">*</span></label>
+                        <select id="framework" class="form-select" required>
+                            {% for fw in frameworks %}
+                            <option value="{{ fw }}">{{ fw }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">框架版本</label>
+                        <input id="frameworkVersion" class="form-input" placeholder="例如：>=0.3.0">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">问题标题（中文） <span class="required">*</span></label>
+                    <input id="title" class="form-input" placeholder="简洁描述核心问题" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">问题标题（英文）</label>
+                    <input id="titleEn" class="form-input" placeholder="English title for the case">
+                </div>
+                <div class="form-row-3">
+                    <div class="form-group">
+                        <label class="form-label">严重性</label>
+                        <select id="severity" class="form-select">
+                            {% for sv in severities %}
+                            <option value="{{ sv }}" {% if sv=='medium' %}selected{% endif %}>{{ sv }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">复杂度</label>
+                        <select id="complexity" class="form-select">
+                            {% for cx in complexities %}
+                            <option value="{{ cx }}" {% if cx=='moderate' %}selected{% endif %}>{{ complexity_emoji[cx]
+                                }} {{ cx }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">标签</label>
+                        <input id="tags" class="form-input" placeholder="逗号分隔，如: import-error, breaking-change">
+                    </div>
+                </div>
+            </div>
+
+            <!-- 症状与错误 -->
+            <div class="form-card">
+                <div class="form-card__title">🏥 症状与错误</div>
+                <div class="form-group">
+                    <label class="form-label">症状描述 <span class="required">*</span></label>
+                    <textarea id="symptom" class="form-textarea" placeholder="描述你遇到的问题现象..." required></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">错误信息</label>
+                    <textarea id="errorMessage" class="form-textarea" placeholder="粘贴完整的报错信息 / Traceback..."
+                        style="min-height: 80px;"></textarea>
+                    <span class="form-hint">粘贴完整的 Traceback 或错误日志</span>
+                </div>
+            </div>
+
+            <!-- 诊断与药方 -->
+            <div class="form-card">
+                <div class="form-card__title">💊 诊断与药方</div>
+                <div class="form-group">
+                    <label class="form-label">根因分析</label>
+                    <textarea id="rootCause" class="form-textarea" placeholder="分析问题的根本原因..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">解决方案（药方） <span class="required">*</span></label>
+                    <textarea id="prescription" class="form-textarea" placeholder="详细的解决步骤和代码示例..."
+                        style="min-height: 140px;" required></textarea>
+                    <span class="form-hint">支持 Markdown 格式，建议包含代码示例</span>
+                </div>
+            </div>
+
+            <!-- 贡献者信息 -->
+            <div class="form-card">
+                <div class="form-card__title">👤 贡献者信息</div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">GitHub 用户名</label>
+                        <input id="contributorGithub" class="form-input" placeholder="your-github-username">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">参考链接</label>
+                        <input id="sourceUrl" class="form-input" placeholder="https://github.com/...">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="form-actions">
+                <button type="button" class="btn btn-preview" onclick="doPreview()">📋 预览生成的文件</button>
+                <button type="button" class="btn btn-save" onclick="doSave()">🚀 保存到本地仓库</button>
+            </div>
+        </form>
+
+        <!-- Preview -->
+        <div id="previewPanel" class="preview-panel">
+            <div class="preview-panel__title">📋 预览生成的病例文件</div>
+            <pre id="previewContent"></pre>
+        </div>
+
+        <!-- Success -->
+        <div id="successPanel" class="success-panel">
+            <div class="success-panel__title">✅ 病例已保存！</div>
+            <p id="successMessage" style="color: var(--text-secondary); margin-bottom: 12px;"></p>
+            <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 8px;">接下来运行以下命令提交到 GitHub：</p>
+            <div id="nextSteps"></div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <a href="/">🩺 返回诊断搜索</a>
+        </footer>
+    </div>
+
+    <script>
+        function getFormData() {
+            return {
+                framework: document.getElementById('framework').value,
+                title: document.getElementById('title').value,
+                title_en: document.getElementById('titleEn').value,
+                error_message: document.getElementById('errorMessage').value,
+                symptom: document.getElementById('symptom').value,
+                root_cause: document.getElementById('rootCause').value,
+                prescription: document.getElementById('prescription').value,
+                severity: document.getElementById('severity').value,
+                complexity: document.getElementById('complexity').value,
+                tags: document.getElementById('tags').value,
+                framework_version: document.getElementById('frameworkVersion').value,
+                contributor_github: document.getElementById('contributorGithub').value || 'anonymous',
+                source_url: document.getElementById('sourceUrl').value,
+            };
+        }
+
+        async function doPreview() {
+            const data = getFormData();
+            if (!data.title || !data.symptom || !data.prescription) {
+                alert('请至少填写：标题、症状描述、解决方案');
+                return;
+            }
+
+            const formData = new FormData();
+            Object.entries(data).forEach(([k, v]) => formData.append(k, v));
+            formData.append('action', 'preview');
+
+            try {
+                const resp = await fetch('/api/contribute', { method: 'POST', body: formData });
+                const result = await resp.json();
+                document.getElementById('previewContent').textContent = result.content;
+                document.getElementById('previewPanel').classList.add('active');
+                document.getElementById('successPanel').classList.remove('active');
+            } catch (err) {
+                alert('预览失败: ' + err.message);
+            }
+        }
+
+        async function doSave() {
+            const data = getFormData();
+            if (!data.title || !data.symptom || !data.prescription) {
+                alert('请至少填写：标题、症状描述、解决方案');
+                return;
+            }
+
+            if (!confirm('确认保存到本地仓库？')) return;
+
+            const formData = new FormData();
+            Object.entries(data).forEach(([k, v]) => formData.append(k, v));
+            formData.append('action', 'save');
+
+            try {
+                const resp = await fetch('/api/contribute', { method: 'POST', body: formData });
+                const result = await resp.json();
+
+                document.getElementById('successMessage').textContent = result.message;
+                const stepsEl = document.getElementById('nextSteps');
+                stepsEl.innerHTML = result.next_steps.map(s => `<code>${s}</code>`).join('');
+                document.getElementById('successPanel').classList.add('active');
+                document.getElementById('previewPanel').classList.remove('active');
+            } catch (err) {
+                alert('保存失败: ' + err.message);
+            }
+        }
+    </script>
+</body>
+
+</html>
