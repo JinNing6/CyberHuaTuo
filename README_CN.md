@@ -448,6 +448,20 @@ PORT=8000
 
 ---
 
+## 🔌 MCP Server — 接入 AI 编辑器
+
+赛博华佗提供了原生的 **Model Context Protocol (MCP)** 服务，让你的 AI 编辑器（如 Cursor，VS Code Copilot，Claude Desktop 等）直接拥有中医的**望闻问切**能力。
+
+只需配置 MCP Server，你的 AI 助手就能直接调用这些能力：
+*   **诊断 (diagnose)**: 发送报错信息，AI 自动结合知识库为你开出针对性药方。
+*   **安全体检 (security_checkup)**: 针对 Agent 代码库进行六大维度的安全和性能审查。
+*   **药方搜索 (search_knowledge_base)**: 直接在 AI 对话中检索赛博华佗的历代病例。
+*   **保存新药方 (save_prescription)**: 大模型帮你解决了未收录的问题？你可以直接让它一键提交新药方到本地知识库。
+
+> 👉 **详细的安装和配置指南，请查阅 [README_MCP.md](README_MCP.md)**
+
+---
+
 ## 🏛️ 华佗
 
 > **华佗**（约 145–208），字元化，东汉末年沛国谯县（今安徽亳州）人。

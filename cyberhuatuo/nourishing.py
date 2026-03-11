@@ -4,8 +4,8 @@ AI 安全体检 + 健康评分 + 滋补方案推荐
 """
 
 import json
-from .config import config
 
+from .config import config
 
 # ===== 安全体检 System Prompt =====
 

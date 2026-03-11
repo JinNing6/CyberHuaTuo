@@ -94,7 +94,7 @@ def search_cases(
     distances = results["distances"][0] if results["distances"] else [0] * len(ids)
     metadatas = results["metadatas"][0] if results["metadatas"] else [{}] * len(ids)
 
-    for i, (doc_id, distance, metadata) in enumerate(zip(ids, distances, metadatas)):
+    for _i, (doc_id, distance, metadata) in enumerate(zip(ids, distances, metadatas)):
         # 将距离转换为 0-100 的相关度分数
         # ChromaDB 默认使用 L2 距离，越小越相关
         relevance = max(0.0, min(100.0, 100.0 * (1.0 / (1.0 + distance))))

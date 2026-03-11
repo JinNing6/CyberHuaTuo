@@ -11,11 +11,10 @@
 
 import math
 import re
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 
 import yaml
-
 
 # ============================================================
 # 数据结构
@@ -175,9 +174,8 @@ def _extract_error_patterns(content: str) -> list[str]:
             # 匹配常见的错误行
             if any(kw in line_stripped.lower() for kw in [
                 "error", "exception", "traceback", "failed", "cannot",
-            ]):
-                if len(line_stripped) > 10:
-                    patterns.append(line_stripped)
+            ]) and len(line_stripped) > 10:
+                patterns.append(line_stripped)
 
     return patterns[:10]  # 最多保留 10 个错误模式
 

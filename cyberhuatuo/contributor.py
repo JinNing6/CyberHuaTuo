@@ -3,17 +3,16 @@ CyberHuaTuo 药方贡献生成器
 帮助开发者快速生成规范格式的病例文件
 """
 
-import re
 import json
-import litellm
-from datetime import date
-from pathlib import Path
+import re
 from dataclasses import dataclass, field
-from typing import Dict, Any
+from datetime import date
+from typing import Any
+
+import litellm
 
 from .config import config
 from .doc_sources import get_agent_framework_keys
-
 
 # 框架枚举值（从 doc_sources 动态获取 Agent 框架列表）
 FRAMEWORKS = get_agent_framework_keys()
@@ -53,13 +52,13 @@ class CaseSubmission:
 
 
 async def smart_extract_contribution(
-    issue_text: str, 
-    prescription: str, 
-    framework_hint: str = "auto", 
+    issue_text: str,
+    prescription: str,
+    framework_hint: str = "auto",
     source_url: str = "",
     api_key: str = None,
     provider: str = "openai"
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     使用 LLM 自动提取诊断病例所需的详细信息
     """
@@ -106,7 +105,7 @@ async def smart_extract_contribution(
 
         response = await litellm.acompletion(**kwargs)
         raw_content = response.choices[0].message.content.strip()
-        
+
         # Clean up any potential markdown formatting from the response
         if raw_content.startswith("```json"):
             raw_content = raw_content[7:]
@@ -114,7 +113,7 @@ async def smart_extract_contribution(
             raw_content = raw_content[3:]
         if raw_content.endswith("```"):
             raw_content = raw_content[:-3]
-            
+
         return json.loads(raw_content.strip())
     except Exception as e:
         print(f"Error extracting contribution via LLM: {e}")

@@ -5,9 +5,8 @@ CyberHuaTuo 望闻问切诊断引擎
 """
 
 from .config import config
+from .doc_fetcher import DocSnippet, smart_fetch
 from .searcher import SearchResult
-from .doc_fetcher import smart_fetch, DocSnippet
-
 
 SYSTEM_PROMPT = """你是赛博华佗（CyberHuaTuo），一个专精于 AI 技术问题诊断的智能医师。
 
@@ -184,8 +183,9 @@ async def diagnose(
     messages = build_diagnosis_prompt(query, results, doc_snippets=doc_snippets)
 
     try:
-        import litellm
         import os
+
+        import litellm
 
         # 确定模型和 API Key
         api_base = None

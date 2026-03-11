@@ -3,7 +3,7 @@ CyberHuaTuo 框架文档源注册表
 全量框架到 Context7 Library ID 的映射，支持智能体直接检索最新官方技术文档
 """
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 
 @dataclass(frozen=True)

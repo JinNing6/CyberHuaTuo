@@ -3,13 +3,13 @@ CyberHuaTuo 索引构建器
 解析 cases/ 目录下所有 .md 病例文件，构建 ChromaDB 向量索引
 """
 
-import re
 import hashlib
+import re
 from pathlib import Path
 from typing import Any
 
-import yaml
 import chromadb
+import yaml
 
 from .config import config
 

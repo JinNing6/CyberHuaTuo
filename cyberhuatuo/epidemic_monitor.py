@@ -8,15 +8,11 @@ CyberHuaTuo 疫情通报引擎 — Agent 生态健康度监控
 
 import asyncio
 import json
-import math
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
-from pathlib import Path
-from typing import Any
 
 from .config import config
-from .issue_miner import GitHubClient, TARGET_REPOS, TargetRepo
-
+from .issue_miner import TARGET_REPOS, GitHubClient, TargetRepo
 
 # ===== 数据结构 =====
 
@@ -261,8 +257,8 @@ class EpidemicMonitor:
         state: str = "open",
     ) -> int:
         """通过 Search API 获取匹配数量（仅返回 total_count）"""
+
         import httpx
-        import time
 
         await self.github._wait_if_limited(is_search=True)
 
@@ -510,32 +506,32 @@ class EpidemicMonitor:
 def generate_markdown_report(report: EpidemicReport) -> str:
     """生成 Markdown 格式的疫情通报"""
     lines = [
-        f"# 🦠 Agent 生态疫情通报",
-        f"# Agent Ecosystem Epidemic Report",
-        f"",
+        "# 🦠 Agent 生态疫情通报",
+        "# Agent Ecosystem Epidemic Report",
+        "",
         f"> **报告日期**: {report.report_date}",
         f"> **生成时间**: {report.generated_at}",
         f"> **监控框架**: {report.framework_count} 个主流 Agent 框架",
-        f"",
-        f"---",
-        f"",
-        f"## 📊 全局概览 / Global Overview",
-        f"",
-        f"| 指标 Metric | 数值 Value |",
-        f"|:---|:---|",
+        "",
+        "---",
+        "",
+        "## 📊 全局概览 / Global Overview",
+        "",
+        "| 指标 Metric | 数值 Value |",
+        "|:---|:---|",
         f"| 📈 监控框架数 Frameworks | **{report.framework_count}** |",
         f"| 🔓 总开放 Issues Total Open | **{report.total_open_issues:,}** |",
         f"| 📥 本周新增 New (7d) | **{report.total_new_issues_7d:,}** |",
         f"| ✅ 本周关闭 Closed (7d) | **{report.total_closed_issues_7d:,}** |",
         f"| 💚 平均健康分 Avg Score | **{report.avg_health_score}/100** |",
-        f"",
+        "",
     ]
 
     # 排行榜
     if report.healthiest_frameworks:
         lines.extend([
-            f"### 🏆 健康度排行 / Health Ranking",
-            f"",
+            "### 🏆 健康度排行 / Health Ranking",
+            "",
         ])
         for i, fw in enumerate(report.healthiest_frameworks, 1):
             medal = ["🥇", "🥈", "🥉"][i-1] if i <= 3 else f"{i}."
@@ -544,8 +540,8 @@ def generate_markdown_report(report: EpidemicReport) -> str:
 
     if report.needs_attention:
         lines.extend([
-            f"### ⚠️ 需要关注 / Needs Attention",
-            f"",
+            "### ⚠️ 需要关注 / Needs Attention",
+            "",
         ])
         for fw in report.needs_attention:
             lines.append(f"- 🔴 **{fw}**")
@@ -554,18 +550,18 @@ def generate_markdown_report(report: EpidemicReport) -> str:
     # 全局异常
     if report.global_anomalies:
         lines.extend([
-            f"### 🚨 异常告警 / Anomaly Alerts",
-            f"",
+            "### 🚨 异常告警 / Anomaly Alerts",
+            "",
         ])
         for anomaly in report.global_anomalies:
             lines.append(f"- {anomaly}")
         lines.append("")
 
     lines.extend([
-        f"---",
-        f"",
-        f"## 📋 各框架详情 / Framework Details",
-        f"",
+        "---",
+        "",
+        "## 📋 各框架详情 / Framework Details",
+        "",
     ])
 
     # 各框架详细报告
@@ -583,26 +579,26 @@ def generate_markdown_report(report: EpidemicReport) -> str:
         lines.extend([
             f"### {health_emoji} {fw_data.display_name}",
             f"**框架**: `{fw_data.framework}` | **健康分数 Health Score**: **{score}/100** | **趋势 Trend**: {fw_data.trend}",
-            f"",
-            f"| 指标 | 数值 |",
-            f"|:---|:---|",
+            "",
+            "| 指标 | 数值 |",
+            "|:---|:---|",
             f"| 开放 Issues Open | {fw_data.open_issues_count:,} |",
             f"| 本周新增 New (7d) | {fw_data.new_issues_7d} |",
             f"| 本月新增 New (30d) | {fw_data.new_issues_30d} |",
             f"| 本周关闭 Closed (7d) | {fw_data.closed_issues_7d} |",
             f"| 本月关闭 Closed (30d) | {fw_data.closed_issues_30d} |",
             f"| Bug 类 Issues | {fw_data.bug_count} |",
-            f"",
+            "",
         ])
 
         if fw_data.anomalies:
-            lines.append(f"**异常告警 Anomalies**:")
+            lines.append("**异常告警 Anomalies**:")
             for a in fw_data.anomalies:
                 lines.append(f"- {a}")
             lines.append("")
 
         if fw_data.top_issues:
-            lines.append(f"**🔥 热门 Issues / Hot Issues**:")
+            lines.append("**🔥 热门 Issues / Hot Issues**:")
             for issue in fw_data.top_issues[:3]:
                 lines.append(
                     f"- [{issue['title'][:80]}]({issue['url']}) "
@@ -611,7 +607,7 @@ def generate_markdown_report(report: EpidemicReport) -> str:
             lines.append("")
 
         if fw_data.critical_issues:
-            lines.append(f"**🚨 高危 Issues / Critical Issues**:")
+            lines.append("**🚨 高危 Issues / Critical Issues**:")
             for ci in fw_data.critical_issues[:3]:
                 lines.append(
                     f"- [{ci.title[:80]}]({ci.url}) "
@@ -628,12 +624,12 @@ def generate_markdown_report(report: EpidemicReport) -> str:
 
     # Footer
     lines.extend([
-        f"",
-        f"---",
-        f"",
-        f"*🩺 由 [CyberHuaTuo 赛博华佗](https://github.com/JinNing6/CyberHuaTuo) 自动生成*",
-        f"*📡 数据来源: GitHub REST API | 更新频率: 每日*",
-        f"*🦠 掌握 Agent 生态脉搏，定义框架健康标准*",
+        "",
+        "---",
+        "",
+        "*🩺 由 [CyberHuaTuo 赛博华佗](https://github.com/JinNing6/CyberHuaTuo) 自动生成*",
+        "*📡 数据来源: GitHub REST API | 更新频率: 每日*",
+        "*🦠 掌握 Agent 生态脉搏，定义框架健康标准*",
     ])
 
     return "\n".join(lines)
@@ -777,7 +773,7 @@ async def _cli_main():
     monitor = EpidemicMonitor()
     report = await monitor.scan_all_frameworks()
     result = save_report(report)
-    print(f"\n🦠 疫情通报生成完成！")
+    print("\n🦠 疫情通报生成完成！")
     print(f"  📄 {result['markdown_path']}")
     print(f"  📊 {result['json_path']}")
 

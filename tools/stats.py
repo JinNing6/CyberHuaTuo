@@ -8,9 +8,9 @@ CyberHuaTuo 疫情统计报告生成器
 """
 
 import sys
-from pathlib import Path
-from collections import Counter, defaultdict
+from collections import Counter
 from datetime import datetime
+from pathlib import Path
 
 try:
     import yaml
@@ -94,7 +94,6 @@ def generate_report():
     diagnostic_total = total - nourishing_count
 
     # 框架健康度评分（病例越多 = 越多人踩坑 = 越需要关注）
-    severity_weight = {"low": 1, "medium": 2, "high": 3, "critical": 5}
 
     # 生成报告
     now = datetime.now().strftime("%Y-%m-%d %H:%M")
@@ -108,8 +107,8 @@ def generate_report():
     lines.append("")
     lines.append("## 📊 生态总览")
     lines.append("")
-    lines.append(f"| 指标 | 数值 |")
-    lines.append(f"|------|------|")
+    lines.append("| 指标 | 数值 |")
+    lines.append("|------|------|")
     lines.append(f"| 📋 总病例数 | **{total}** |")
     lines.append(f"| 🩺 诊断病例 | **{diagnostic_total}** |")
     lines.append(f"| 🧬 滋补药方 | **{nourishing_count}** |")

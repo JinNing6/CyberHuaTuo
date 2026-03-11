@@ -6,37 +6,48 @@ CyberHuaTuo FastAPI 路由
 from contextlib import asynccontextmanager
 
 import chromadb
-from fastapi import FastAPI, Request, Form, Query
+from fastapi import FastAPI, Form, Query, Request
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from .config import config
-from .indexer import build_index, scan_cases
-from .searcher import search_cases
-from .diagnosis import diagnose
 from .contributor import (
-    CaseSubmission, FRAMEWORKS, SEVERITIES, COMPLEXITIES,
-    generate_case_markdown, save_case_file, COMPLEXITY_EMOJI,
+    COMPLEXITIES,
+    COMPLEXITY_EMOJI,
+    FRAMEWORKS,
+    SEVERITIES,
+    CaseSubmission,
+    generate_case_markdown,
+    save_case_file,
     smart_extract_contribution,
 )
+from .diagnosis import diagnose
 from .doc_fetcher import (
-    smart_fetch, multi_framework_fetch, get_supported_frameworks_info,
-    search_library, fetch_docs, DocSnippet,
+    fetch_docs,
+    get_supported_frameworks_info,
+    multi_framework_fetch,
+    smart_fetch,
 )
-from .doc_sources import ALL_FRAMEWORKS, search_frameworks
+from .doc_sources import ALL_FRAMEWORKS
+from .epidemic_monitor import (
+    EpidemicMonitor,
+    list_report_history,
+    load_latest_report,
+    report_to_json,
+    save_report,
+)
+from .indexer import build_index, scan_cases
 from .issue_miner import (
-    IssueMiner, GitHubClient, get_all_target_repos,
-    _issue_to_dict, _refined_to_dict,
+    IssueMiner,
+    _issue_to_dict,
+    get_all_target_repos,
 )
 from .nourishing import (
-    security_checkup, get_nourishing_categories,
+    get_nourishing_categories,
+    security_checkup,
 )
-from .epidemic_monitor import (
-    EpidemicMonitor, load_latest_report, list_report_history,
-    report_to_json, save_report,
-)
-
+from .searcher import search_cases
 
 # 全局 ChromaDB 客户端
 _chroma_client: chromadb.ClientAPI | None = None
@@ -48,25 +59,25 @@ async def lifespan(app: FastAPI):
     """应用启动时构建索引"""
     global _chroma_client, _case_count
     _chroma_client, _case_count = build_index()
-    print(f"\n🩺 CyberHuaTuo 已启动！")
+    print("\n🩺 CyberHuaTuo 已启动！")
     print(f"📦 已加载 {_case_count} 个病例")
     if config.has_llm_key():
         providers = ", ".join(config.get_available_providers())
         print(f"🧠 AI 诊断已启用（{providers}）")
     else:
-        print(f"💡 AI 诊断未启用（配置 .env 中的 API Key 可开启）")
+        print("💡 AI 诊断未启用（配置 .env 中的 API Key 可开启）")
     if config.CONTEXT7_ENABLED:
         print(f"\u00a0\u00a0📚 官方文档检索已启用（支持 {len(ALL_FRAMEWORKS)} 个框架）")
         if config.CONTEXT7_API_KEY:
-            print(f"\u00a0\u00a0🔑 Context7 API Key 已配置（高速率模式）")
+            print("\u00a0\u00a0🔑 Context7 API Key 已配置（高速率模式）")
         else:
-            print(f"\u00a0\u00a0💡 未配置 Context7 API Key（免费模式，有速率限制）")
+            print("\u00a0\u00a0💡 未配置 Context7 API Key（免费模式，有速率限制）")
     else:
-        print(f"\u00a0\u00a0📚 官方文档检索未启用")
+        print("\u00a0\u00a0📚 官方文档检索未启用")
     if config.NOURISHING_ENABLED:
-        print(f"\u00a0\u00a0🧬 滋补药方已启用（上医治未病）")
+        print("\u00a0\u00a0🧬 滋补药方已启用（上医治未病）")
     if config.EPIDEMIC_ENABLED:
-        print(f"\u00a0\u00a0🦠 疫情通报已启用（Agent 生态健康度监控）")
+        print("\u00a0\u00a0🦠 疫情通报已启用（Agent 生态健康度监控）")
     print(f"\u00a0\u00a0📡 访问 http://{config.HOST}:{config.PORT}\n")
     yield
 
@@ -241,7 +252,7 @@ async def api_contribute_smart(
             api_key=api_key,
             provider=provider
         )
-        
+
         # Fallback values for required fields
         safe_data = {
             "framework": parsed_data.get("framework", "unknown"),
@@ -257,7 +268,7 @@ async def api_contribute_smart(
             "source_url": source_url,
             "contributor_github": "anonymous"
         }
-        
+
         # Add values not strictly required by CaseSubmission
         parsed_data.update(safe_data)
 
@@ -275,7 +286,7 @@ async def api_contribute_smart(
             source_url=safe_data["source_url"],
             contributor_github=safe_data["contributor_github"]
         )
-        
+
         content = generate_case_markdown(submission)
 
         return {
