@@ -167,6 +167,19 @@ cases/
 
 ---
 
+## 📝 签署 CLA Contributor License Agreement
+
+首次向本项目提交 Pull Request 时，CLA Bot 会自动要求你签署[贡献者许可协议 (CLA)](CLA.md)。
+
+When you submit your first Pull Request, the CLA Bot will automatically ask you to sign
+our [Contributor License Agreement (CLA)](CLA.md).
+
+**操作方式：** 在 PR 中回复 `I have read the CLA Document and I hereby sign the CLA` 即可。**只需签署一次**，之后的所有贡献将自动通过验证。
+
+**How to sign:** Reply with `I have read the CLA Document and I hereby sign the CLA` in the PR. **Sign once**, and all future contributions pass automatically.
+
+---
+
 ## 🏅 贡献者荣誉 Contributor Recognition
 
 - 每位贡献者都会在病例文件中署名

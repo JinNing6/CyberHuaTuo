@@ -50,6 +50,17 @@
   <sub>🎨 <em>All artwork AI-generated · 所有画作均由 AI 文生图创作</em></sub>
 </p>
 
+<!-- 🌐 3D Prescription Universe · 3D 药方宇宙 -->
+<p align="center">
+  <a href="https://jinning6.github.io/CyberHuaTuo/3d-universe/">
+    <img src="assets/prescription_universe.svg" alt="3D Prescription Universe · 药方宇宙" width="100%"/>
+  </a>
+</p>
+
+<p align="center">
+  <a href="https://jinning6.github.io/CyberHuaTuo/3d-universe/"><strong>🌐 Explore the Interactive 3D Prescription Universe → 探索可交互的 3D 药方宇宙</strong></a>
+</p>
+
 <p align="center">
   <a href="https://github.com/JinNing6/CyberHuaTuo/stargazers"><img src="https://img.shields.io/github/stars/JinNing6/CyberHuaTuo?style=for-the-badge&logo=github&logoColor=white&labelColor=0A0E1A&color=00D09C" alt="Stars"/></a>
   <a href="https://github.com/JinNing6/CyberHuaTuo/network/members"><img src="https://img.shields.io/github/forks/JinNing6/CyberHuaTuo?style=for-the-badge&logo=github&logoColor=white&labelColor=0A0E1A&color=00BFFF" alt="Forks"/></a>

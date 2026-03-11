@@ -42,6 +42,9 @@ def main():
     # stats 命令
     subparsers.add_parser("stats", help="显示知识库统计")
 
+    # generate-3d 命令
+    subparsers.add_parser("generate-3d", help="生成 3D 药方宇宙（SVG + 交互式 HTML）")
+
     # mine 命令
     mine_parser = subparsers.add_parser("mine", help="GitHub Issues 淘金")
     mine_sub = mine_parser.add_subparsers(dest="mine_action", help="淘金操作")
@@ -109,6 +112,12 @@ def main():
             print(f"\n📊 按框架统计:")
             for fw, count in sorted(fw_stats.items(), key=lambda x: -x[1]):
                 print(f"  {fw}: {count}")
+
+    elif args.command == "generate-3d":
+        from pathlib import Path as _Path
+        import subprocess
+        tools_script = _Path(__file__).parent.parent / "tools" / "generate_3d_universe.py"
+        subprocess.run([sys.executable, str(tools_script)], check=True)
 
     elif args.command == "mine":
         import asyncio as _aio

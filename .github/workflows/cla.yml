@@ -1,0 +1,78 @@
+# 🩺 CyberHuaTuo CLA Assistant
+# 自动化贡献者许可协议签署验证
+# Automated Contributor License Agreement verification
+
+name: "CLA Assistant"
+
+on:
+  # PR 事件触发（新建、同步、关闭）
+  pull_request_target:
+    types: [opened, synchronize, closed]
+  # Issue 评论触发（用于签署和重新验证）
+  issue_comment:
+    types: [created]
+
+# 必需权限
+permissions:
+  actions: write
+  contents: write       # 存储签名数据
+  pull-requests: write  # 在 PR 中发布评论
+  statuses: write       # 更新 PR 状态检查
+
+jobs:
+  cla-check:
+    runs-on: ubuntu-latest
+    # 仅在以下情况运行：
+    # 1. PR 事件
+    # 2. Issue 评论中包含 "recheck" 或 "I have read" (签署关键词)
+    if: |
+      github.event_name == 'pull_request_target' ||
+      (github.event_name == 'issue_comment' &&
+       github.event.issue.pull_request &&
+       (contains(github.event.comment.body, 'recheck') ||
+        contains(github.event.comment.body, 'I have read')))
+
+    steps:
+      - name: "CLA Assistant"
+        uses: contributor-assistant/github-action@v2.6.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          # CLA 协议文档路径（指向仓库内的 CLA.md）
+          path-to-cla-document: "https://github.com/${{ github.repository }}/blob/main/CLA.md"
+
+          # 签名数据存储路径（在仓库内）
+          path-to-signatures: "signatures/cla.json"
+
+          # 签名分支
+          branch: "main"
+
+          # ------ 白名单配置 ------
+          # 免签用户（项目维护者）
+          allowlist: JinNing6,dependabot[bot],github-actions[bot]
+
+          # ------ 自定义消息 ------
+          # Bot 在 PR 中发布的签署提示
+          custom-notsigned-prcomment: |
+            ## 🩺 贡献者许可协议 (CLA) 签署
+            ### Contributor License Agreement
+
+            感谢你的贡献！在合并此 PR 之前，请签署我们的 [贡献者许可协议](https://github.com/${{ github.repository }}/blob/main/CLA.md)。
+
+            Thank you for your contribution! Before we can merge this PR,
+            please sign our [Contributor License Agreement](https://github.com/${{ github.repository }}/blob/main/CLA.md).
+
+            **签署方式 / How to sign:**
+            请在本 PR 下回复以下内容 / Reply with the following comment:
+
+            ```
+            I have read the CLA Document and I hereby sign the CLA
+            ```
+
+            > 💡 你只需签署一次，之后的所有 PR 将自动通过。
+            > You only need to sign once. All future PRs will pass automatically.
+
+          # 已签署时的提示
+          custom-allsigned-prcomment: |
+            ✅ **CLA 验证通过！** 所有贡献者已签署贡献者许可协议。
+            **CLA check passed!** All contributors have signed the CLA.
