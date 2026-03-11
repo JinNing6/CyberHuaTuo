@@ -4,9 +4,12 @@ CyberHuaTuo 药方贡献生成器
 """
 
 import re
+import json
+import litellm
 from datetime import date
 from pathlib import Path
 from dataclasses import dataclass, field
+from typing import Dict, Any
 
 from .config import config
 from .doc_sources import get_agent_framework_keys
@@ -49,6 +52,85 @@ class CaseSubmission:
     source_url: str = ""
 
 
+async def smart_extract_contribution(
+    issue_text: str, 
+    prescription: str, 
+    framework_hint: str = "auto", 
+    source_url: str = "",
+    api_key: str = None,
+    provider: str = "openai"
+) -> Dict[str, Any]:
+    """
+    使用 LLM 自动提取诊断病例所需的详细信息
+    """
+    prompt = f"""
+你是一个资深的主治医师和程序员专家，正在整理一份《赛博华佗》的 AI 技术纠错药方。
+下面是用户提交的极简报错和修复记录，你需要推断并提取出所有必须的结构化字段。
+
+用户遇到的问题（症状/报错）：
+{issue_text}
+
+用户的解决方案（药方）：
+{prescription}
+
+用户提示的框架：{framework_hint}
+参考链接：{source_url}
+
+请输出纯合法的 JSON 内容，不要包含任何 Markdown code block 头尾包裹！
+返回字段说明：
+- "framework": 如果用户提示了非 auto 框架，请尊重。如果是 auto，请根据代码识别归类出具体框架或工具名（如 langchain, pytorch, transformers, crewai, openai-sdk, fastapi 等小写短名）。覆盖范围包括 AI Agent 框架、LLM SDK、深度学习框架、ML 工具、MLOps 工具等所有 AI 相关技术栈。
+- "title": 中文问题标题，20字内简洁有力。
+- "title_en": 匹配的英文问题标题。
+- "symptom": 症状详细描述（基于输入总结提炼清晰的现象）。
+- "error_message": 提取出的纯报错日志或 Traceback（若无也可适当放空）。
+- "root_cause": 你根据经验推断的根本原因分析。
+- "prescription": 使用 Markdown 格式详细描述修复方案，尽量给出带有 diff 标志的代码块。
+- "severity": 只能是 "low", "medium", "high", "critical" 之一。
+- "complexity": 只能是 "simple", "moderate", "complex", "extreme" 之一。
+- "tags": ["tag1", "tag2"]（2-4个英文或中文标签串）。
+
+一定要确保输出纯正 JSON 能够被 python 的 json.loads 成功解析！
+"""
+    model_name = "gpt-4o"
+    if provider == "anthropic":
+        model_name = "claude-3-5-sonnet-20241022"
+
+    try:
+        kwargs = {
+            "model": model_name,
+            "messages": [{"role": "user", "content": prompt}],
+            "temperature": 0.2
+        }
+        if api_key:
+            kwargs["api_key"] = api_key
+
+        response = await litellm.acompletion(**kwargs)
+        raw_content = response.choices[0].message.content.strip()
+        
+        # Clean up any potential markdown formatting from the response
+        if raw_content.startswith("```json"):
+            raw_content = raw_content[7:]
+        elif raw_content.startswith("```"):
+            raw_content = raw_content[3:]
+        if raw_content.endswith("```"):
+            raw_content = raw_content[:-3]
+            
+        return json.loads(raw_content.strip())
+    except Exception as e:
+        print(f"Error extracting contribution via LLM: {e}")
+        # Default fallback
+        return {
+            "framework": framework_hint if framework_hint and framework_hint.lower() != 'auto' else "unknown",
+            "title": "自动分析失败请手动修改",
+            "title_en": "Auto-generation failed",
+            "symptom": issue_text,
+            "error_message": "",
+            "root_cause": "AI extraction failed.",
+            "prescription": prescription,
+            "severity": "medium",
+            "complexity": "moderate",
+            "tags": ["needs-review"]
+        }
 def generate_case_id(framework: str, title: str) -> str:
     """基于框架和标题生成唯一病例 ID"""
     # 从标题中提取关键词

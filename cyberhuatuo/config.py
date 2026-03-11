@@ -48,12 +48,32 @@ class Config:
     CONTEXT7_API_KEY: str | None = os.getenv("CONTEXT7_API_KEY", None)
     CONTEXT7_BASE_URL: str = os.getenv("CONTEXT7_BASE_URL", "https://context7.com/api/v2")
 
+    # GitHub Issues 淘金配置
+    GITHUB_TOKEN: str | None = os.getenv("GITHUB_TOKEN", None)
+    MINE_DEFAULT_LIMIT: int = int(os.getenv("MINE_DEFAULT_LIMIT", "10"))
+    MINE_MIN_REACTIONS: int = int(os.getenv("MINE_MIN_REACTIONS", "3"))
+    MINE_MIN_COMMENTS: int = int(os.getenv("MINE_MIN_COMMENTS", "2"))
+
+    # 滋补药方配置
+    NOURISHING_ENABLED: bool = os.getenv("NOURISHING_ENABLED", "true").lower() == "true"
+
+    # 疫情通报配置
+    EPIDEMIC_ENABLED: bool = os.getenv("EPIDEMIC_ENABLED", "true").lower() == "true"
+    EPIDEMIC_REPORT_DIR: Path = ROOT_DIR / "reports" / "epidemic"
+
     @classmethod
     def has_llm_key(cls) -> bool:
         """检查是否配置了 LLM API Key"""
         return any([
             os.getenv("OPENAI_API_KEY"),
             os.getenv("ANTHROPIC_API_KEY"),
+            os.getenv("DEEPSEEK_API_KEY"),
+            os.getenv("KIMI_API_KEY"),
+            os.getenv("DOUBAO_API_KEY"),
+            os.getenv("MINIMAX_API_KEY"),
+            os.getenv("GROQ_API_KEY"),
+            os.getenv("GEMINI_API_KEY"),
+            os.getenv("COHERE_API_KEY"),
             cls.OLLAMA_BASE_URL,
         ])
 
@@ -65,6 +85,20 @@ class Config:
             providers.append("OpenAI")
         if os.getenv("ANTHROPIC_API_KEY"):
             providers.append("Anthropic")
+        if os.getenv("DEEPSEEK_API_KEY"):
+            providers.append("DeepSeek")
+        if os.getenv("KIMI_API_KEY"):
+            providers.append("Kimi")
+        if os.getenv("DOUBAO_API_KEY"):
+            providers.append("Doubao")
+        if os.getenv("MINIMAX_API_KEY"):
+            providers.append("MiniMax")
+        if os.getenv("GROQ_API_KEY"):
+            providers.append("Groq")
+        if os.getenv("GEMINI_API_KEY"):
+            providers.append("Google")
+        if os.getenv("COHERE_API_KEY"):
+            providers.append("Cohere")
         if cls.OLLAMA_BASE_URL:
             providers.append("Ollama")
         return providers

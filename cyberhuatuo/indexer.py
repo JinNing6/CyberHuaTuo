@@ -70,12 +70,18 @@ def scan_cases(cases_dir: Path | None = None) -> list[dict[str, Any]]:
     md_files = sorted(cases_dir.rglob("*.md"))
 
     for filepath in md_files:
-        # 跳过索引文件和非病例文件
+        # 跳过索引文件（_index.md 等），但不跳过 _nourishing 目录下的文件
         if filepath.name.startswith("_"):
             continue
 
         case = parse_case_file(filepath)
         if case:
+            # 自动标记 case_type：滋补药方 or 治病药方
+            rel_path = str(filepath.relative_to(cases_dir))
+            if rel_path.startswith("_nourishing"):
+                case["metadata"]["case_type"] = "nourishing"
+            else:
+                case["metadata"]["case_type"] = "treatment"
             cases.append(case)
 
     return cases
@@ -148,6 +154,7 @@ def build_index(force_rebuild: bool = False) -> tuple[chromadb.ClientAPI, int]:
             "framework": case["metadata"].get("framework", "unknown"),
             "severity": case["metadata"].get("severity", "medium"),
             "complexity": case["metadata"].get("complexity", "moderate"),
+            "case_type": case["metadata"].get("case_type", "treatment"),
             "filepath": case["filepath"],
         }
         # 将 tags 列表转为逗号分隔字符串

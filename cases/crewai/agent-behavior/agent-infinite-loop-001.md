@@ -178,3 +178,7 @@ References
 
 - [CrewAI Agent Configuration Docs](https://docs.crewai.com/core-concepts/agents/)
 - [CrewAI Task Design Best Practices](https://docs.crewai.com/core-concepts/tasks/)
+
+---
+
+> 📝 本药方由 [@CyberHuaTuo](https://github.com/CyberHuaTuo) 贡献 · 如有更好方案欢迎 [提交 PR](https://github.com/CyberHuaTuo/CyberHuaTuo/pulls)

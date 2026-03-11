@@ -6,7 +6,7 @@
   </p>
   <p align="center">
     An open-source knowledge base for diagnosing and curing AI agent issues.<br>
-    开源的 AI Agent 问题诊断知识库 — Agent 世界的赛博神医
+    开源的 AI 问题诊断知识库 — AI 世界的赛博神医
   </p>
   <p align="center">
     <a href="#-the-problem">Problem</a> •

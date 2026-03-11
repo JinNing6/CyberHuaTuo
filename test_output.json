@@ -1,0 +1,14 @@
+{
+  "framework": "unknown",
+  "title": "自动分析失败请手动修改",
+  "title_en": "Auto-generation failed",
+  "symptom": "React context 更新时导致组件无限重渲染",
+  "error_message": "",
+  "root_cause": "AI extraction failed.",
+  "prescription": "使用 useMemo 包裹 provider value",
+  "severity": "medium",
+  "complexity": "moderate",
+  "tags": [
+    "needs-review"
+  ]
+}

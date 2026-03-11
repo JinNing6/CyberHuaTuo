@@ -1,0 +1,75 @@
+# ============================================================
+# 🔒 CyberHuaTuo — Stale Issue/PR 自动清理
+# Auto-close stale issues and PRs
+# ============================================================
+
+name: 🔒 Stale 清理
+
+on:
+  schedule:
+    # 每周一 UTC 00:00 运行
+    - cron: "0 0 * * 1"
+  workflow_dispatch:
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  stale:
+    name: 🧹 清理 · Stale Management
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🔒 标记并清理 Stale Issues/PRs
+        uses: actions/stale@v9
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+          # Issue 配置
+          stale-issue-message: |
+            🩺 **赛博华佗提醒**
+
+            此 Issue 已 **90 天没有活动** 了。
+
+            - 如果问题仍然存在，请回复更新状态
+            - 如果问题已解决，请关闭此 Issue
+            - 如果 30 天内无回复，此 Issue 将被自动关闭
+
+            > *未经治疗的疾病，终将自愈或被遗忘。但我们更希望每一个问题都有药方。*
+
+          close-issue-message: |
+            🩺 此 Issue 因长期无活动已被自动关闭。
+
+            如果问题仍然存在，请随时重新打开。我们的诊室永远为你敞开。
+
+            > *闭门不是拒客，而是等待你的再次到来。*
+
+          stale-issue-label: "stale"
+          days-before-issue-stale: 90
+          days-before-issue-close: 30
+
+          # PR 配置
+          stale-pr-message: |
+            🩺 **赛博华佗提醒**
+
+            此 PR 已 **60 天没有活动** 了。
+
+            - 请更新你的 PR 或回复说明当前状态
+            - 如果 14 天内无更新，此 PR 将被自动关闭
+
+          close-pr-message: |
+            🩺 此 PR 因长期无活动已被自动关闭。
+
+            如果你仍希望贡献此变更，请随时重新打开。
+
+          stale-pr-label: "stale"
+          days-before-pr-stale: 60
+          days-before-pr-close: 14
+
+          # 排除规则 — 重要的 Issue 不会被自动关闭
+          exempt-issue-labels: "pinned,security,critical,priority:critical,priority:high"
+          exempt-pr-labels: "pinned,security,work-in-progress"
+
+          # 操作限制
+          operations-per-run: 30

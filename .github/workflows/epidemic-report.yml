@@ -1,0 +1,59 @@
+name: 🦠 Epidemic Report — Agent 生态疫情通报
+
+on:
+  schedule:
+    # 每日 UTC 0:00 自动扫描（北京时间 08:00）
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+    # 支持手动触发
+
+permissions:
+  contents: write
+
+jobs:
+  epidemic-scan:
+    name: 📡 Agent Ecosystem Health Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: 📦 Install dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: 🦠 Run Epidemic Scan
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          EPIDEMIC_ENABLED: 'true'
+        run: |
+          python -c "
+          import asyncio
+          from cyberhuatuo.epidemic_monitor import EpidemicMonitor, save_report
+
+          async def main():
+              monitor = EpidemicMonitor()
+              report = await monitor.scan_all_frameworks()
+              result = save_report(report)
+              print(f'Report saved: {result}')
+
+          asyncio.run(main())
+          "
+
+      - name: 📤 Commit & Push Report
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add EPIDEMIC_REPORT.md reports/epidemic/
+          git diff --staged --quiet || git commit -m "📊 epidemic: update daily health report $(date -u +%Y-%m-%d)"
+          git push

@@ -102,3 +102,7 @@ References
 
 - [LangChain 0.3 迁移指南](https://python.langchain.com/docs/versions/v0_3/)
 - [LangChain Integration Packages](https://python.langchain.com/docs/integrations/platforms/)
+
+---
+
+> 📝 本药方由 [@CyberHuaTuo](https://github.com/CyberHuaTuo) 贡献 · 如有更好方案欢迎 [提交 PR](https://github.com/CyberHuaTuo/CyberHuaTuo/pulls)

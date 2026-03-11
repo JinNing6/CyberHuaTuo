@@ -1,0 +1,112 @@
+# ============================================================
+# 🚀 CyberHuaTuo — 自动发布
+# Auto-release on version tag push
+# ============================================================
+
+name: 🚀 自动发布
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: 📦 发布 · Create Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 📋 生成 Changelog
+        id: changelog
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // 获取上一个 tag
+            const { data: tags } = await github.rest.repos.listTags({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              per_page: 2,
+            });
+
+            const currentTag = context.ref.replace('refs/tags/', '');
+            const previousTag = tags.length > 1 ? tags[1].name : null;
+
+            let changelog = `# 🩺 CyberHuaTuo ${currentTag}\n\n`;
+
+            if (previousTag) {
+              // 获取两个 tag 之间的 commits
+              const { data: comparison } = await github.rest.repos.compareCommits({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                base: previousTag,
+                head: currentTag,
+              });
+
+              const categories = {
+                '💊 新增药方': [],
+                '⚙️ 引擎改进': [],
+                '🛠️ 工具改进': [],
+                '🐛 Bug 修复': [],
+                '📝 文档更新': [],
+                '🏗️ 基建': [],
+              };
+
+              for (const commit of comparison.commits) {
+                const msg = commit.commit.message.split('\n')[0];
+                if (msg.startsWith('feat:') || msg.includes('case') || msg.includes('prescription')) {
+                  categories['💊 新增药方'].push(`- ${msg} (@${commit.author?.login || 'unknown'})`);
+                } else if (msg.startsWith('fix:')) {
+                  categories['🐛 Bug 修复'].push(`- ${msg} (@${commit.author?.login || 'unknown'})`);
+                } else if (msg.startsWith('docs:')) {
+                  categories['📝 文档更新'].push(`- ${msg} (@${commit.author?.login || 'unknown'})`);
+                } else if (msg.includes('engine') || msg.includes('refactor')) {
+                  categories['⚙️ 引擎改进'].push(`- ${msg} (@${commit.author?.login || 'unknown'})`);
+                } else if (msg.includes('ci') || msg.includes('chore')) {
+                  categories['🏗️ 基建'].push(`- ${msg} (@${commit.author?.login || 'unknown'})`);
+                } else {
+                  categories['🛠️ 工具改进'].push(`- ${msg} (@${commit.author?.login || 'unknown'})`);
+                }
+              }
+
+              for (const [category, items] of Object.entries(categories)) {
+                if (items.length > 0) {
+                  changelog += `## ${category}\n\n${items.join('\n')}\n\n`;
+                }
+              }
+
+              changelog += `---\n\n`;
+              changelog += `**Full Changelog**: https://github.com/${context.repo.owner}/${context.repo.repo}/compare/${previousTag}...${currentTag}\n`;
+            } else {
+              changelog += '🎉 首次发布！\n';
+            }
+
+            core.setOutput('changelog', changelog);
+            return changelog;
+
+      - name: 🚀 创建 GitHub Release
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const tag = context.ref.replace('refs/tags/', '');
+            const changelog = ${{ steps.changelog.outputs.result }};
+
+            await github.rest.repos.createRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              tag_name: tag,
+              name: `🩺 CyberHuaTuo ${tag}`,
+              body: changelog,
+              draft: false,
+              prerelease: tag.includes('beta') || tag.includes('alpha') || tag.includes('rc'),
+            });
+
+            console.log(`✅ Release ${tag} 已创建`);

@@ -1,0 +1,161 @@
+# ============================================================
+# 🤖 CyberHuaTuo Bot — 自动诊断处方推荐
+# Auto-prescribe matching remedies on Issues
+# ============================================================
+#
+# 触发条件：
+#   1. 新 Issue 打开 → 自动匹配药方
+#   2. Issue 评论中 @CyberHuaTuo → 定向响应
+#
+# 安装方式：
+#   将此文件复制到你的仓库 .github/workflows/ 下即可
+#   详见: https://github.com/JinNing6/CyberHuaTuo/blob/main/docs/GITHUB_BOT.md
+# ============================================================
+
+name: 🤖 赛博华佗 Bot
+
+on:
+  issues:
+    types: [opened]
+  issue_comment:
+    types: [created]
+
+permissions:
+  issues: write
+  contents: read
+
+# 防止同一 Issue 上并发执行
+concurrency:
+  group: cyberhuatuo-bot-${{ github.event.issue.number }}
+  cancel-in-progress: true
+
+jobs:
+
+  # ─────────────────────────────────────────
+  # Job 1: 新 Issue 自动诊断
+  # ─────────────────────────────────────────
+  auto-diagnose:
+    name: 🩺 望诊 · Auto Diagnose
+    if: github.event_name == 'issues'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🔍 检查是否需要诊断
+        id: check
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issue = context.payload.issue;
+            const labels = issue.labels.map(l => l.name);
+
+            // 跳过已诊断的 Issue
+            if (labels.includes('bot:diagnosed')) {
+              core.setOutput('skip', 'true');
+              console.log('⏭️ Issue 已被 Bot 诊断过，跳过');
+              return;
+            }
+
+            // 跳过 Bot 自己创建的 Issue
+            if (issue.user.login.includes('[bot]') || issue.user.type === 'Bot') {
+              core.setOutput('skip', 'true');
+              console.log('⏭️ Bot 创建的 Issue，跳过');
+              return;
+            }
+
+            core.setOutput('skip', 'false');
+            console.log(`🩺 准备诊断 Issue #${issue.number}: ${issue.title}`);
+
+      - name: 📥 检出代码
+        if: steps.check.outputs.skip != 'true'
+        uses: actions/checkout@v4
+
+      - name: 🐍 安装 Python
+        if: steps.check.outputs.skip != 'true'
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: 📦 安装依赖
+        if: steps.check.outputs.skip != 'true'
+        run: pip install pyyaml
+
+      - name: 🩺 运行 Bot 诊断
+        if: steps.check.outputs.skip != 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          BOT_MIN_SCORE: "15"
+          BOT_MAX_RESULTS: "3"
+        run: |
+          python -m cyberhuatuo.github_bot \
+            --event-type "issues" \
+            --event-path "${{ github.event_path }}"
+
+  # ─────────────────────────────────────────
+  # Job 2: @CyberHuaTuo 提及响应
+  # ─────────────────────────────────────────
+  mention-respond:
+    name: 🤖 问诊 · Mention Response
+    if: >-
+      github.event_name == 'issue_comment' &&
+      contains(github.event.comment.body, '@CyberHuaTuo') ||
+      contains(github.event.comment.body, '@cyberhuatuo')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🔍 检查评论是否有效
+        id: check
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const comment = context.payload.comment;
+
+            // 跳过 Bot 自身的评论（防止无限循环）
+            const botSignatures = [
+              '🩺 赛博华佗 · 自动诊断',
+              'CyberHuaTuo · Auto Diagnosis',
+              '此回复由 [CyberHuaTuo 赛博华佗]',
+            ];
+
+            const isBot = botSignatures.some(sig => comment.body.includes(sig));
+            if (isBot) {
+              core.setOutput('skip', 'true');
+              console.log('⏭️ 跳过 Bot 自身的评论');
+              return;
+            }
+
+            // 跳过 GitHub Bot 用户
+            if (comment.user.login.includes('[bot]') || comment.user.type === 'Bot') {
+              core.setOutput('skip', 'true');
+              console.log('⏭️ 跳过 Bot 用户的评论');
+              return;
+            }
+
+            core.setOutput('skip', 'false');
+            console.log(`🤖 收到 @CyberHuaTuo 提及，来自 @${comment.user.login}`);
+
+      - name: 📥 检出代码
+        if: steps.check.outputs.skip != 'true'
+        uses: actions/checkout@v4
+
+      - name: 🐍 安装 Python
+        if: steps.check.outputs.skip != 'true'
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: 📦 安装依赖
+        if: steps.check.outputs.skip != 'true'
+        run: pip install pyyaml
+
+      - name: 🤖 运行 Bot 响应
+        if: steps.check.outputs.skip != 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          BOT_MIN_SCORE: "15"
+          BOT_MAX_RESULTS: "3"
+        run: |
+          python -m cyberhuatuo.github_bot \
+            --event-type "issue_comment" \
+            --event-path "${{ github.event_path }}"

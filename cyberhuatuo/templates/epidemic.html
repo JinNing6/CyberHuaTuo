@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberHuaTuo 疫情通报 · Agent Ecosystem Health Report</title>
+    <meta name="description" content="Agent 生态框架健康度监控仪表盘——实时追踪 LangChain、CrewAI、AutoGen 等主流框架的 GitHub Issues 健康状况。">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+SC:wght@300;400;500;700&family=Orbitron:wght@500;700&display=swap"
+        rel="stylesheet">
+
+    <style>
+        /* ===== Design Tokens ===== */
+        :root {
+            --bg-deep: #0A0E1A;
+            --bg-surface: #1A1F2E;
+            --bg-surface-hover: #222840;
+            --border: #2A3050;
+            --border-glow: #00D09C;
+            --text-1: #E8E8F0;
+            --text-2: #8892B0;
+            --text-3: #4A5070;
+            --emerald: #00D09C;
+            --emerald-dim: rgba(0, 208, 156, 0.10);
+            --emerald-glow: rgba(0, 208, 156, 0.25);
+            --cyan: #00FFFF;
+            --gold: #FFD700;
+            --red: #FF4757;
+            --red-dim: rgba(255, 71, 87, 0.10);
+            --green-heal: #2ED573;
+            --blue: #60A5FA;
+            --blue-dim: rgba(96, 165, 250, 0.10);
+            --orange: #FB923C;
+            --orange-dim: rgba(251, 146, 60, 0.10);
+            --purple: #A78BFA;
+            --font-display: 'Orbitron', sans-serif;
+            --font-sans: 'Inter', 'Noto Sans SC', -apple-system, system-ui, sans-serif;
+            --font-mono: 'JetBrains Mono', 'Cascadia Code', monospace;
+            --radius-lg: 20px;
+            --radius-md: 14px;
+            --radius-sm: 8px;
+        }
+
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        html { height: 100%; scroll-behavior: smooth; }
+        body {
+            font-family: var(--font-sans);
+            background: var(--bg-deep);
+            color: var(--text-1);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed; inset: 0;
+            background:
+                linear-gradient(rgba(255, 71, 87, 0.012) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 71, 87, 0.012) 1px, transparent 1px);
+            background-size: 64px 64px;
+            pointer-events: none; z-index: 0;
+        }
+
+        body::after {
+            content: '';
+            position: fixed; top: -40%; left: 50%;
+            transform: translateX(-50%);
+            width: 800px; height: 800px;
+            background: radial-gradient(ellipse, rgba(255, 71, 87, 0.05) 0%, transparent 70%);
+            pointer-events: none; z-index: 0;
+        }
+
+        /* ===== Main Container ===== */
+        .main {
+            width: 100%; max-width: 1100px;
+            padding: 0 24px; position: relative; z-index: 1;
+        }
+
+        /* ===== Header ===== */
+        .header {
+            text-align: center;
+            padding: 48px 0 20px;
+            animation: fadeInDown 0.6s ease;
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-16px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .logo {
+            font-family: var(--font-display);
+            font-size: 1.4rem; font-weight: 700;
+            color: var(--red);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+            text-shadow: 0 0 24px rgba(255, 71, 87, 0.3);
+        }
+
+        .logo-icon { font-family: var(--font-sans); font-size: 1.3rem; margin-right: 6px; }
+
+        .tagline {
+            font-size: 0.82rem; color: var(--text-3);
+            font-weight: 400; letter-spacing: 0.02em;
+        }
+        .tagline-cn { color: var(--text-2); }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 10px;
+            font-size: 0.75rem;
+            color: var(--emerald);
+            text-decoration: none;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+        .back-link:hover { opacity: 1; }
+
+        /* ===== Global Stats ===== */
+        .global-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            margin: 24px 0;
+            animation: fadeInUp 0.5s ease 0.1s both;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .stat-card {
+            background: rgba(26, 31, 46, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(42, 48, 80, 0.6);
+            border-radius: var(--radius-md);
+            padding: 20px 18px;
+            text-align: center;
+            transition: border-color 0.2s, transform 0.2s;
+        }
+
+        .stat-card:hover {
+            border-color: rgba(0, 208, 156, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .stat-value {
+            font-family: var(--font-mono);
+            font-size: 2rem; font-weight: 700;
+            line-height: 1.1;
+        }
+        .stat-label {
+            font-size: 0.72rem; color: var(--text-3);
+            margin-top: 6px; line-height: 1.4;
+        }
+
+        .stat-emerald { color: var(--emerald); }
+        .stat-red { color: var(--red); }
+        .stat-blue { color: var(--blue); }
+        .stat-orange { color: var(--orange); }
+        .stat-gold { color: var(--gold); }
+
+        /* ===== Anomaly Alert Bar ===== */
+        .alert-bar {
+            background: rgba(255, 71, 87, 0.08);
+            border: 1px solid rgba(255, 71, 87, 0.2);
+            border-radius: var(--radius-md);
+            padding: 14px 18px;
+            margin-bottom: 20px;
+            animation: fadeInUp 0.5s ease 0.15s both;
+        }
+
+        .alert-bar-header {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--red);
+            margin-bottom: 8px;
+        }
+
+        .alert-item {
+            font-size: 0.78rem;
+            color: var(--text-2);
+            padding: 3px 0;
+            line-height: 1.5;
+        }
+
+        .alert-none {
+            text-align: center;
+            color: var(--emerald);
+            font-size: 0.82rem;
+            padding: 8px 0;
+        }
+
+        /* ===== Scan Button ===== */
+        .scan-section {
+            text-align: center;
+            margin: 16px 0 24px;
+            animation: fadeInUp 0.5s ease 0.2s both;
+        }
+
+        .btn-scan {
+            padding: 12px 32px;
+            border-radius: var(--radius-lg);
+            border: 1.5px solid rgba(255, 71, 87, 0.3);
+            background: rgba(255, 71, 87, 0.08);
+            color: var(--red);
+            font-family: var(--font-sans);
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s;
+        }
+        .btn-scan:hover {
+            background: rgba(255, 71, 87, 0.15);
+            border-color: var(--red);
+            box-shadow: 0 0 24px rgba(255, 71, 87, 0.15);
+        }
+        .btn-scan:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .scan-hint {
+            font-size: 0.7rem;
+            color: var(--text-3);
+            margin-top: 8px;
+        }
+
+        /* ===== Framework Grid ===== */
+        .section-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-1);
+            margin: 28px 0 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .section-subtitle {
+            font-size: 0.78rem;
+            color: var(--text-3);
+            font-weight: 400;
+        }
+
+        .fw-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 14px;
+            margin-bottom: 32px;
+        }
+
+        /* ===== Framework Card ===== */
+        .fw-card {
+            background: rgba(26, 31, 46, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(42, 48, 80, 0.6);
+            border-radius: var(--radius-md);
+            padding: 20px;
+            transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+            animation: cardIn 0.4s ease both;
+            cursor: default;
+        }
+
+        @keyframes cardIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fw-card:hover {
+            border-color: rgba(0, 208, 156, 0.3);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .fw-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 14px;
+        }
+
+        .fw-card-name {
+            font-size: 0.92rem;
+            font-weight: 600;
+        }
+
+        .fw-card-repo {
+            font-size: 0.7rem;
+            color: var(--text-3);
+            font-family: var(--font-mono);
+        }
+
+        .fw-card-score {
+            display: flex; align-items: center; gap: 6px;
+        }
+
+        .score-num {
+            font-family: var(--font-mono);
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .score-label {
+            font-size: 0.65rem;
+            color: var(--text-3);
+        }
+
+        .score-green { color: var(--green-heal); }
+        .score-yellow { color: var(--gold); }
+        .score-orange { color: var(--orange); }
+        .score-red { color: var(--red); }
+
+        /* Health Bar */
+        .health-bar-wrap {
+            height: 6px;
+            background: rgba(42, 48, 80, 0.5);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 14px;
+        }
+
+        .health-bar {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.6s ease;
+        }
+
+        .bar-green { background: linear-gradient(90deg, var(--green-heal), var(--emerald)); }
+        .bar-yellow { background: linear-gradient(90deg, var(--gold), #FFA500); }
+        .bar-orange { background: linear-gradient(90deg, var(--orange), #E74C3C); }
+        .bar-red { background: linear-gradient(90deg, var(--red), #C0392B); }
+
+        /* Metrics Row */
+        .fw-metrics {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .fw-metric {
+            text-align: center;
+        }
+
+        .fw-metric-value {
+            font-family: var(--font-mono);
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--text-1);
+        }
+
+        .fw-metric-label {
+            font-size: 0.62rem;
+            color: var(--text-3);
+            margin-top: 2px;
+        }
+
+        /* Trend Badge */
+        .fw-card-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 8px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(42, 48, 80, 0.4);
+        }
+
+        .trend-badge {
+            font-size: 0.72rem;
+            font-weight: 500;
+            padding: 3px 10px;
+            border-radius: 12px;
+        }
+
+        .trend-up {
+            color: var(--green-heal);
+            background: rgba(46, 213, 115, 0.1);
+        }
+        .trend-stable {
+            color: var(--text-2);
+            background: rgba(136, 146, 176, 0.1);
+        }
+        .trend-down {
+            color: var(--red);
+            background: rgba(255, 71, 87, 0.1);
+        }
+
+        .fw-anomaly {
+            font-size: 0.68rem;
+            color: var(--orange);
+        }
+
+        /* ===== Hot Issues Section ===== */
+        .hot-issues {
+            margin-top: 12px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(42, 48, 80, 0.3);
+        }
+
+        .hot-issues-title {
+            font-size: 0.72rem;
+            color: var(--text-3);
+            margin-bottom: 6px;
+        }
+
+        .hot-issue-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 0;
+            font-size: 0.75rem;
+            color: var(--text-2);
+        }
+
+        .hot-issue-item a {
+            color: var(--text-1);
+            text-decoration: none;
+            transition: color 0.2s;
+            flex: 1;
+            min-width: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .hot-issue-item a:hover {
+            color: var(--emerald);
+        }
+
+        .hot-issue-reactions {
+            font-family: var(--font-mono);
+            font-size: 0.65rem;
+            color: var(--text-3);
+            white-space: nowrap;
+        }
+
+        /* ===== Ranking Section ===== */
+        .ranking-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 14px;
+            margin-bottom: 32px;
+        }
+
+        .ranking-card {
+            background: rgba(26, 31, 46, 0.5);
+            border: 1px solid rgba(42, 48, 80, 0.5);
+            border-radius: var(--radius-md);
+            padding: 18px;
+        }
+
+        .ranking-title {
+            font-size: 0.82rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .ranking-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 5px 0;
+            font-size: 0.8rem;
+        }
+
+        .ranking-medal {
+            font-size: 1rem;
+        }
+
+        .ranking-name {
+            color: var(--text-1);
+            font-weight: 500;
+        }
+
+        /* ===== Empty / Loading States ===== */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-3);
+        }
+
+        .empty-icon {
+            font-size: 3rem;
+            margin-bottom: 12px;
+            opacity: 0.5;
+        }
+
+        .empty-text {
+            font-size: 0.92rem;
+            margin-bottom: 6px;
+        }
+
+        .loading-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(10, 14, 26, 0.85);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+
+        .loading-overlay.active {
+            display: flex;
+        }
+
+        .loading-spinner {
+            width: 48px; height: 48px;
+            border: 3px solid var(--border);
+            border-top-color: var(--red);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            margin-top: 16px;
+            font-size: 0.9rem;
+            color: var(--text-2);
+        }
+
+        .loading-subtext {
+            font-size: 0.75rem;
+            color: var(--text-3);
+            margin-top: 6px;
+        }
+
+        /* ===== Footer ===== */
+        .footer {
+            text-align: center;
+            padding: 32px 0;
+            font-size: 0.72rem;
+            color: var(--text-3);
+        }
+
+        .footer a {
+            color: var(--emerald);
+            text-decoration: none;
+            transition: opacity 0.2s;
+        }
+
+        .footer a:hover { opacity: 0.8; }
+
+        /* ===== Responsive ===== */
+        @media (max-width: 768px) {
+            .global-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .fw-grid {
+                grid-template-columns: 1fr;
+            }
+            .ranking-section {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="main">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <span class="logo-icon">🦠</span> EPIDEMIC REPORT
+            </div>
+            <div class="tagline">
+                <span class="tagline-cn">Agent 生态疫情通报 · 框架健康度监控</span>
+                <br>Agent Ecosystem Health Monitor
+            </div>
+            <a href="/" class="back-link">← 返回 CyberHuaTuo 首页 / Back to Home</a>
+        </header>
+
+        <!-- Global Stats -->
+        <section class="global-stats" id="globalStats">
+            <div class="stat-card">
+                <div class="stat-value stat-emerald" id="statScore">--</div>
+                <div class="stat-label">平均健康分<br>Avg Health Score</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value stat-blue" id="statFrameworks">--</div>
+                <div class="stat-label">监控框架数<br>Frameworks</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value stat-red" id="statOpen">--</div>
+                <div class="stat-label">总开放 Issues<br>Total Open</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value stat-orange" id="statNew7d">--</div>
+                <div class="stat-label">本周新增<br>New (7d)</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value stat-emerald" id="statClosed7d">--</div>
+                <div class="stat-label">本周关闭<br>Closed (7d)</div>
+            </div>
+        </section>
+
+        <!-- Anomaly Alert Bar -->
+        <section class="alert-bar" id="alertBar" style="display: none;">
+            <div class="alert-bar-header">🚨 异常告警 / Anomaly Alerts</div>
+            <div id="alertItems"></div>
+        </section>
+
+        <!-- Scan Button -->
+        <section class="scan-section">
+            <button class="btn-scan" id="btnScan" onclick="doScan()">
+                🔬 启动全量扫描
+                <br><span style="font-size: 0.72rem; font-weight: 400;">Run Full Scan</span>
+            </button>
+            <div class="scan-hint" id="scanHint">
+                {% if has_github_token %}
+                    ✅ GitHub Token 已配置（5000 请求/小时）
+                {% else %}
+                    ⚠️ 未配置 GitHub Token（60 请求/小时），建议在 .env 中配置 GITHUB_TOKEN
+                {% endif %}
+            </div>
+        </section>
+
+        <!-- Rankings -->
+        <section class="ranking-section" id="rankings" style="display: none;">
+            <div class="ranking-card">
+                <div class="ranking-title">🏆 健康度排行 / Health Ranking</div>
+                <div id="rankHealth"></div>
+            </div>
+            <div class="ranking-card">
+                <div class="ranking-title">⚡ 最活跃框架 / Most Active</div>
+                <div id="rankActive"></div>
+            </div>
+            <div class="ranking-card">
+                <div class="ranking-title">⚠️ 需要关注 / Needs Attention</div>
+                <div id="rankAttention"></div>
+            </div>
+        </section>
+
+        <!-- Section Title -->
+        <div class="section-title" id="fwTitle" style="display: none;">
+            📋 各框架详情 <span class="section-subtitle">/ Framework Details</span>
+        </div>
+
+        <!-- Framework Grid -->
+        <div class="fw-grid" id="fwGrid"></div>
+
+        <!-- Empty State -->
+        <div class="empty-state" id="emptyState">
+            <div class="empty-icon">🦠</div>
+            <div class="empty-text">暂无疫情通报数据<br>No epidemic data available</div>
+            <div style="font-size: 0.78rem; color: var(--text-3); margin-top: 8px;">
+                点击上方"启动全量扫描"按钮生成首份报告<br>
+                Click "Run Full Scan" to generate the first report
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <a href="/">CyberHuaTuo 赛博华佗</a>
+            &nbsp;·&nbsp;
+            <a href="https://github.com/JinNing6/CyberHuaTuo" target="_blank">GitHub</a>
+            &nbsp;·&nbsp;
+            掌握 Agent 生态脉搏，定义框架健康标准
+        </footer>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">🦠 疫情扫描进行中 ...</div>
+        <div class="loading-subtext">扫描 10 个框架约需 3-5 分钟，请耐心等待</div>
+        <div class="loading-subtext" style="margin-top: 4px;">Scanning all frameworks, please wait 3-5 minutes</div>
+    </div>
+
+    <script>
+        // ===== 初始化：加载已有数据 =====
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const res = await fetch('/api/epidemic/report');
+                if (res.ok) {
+                    const data = await res.json();
+                    renderReport(data);
+                }
+            } catch (e) {
+                console.log('No existing report:', e);
+            }
+        });
+
+        // ===== 渲染报告 =====
+        function renderReport(data) {
+            if (!data || !data.frameworks || data.frameworks.length === 0) return;
+
+            // 隐藏空状态
+            document.getElementById('emptyState').style.display = 'none';
+            document.getElementById('fwTitle').style.display = 'flex';
+            document.getElementById('rankings').style.display = 'grid';
+
+            // 全局统计
+            document.getElementById('statScore').textContent = data.avg_health_score || '--';
+            document.getElementById('statFrameworks').textContent = data.framework_count || '--';
+            document.getElementById('statOpen').textContent = formatNum(data.total_open_issues);
+            document.getElementById('statNew7d').textContent = formatNum(data.total_new_issues_7d);
+            document.getElementById('statClosed7d').textContent = formatNum(data.total_closed_issues_7d);
+
+            // 异常告警
+            if (data.global_anomalies && data.global_anomalies.length > 0) {
+                document.getElementById('alertBar').style.display = 'block';
+                document.getElementById('alertItems').innerHTML = data.global_anomalies
+                    .map(a => `<div class="alert-item">${esc(a)}</div>`)
+                    .join('');
+            } else {
+                document.getElementById('alertBar').style.display = 'block';
+                document.getElementById('alertItems').innerHTML =
+                    '<div class="alert-none">✅ 当前无异常告警 / No anomalies detected</div>';
+            }
+
+            // 排行榜
+            renderRanking('rankHealth', data.healthiest_frameworks, ['🥇', '🥈', '🥉']);
+            renderRanking('rankActive', data.most_active_frameworks, ['⚡', '⚡', '⚡']);
+
+            const attentionEl = document.getElementById('rankAttention');
+            if (data.needs_attention && data.needs_attention.length > 0) {
+                attentionEl.innerHTML = data.needs_attention
+                    .map(fw => `<div class="ranking-item"><span class="ranking-medal">🔴</span><span class="ranking-name">${esc(fw)}</span></div>`)
+                    .join('');
+            } else {
+                attentionEl.innerHTML = '<div style="color: var(--emerald); font-size: 0.8rem; padding: 5px 0;">全部健康 ✅</div>';
+            }
+
+            // 框架卡片
+            const grid = document.getElementById('fwGrid');
+            const sortedFw = [...data.frameworks].sort((a, b) => b.health_score - a.health_score);
+            grid.innerHTML = sortedFw.map((fw, i) => renderFwCard(fw, i)).join('');
+        }
+
+        function renderRanking(elementId, items, medals) {
+            const el = document.getElementById(elementId);
+            if (!items || items.length === 0) {
+                el.innerHTML = '<div style="color: var(--text-3); font-size: 0.78rem;">--</div>';
+                return;
+            }
+            el.innerHTML = items.map((fw, i) => `
+                <div class="ranking-item">
+                    <span class="ranking-medal">${medals[i] || '•'}</span>
+                    <span class="ranking-name">${esc(fw)}</span>
+                </div>
+            `).join('');
+        }
+
+        function renderFwCard(fw, index) {
+            const score = fw.health_score || 0;
+            const scoreClass = score >= 80 ? 'score-green' :
+                               score >= 60 ? 'score-yellow' :
+                               score >= 40 ? 'score-orange' : 'score-red';
+            const barClass = score >= 80 ? 'bar-green' :
+                             score >= 60 ? 'bar-yellow' :
+                             score >= 40 ? 'bar-orange' : 'bar-red';
+            const trendClass = fw.trend?.includes('improving') ? 'trend-up' :
+                               fw.trend?.includes('declining') ? 'trend-down' : 'trend-stable';
+            const trendText = fw.trend || '→ stable';
+
+            let hotIssuesHtml = '';
+            if (fw.top_issues && fw.top_issues.length > 0) {
+                const issueItems = fw.top_issues.slice(0, 3).map(issue => `
+                    <div class="hot-issue-item">
+                        <span style="color: var(--red);">🔥</span>
+                        <a href="${esc(issue.url)}" target="_blank" title="${esc(issue.title)}">${esc(truncate(issue.title, 50))}</a>
+                        <span class="hot-issue-reactions">👍 ${issue.reactions}</span>
+                    </div>
+                `).join('');
+                hotIssuesHtml = `
+                    <div class="hot-issues">
+                        <div class="hot-issues-title">🔥 热门 Issues / Hot Issues</div>
+                        ${issueItems}
+                    </div>
+                `;
+            }
+
+            const anomalyHtml = fw.anomalies && fw.anomalies.length > 0
+                ? `<span class="fw-anomaly">⚠️ ${fw.anomalies.length} 条告警</span>`
+                : '<span style="color: var(--emerald); font-size: 0.68rem;">✅ 正常</span>';
+
+            return `
+                <div class="fw-card" style="animation-delay: ${index * 0.06}s">
+                    <div class="fw-card-header">
+                        <div>
+                            <div class="fw-card-name">${esc(fw.framework)}</div>
+                            <div class="fw-card-repo">${esc(fw.display_name)}</div>
+                        </div>
+                        <div class="fw-card-score">
+                            <div>
+                                <div class="score-num ${scoreClass}">${score}</div>
+                                <div class="score-label">/100</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="health-bar-wrap">
+                        <div class="health-bar ${barClass}" style="width: ${score}%"></div>
+                    </div>
+
+                    <div class="fw-metrics">
+                        <div class="fw-metric">
+                            <div class="fw-metric-value">${formatNum(fw.open_issues_count)}</div>
+                            <div class="fw-metric-label">开放 Issues<br>Open</div>
+                        </div>
+                        <div class="fw-metric">
+                            <div class="fw-metric-value" style="color: var(--orange);">${fw.new_issues_7d || 0}</div>
+                            <div class="fw-metric-label">本周新增<br>New (7d)</div>
+                        </div>
+                        <div class="fw-metric">
+                            <div class="fw-metric-value" style="color: var(--emerald);">${fw.closed_issues_7d || 0}</div>
+                            <div class="fw-metric-label">本周关闭<br>Closed (7d)</div>
+                        </div>
+                    </div>
+
+                    <div class="fw-card-footer">
+                        <span class="trend-badge ${trendClass}">${esc(trendText)}</span>
+                        ${anomalyHtml}
+                    </div>
+
+                    ${hotIssuesHtml}
+                </div>
+            `;
+        }
+
+        // ===== 扫描 =====
+        async function doScan() {
+            const btn = document.getElementById('btnScan');
+            const overlay = document.getElementById('loadingOverlay');
+
+            btn.disabled = true;
+            overlay.classList.add('active');
+
+            try {
+                const res = await fetch('/api/epidemic/scan', { method: 'POST' });
+                const data = await res.json();
+
+                if (res.ok && data.report) {
+                    renderReport(data.report);
+                } else {
+                    alert(data.error || '扫描失败');
+                }
+            } catch (e) {
+                alert('扫描请求失败: ' + e.message);
+            } finally {
+                btn.disabled = false;
+                overlay.classList.remove('active');
+            }
+        }
+
+        // ===== 工具函数 =====
+        function esc(s) {
+            if (!s) return '';
+            const d = document.createElement('div');
+            d.textContent = s;
+            return d.innerHTML;
+        }
+
+        function formatNum(n) {
+            if (n === undefined || n === null) return '--';
+            if (n >= 1000) return (n / 1000).toFixed(1) + 'k';
+            return String(n);
+        }
+
+        function truncate(s, len) {
+            if (!s) return '';
+            return s.length > len ? s.substring(0, len) + '...' : s;
+        }
+    </script>
+</body>
+
+</html>

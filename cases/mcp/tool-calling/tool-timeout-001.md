@@ -115,3 +115,7 @@ References
 
 - [MCP Protocol Specification - Timeouts](https://spec.modelcontextprotocol.io/)
 - [MCP Python SDK Documentation](https://github.com/modelcontextprotocol/python-sdk)
+
+---
+
+> 📝 本药方由 [@CyberHuaTuo](https://github.com/CyberHuaTuo) 贡献 · 如有更好方案欢迎 [提交 PR](https://github.com/CyberHuaTuo/CyberHuaTuo/pulls)

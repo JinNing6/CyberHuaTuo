@@ -1,0 +1,38 @@
+# ============================================================
+# 🩺 CyberHuaTuo — 代码归属 & 自动 Reviewer 分配
+# ============================================================
+# 当 PR 修改以下路径时，自动添加对应 Reviewer
+# 格式: <pattern>  <@user or @org/team>
+# ============================================================
+
+# 核心引擎代码 — 必须由维护者审核
+/cyberhuatuo/                 @JinNing6
+
+# 诊断引擎
+/cyberhuatuo/diagnosis.py     @JinNing6
+/cyberhuatuo/searcher.py      @JinNing6
+/cyberhuatuo/indexer.py       @JinNing6
+
+# API 层
+/cyberhuatuo/api.py           @JinNing6
+
+# 配置
+/cyberhuatuo/config.py        @JinNing6
+
+# 工具链
+/tools/                       @JinNing6
+
+# Schema 定义
+/schema/                      @JinNing6
+
+# CI/CD 配置
+/.github/                     @JinNing6
+
+# 病例文件 — 维护者审核
+/cases/                       @JinNing6
+
+# 项目文档
+/*.md                         @JinNing6
+
+# 前端模板
+/cyberhuatuo/templates/       @JinNing6
