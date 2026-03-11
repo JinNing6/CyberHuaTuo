@@ -62,6 +62,8 @@
   <a href="#-急诊科--三秒出药方">🏥 急诊科</a> •
   <a href="#-养生堂--防病于未然">🌿 养生堂</a> •
   <a href="#-疫情通报--没有人谈论的-ai-大流行">🦠 疫情</a> •
+  <a href="#-mcp-server--接入-ai-编辑器">🔌 MCP</a> •
+  <a href="#-agent-skills-协议-ai-自救指南">🎒 Skills</a> •
   <a href="#-为什么选择赛博华佗">为什么</a> •
   <a href="#-快速开始">快速开始</a> •
   <a href="#-加入这场运动">加入</a> •
@@ -459,6 +461,12 @@ PORT=8000
 *   **保存新药方 (save_prescription)**: 大模型帮你解决了未收录的问题？你可以直接让它一键提交新药方到本地知识库。
 
 > 👉 **详细的安装和配置指南，请查阅 [README_MCP.md](README_MCP.md)**
+
+### 🎒 Agent Skills 协议 (AI 自救指南)
+
+我们支持开源的 **Agent Skills** 标准 (`SKILL.md`)。你可以赋予你自己的 AI 助手（Cursor、Copilot、Claude Code）自动向赛博华佗求救的能力。
+
+只需将 `skills/cyberhuatuo-rescue` 目录复制到你项目的 `.cursor/rules` 或 `.agent/skills` 文件夹中。当你的 AI 写代码遇到报错时，它将学会自动调用赛博华佗的知识库进行诊断和安全体检。
 
 ---
 

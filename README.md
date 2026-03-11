@@ -74,6 +74,8 @@
   <a href="#-wellness-clinic--nourish-before-it-breaks">🌿 Wellness Clinic</a> •
   <a href="#-github-bot--zero-friction-diagnosis">🤖 GitHub Bot</a> •
   <a href="#-epidemic-alert--the-ai-pandemic-nobody-talks-about">🦠 Epidemic</a> •
+  <a href="#-mcp-server--ai-editor-integration">🔌 MCP</a> •
+  <a href="#-agent-skills-protocol-self-rescue">🎒 Skills</a> •
   <a href="#-why-cyberhuatuo">Why Us</a> •
   <a href="#-quick-start">Quick Start</a> •
   <a href="#-join-the-movement">Join</a> •
@@ -488,6 +490,12 @@ Simply configure the MCP Server, and your AI assistant gains access to these pow
 *   **Save Prescriptions (`save_prescription`)**: Did the LLM solve an unrecorded issue? Let it directly submit the new prescription to the local knowledge base with one click.
 
 > 👉 **For detailed installation and configuration instructions, please refer to [README_MCP.md](README_MCP.md)**
+
+### 🎒 Agent Skills Protocol (Self-Rescue)
+
+We support the open **Agent Skills** standard (`SKILL.md`). You can empower your own AI assistants (Cursor, Copilot, Claude Code) to automatically seek help from CyberHuaTuo when they get stuck.
+
+Simply copy the `skills/cyberhuatuo-rescue` directory into your project's `.cursor/rules` or `.agent/skills` folder. Your AI will learn to automatically diagnose errors and run security checkups using CyberHuaTuo's knowledge base.
 
 ---
 
