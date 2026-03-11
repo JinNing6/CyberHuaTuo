@@ -171,12 +171,15 @@ def generate_svg(data: dict) -> str:
     </filter>
     ''')
 
-    # 径向渐变 - 中心太阳
+    # 径向渐变 - 中心太极
     lines.append('''
-    <radialGradient id="sun-grad" cx="50%" cy="50%">
-      <stop offset="0%" stop-color="#00FFD0" stop-opacity="0.9"/>
-      <stop offset="40%" stop-color="#00D09C" stop-opacity="0.6"/>
-      <stop offset="100%" stop-color="#00D09C" stop-opacity="0"/>
+    <radialGradient id="taichi-cyan" cx="50%" cy="50%">
+      <stop offset="0%" stop-color="#00FFFF" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#00FFFF" stop-opacity="0.2"/>
+    </radialGradient>
+    <radialGradient id="taichi-green" cx="50%" cy="50%">
+      <stop offset="0%" stop-color="#00D09C" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#00D09C" stop-opacity="0.2"/>
     </radialGradient>
     ''')
     lines.append('</defs>')
@@ -256,26 +259,55 @@ def generate_svg(data: dict) -> str:
         )
     lines.append('</g>')
 
-    # ─── 轨道线 ───
+    # ─── 八卦奇门轨道阵 ───
     for i in range(fw_count):
         scale = 0.6 + (i * 0.15)
         rx = orbit_rx * scale
         ry = orbit_ry * scale
         color = list(FRAMEWORK_COLORS.values())[i % len(FRAMEWORK_COLORS)]
+        
+        # 计算 8 个顶点构成带透视的八边形
+        points = []
+        offset_angle = math.pi / 8 if i % 2 == 1 else 0
+        for j in range(8):
+            a = (2 * math.pi / 8) * j + offset_angle
+            px = cx + rx * math.cos(a)
+            py = cy + ry * math.sin(a)
+            points.append(f"{px},{py}")
+            
+        pts_str = " ".join(points)
         lines.append(
-            f'<ellipse cx="{cx}" cy="{cy}" rx="{rx}" ry="{ry}" '
-            f'class="orbit-line" stroke="{color["primary"]}" stroke-opacity="0.2" stroke-width="1"/>'
+            f'<polygon points="{pts_str}" '
+            f'class="orbit-line" stroke="{color["primary"]}" stroke-opacity="0.3" fill="none" stroke-width="1"/>'
         )
 
-    # ─── 中心太阳 ───
-    lines.append(f'<circle cx="{cx}" cy="{cy}" r="50" fill="url(#sun-grad)" class="core-glow" filter="url(#glow-strong)"/>')
-    lines.append(f'<circle cx="{cx}" cy="{cy}" r="22" fill="#0A0E1A" stroke="#00D09C" stroke-width="2" filter="url(#glow)"/>')
-    # 中心文字
-    lines.append(f'<text x="{cx}" y="{cy - 4}" text-anchor="middle" fill="#00D09C" font-family="sans-serif" font-size="7" font-weight="700" letter-spacing="0.5">CYBER</text>')
-    lines.append(f'<text x="{cx}" y="{cy + 6}" text-anchor="middle" fill="#00D09C" font-family="sans-serif" font-size="6" font-weight="500">HUATUO</text>')
-    lines.append(f'<text x="{cx}" y="{cy + 16}" text-anchor="middle" fill="#00D09C" font-family="sans-serif" font-size="5" opacity="0.6">赛博华佗</text>')
+    # ─── 辐射状地支切割线 ───
+    max_scale = 0.6 + ((fw_count - 1) * 0.15) if fw_count > 0 else 0.6
+    max_rx = orbit_rx * max_scale + 20
+    max_ry = orbit_ry * max_scale + 10
+    for j in range(8):
+        a = (2 * math.pi / 8) * j
+        x1 = cx + (max_rx * 0.1) * math.cos(a)
+        y1 = cy + (max_ry * 0.1) * math.sin(a)
+        x2 = cx + max_rx * math.cos(a)
+        y2 = cy + max_ry * math.sin(a)
+        lines.append(f'<line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}" stroke="#00D09C" stroke-opacity="0.15" stroke-width="0.5" stroke-dasharray="2 4"/>')
 
-    # ─── 行星节点 ───
+    # ─── 中心太极光核 ───
+    # 外围发光
+    lines.append(f'<circle cx="{cx}" cy="{cy}" r="45" fill="none" stroke="#00D09C" stroke-width="1" stroke-opacity="0.5" class="core-glow" filter="url(#glow-strong)"/>')
+    # 青蓝色半球 (上)
+    lines.append(f'<path d="M {cx-22} {cy} A 22 22 0 0 1 {cx+22} {cy} Z" fill="url(#taichi-cyan)" filter="url(#glow)"/>')
+    # 翠绿色半球 (下)
+    lines.append(f'<path d="M {cx-22} {cy} A 22 22 0 0 0 {cx+22} {cy} Z" fill="url(#taichi-green)" filter="url(#glow)"/>')
+    # 分界线
+    lines.append(f'<line x1="{cx-24}" y1="{cy}" x2="{cx+24}" y2="{cy}" stroke="#0A0E1A" stroke-width="2"/>')
+    
+    # 中心文字
+    lines.append(f'<text x="{cx}" y="{cy - 4}" text-anchor="middle" fill="#0A0E1A" font-family="sans-serif" font-size="7" font-weight="800" letter-spacing="0.5">CYBER</text>')
+    lines.append(f'<text x="{cx}" y="{cy + 6}" text-anchor="middle" fill="#0A0E1A" font-family="sans-serif" font-size="6" font-weight="600">HUATUO</text>')
+
+    # ─── 行星节点与经络连线 ───
     for i, fw in enumerate(fw_list):
         case_count = sum(len(cases) for cases in frameworks[fw].values())
         color_info = FRAMEWORK_COLORS.get(fw, {"primary": "#888", "glow": "rgba(136,136,136,0.5)"})
@@ -292,10 +324,11 @@ def generate_svg(data: dict) -> str:
         node_r = 10 + case_count * 1.5  # 节点大小与案例数正比
         node_r = min(node_r, 30)
 
-        # 连线
+        # 折线经络连线 (中转点)
+        mid_x = cx + (px - cx) * 0.5
         lines.append(
-            f'<line x1="{cx}" y1="{cy}" x2="{px}" y2="{py}" '
-            f'stroke="{color}" stroke-opacity="0.15" stroke-width="1" stroke-dasharray="3 5"'
+            f'<polyline points="{cx},{cy} {mid_x},{cy} {px},{py}" '
+            f'stroke="{color}" stroke-opacity="0.25" fill="none" stroke-width="1" stroke-dasharray="2 3"'
             f' class="orbit-line"/>'
         )
 
