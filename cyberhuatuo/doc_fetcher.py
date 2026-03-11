@@ -4,17 +4,16 @@ CyberHuaTuo 官方文档检索器
 """
 
 import asyncio
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any
 
 import httpx
 
 from .config import config
 from .doc_sources import (
-    FrameworkDoc,
+    ALL_FRAMEWORKS,
     get_framework,
     search_frameworks,
-    ALL_FRAMEWORKS,
 )
 
 

@@ -1408,7 +1408,7 @@
     "mcp",
     "openai-sdk"
   ],
-  "generated_at": "2026-03-11T17:16:57.547415"
+  "generated_at": "2026-03-11T17:39:17.419199"
 };
     const FW_COLORS = {"langchain": {"primary": "#00D09C", "glow": "rgba(0,208,156,0.5)"}, "crewai": {"primary": "#FF6B6B", "glow": "rgba(255,107,107,0.5)"}, "mcp": {"primary": "#60A5FA", "glow": "rgba(96,165,250,0.5)"}, "llamaindex": {"primary": "#A78BFA", "glow": "rgba(167,139,250,0.5)"}, "openai-sdk": {"primary": "#FFD700", "glow": "rgba(255,215,0,0.5)"}, "_nourishing": {"primary": "#2ED573", "glow": "rgba(46,213,115,0.5)"}};
     const FW_ICONS = {"langchain": "🔗", "crewai": "🤖", "mcp": "🔌", "llamaindex": "📚", "openai-sdk": "🧠", "_nourishing": "🌿"};
@@ -1747,114 +1747,131 @@
     // 离屏 Canvas 渲染药方内容
     function renderPrescriptionCanvas(nodeData) {
       const cvs = document.createElement('canvas');
-      const W = 2048, CH = 1400;
+      const W = 3072, CH = 2048; // High resolution
       cvs.width = W; cvs.height = CH;
       const ctx = cvs.getContext('2d');
 
-      // 纸面底色 — 深色羊皮纸
-      const grad = ctx.createLinearGradient(0, 0, 0, CH);
-      grad.addColorStop(0, '#151925');
-      grad.addColorStop(0.5, '#1A1F2E');
-      grad.addColorStop(1, '#151925');
+      // 纸面底色 — Dark Cyber Glass
+      const grad = ctx.createLinearGradient(0, 0, W, CH);
+      grad.addColorStop(0, '#090D14');
+      grad.addColorStop(0.5, '#121A28');
+      grad.addColorStop(1, '#090D14');
       ctx.fillStyle = grad;
       ctx.fillRect(0, 0, W, CH);
 
+      // Subtle cyber grid lines
+      ctx.strokeStyle = '#ffffff04';
+      ctx.lineWidth = 1;
+      for(let i=0; i<W; i+=100) { ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, CH); ctx.stroke(); }
+      for(let j=0; j<CH; j+=100) { ctx.beginPath(); ctx.moveTo(0, j); ctx.lineTo(W, j); ctx.stroke(); }
+
       const fColor = nodeData.color || '#00D09C';
 
-      // 外边框
-      ctx.strokeStyle = fColor;
-      ctx.lineWidth = 4;
-      ctx.strokeRect(24, 24, W - 48, CH - 48);
-      // 内边框
-      ctx.strokeStyle = fColor + '30';
-      ctx.lineWidth = 1;
-      ctx.strokeRect(44, 44, W - 88, CH - 88);
+      // 外外边框 (Glowing Rim)
+      ctx.strokeStyle = fColor + 'AA';
+      ctx.lineWidth = 10;
+      ctx.strokeRect(30, 30, W - 60, CH - 60);
+
+      // 内边框 (Fine line)
+      ctx.strokeStyle = fColor + '60';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(50, 50, W - 100, CH - 100);
 
       // 顶部四角纹饰
-      ctx.strokeStyle = fColor + '50';
-      ctx.lineWidth = 2;
-      [[50, 50], [W - 50, 50], [50, CH - 50], [W - 50, CH - 50]].forEach(([x, y]) => {
+      ctx.strokeStyle = fColor + '80';
+      ctx.lineWidth = 4;
+      [[60, 60], [W - 60, 60], [60, CH - 60], [W - 60, CH - 60]].forEach(([x, y]) => {
         ctx.beginPath();
         const dx = x < W / 2 ? 1 : -1;
         const dy = y < CH / 2 ? 1 : -1;
-        ctx.moveTo(x + dx * 30, y);
+        ctx.moveTo(x + dx * 50, y);
         ctx.lineTo(x, y);
-        ctx.lineTo(x, y + dy * 30);
+        ctx.lineTo(x, y + dy * 50);
         ctx.stroke();
       });
 
       // 标题 Icon + 名称
       ctx.fillStyle = fColor;
-      ctx.font = 'bold 52px sans-serif';
+      ctx.font = 'bold 80px "Inter", sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText(`${nodeData.icon || '📦'} ${nodeData.name || ''}`, W / 2, 120);
+      ctx.fillText(`${nodeData.icon || '📦'} ${nodeData.name || ''}`, W / 2, 180);
 
       // 副标题
       ctx.fillStyle = '#8892B0';
-      ctx.font = '28px sans-serif';
+      ctx.font = '36px "JetBrains Mono", monospace';
       if (nodeData.type === 'framework') {
         const catCount = Object.keys(nodeData.categories || {}).length;
-        ctx.fillText(`${nodeData.caseCount} prescriptions · ${catCount} categories`, W / 2, 170);
+        ctx.fillText(`药方集 | Prescriptions: ${nodeData.caseCount} · 领域 | Domains: ${catCount}`, W / 2, 250);
       } else {
-        ctx.fillText(`${(nodeData.cases || []).length} prescriptions`, W / 2, 170);
+        ctx.fillText(`药方集 | Prescriptions: ${(nodeData.cases || []).length}`, W / 2, 250);
       }
 
       // 分隔线
-      ctx.strokeStyle = fColor + '40';
-      ctx.lineWidth = 1;
+      ctx.strokeStyle = fColor + '50';
+      ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.moveTo(80, 200);
-      ctx.lineTo(W - 80, 200);
+      ctx.moveTo(150, 310);
+      ctx.lineTo(W - 150, 310);
       ctx.stroke();
 
       // 内容
-      let y = 250;
+      let y = 400;
       ctx.textAlign = 'left';
       const svColors = { critical: '#FF4757', high: '#FF6B35', medium: '#FFA500', low: '#00D09C' };
 
       if (nodeData.type === 'framework') {
         Object.entries(nodeData.categories || {}).forEach(([cat, cases]) => {
-          if (y > CH - 120) return;
+          if (y > CH - 200) return;
           ctx.fillStyle = fColor;
-          ctx.font = 'bold 28px monospace';
-          ctx.fillText(`▸ ${cat.replace(/-/g, ' ')} (${cases.length})`, 80, y);
-          y += 45;
+          ctx.font = 'bold 44px "Inter", sans-serif';
+          ctx.fillText(`✦ ${cat.replace(/-/g, ' ')} (${cases.length})`, 120, y);
+          y += 70;
           cases.forEach(c => {
-            if (y > CH - 80) return;
-            ctx.fillStyle = '#E8E8F0';
-            ctx.font = '24px sans-serif';
+            if (y > CH - 150) return;
+            // 中文行
+            ctx.fillStyle = '#FFFFFF';
+            ctx.font = 'bold 38px "Inter", sans-serif';
             let title = c.title || '';
-            if (title.length > 42) title = title.substring(0, 42) + '...';
-            ctx.fillText(`💊 ${title}`, 110, y);
-            y += 32;
-            ctx.fillStyle = svColors[c.severity] || '#888';
-            ctx.font = '18px monospace';
-            ctx.fillText(`    ${c.severity} · ${c.complexity}`, 130, y);
-            y += 38;
+            if (title.length > 40) title = title.substring(0, 40) + '...';
+            ctx.fillText(title, 160, y);
+            y += 48;
+
+            // 英文行 (Severity, Complexity, Tags)
+            const svColor = svColors[c.severity] || '#888';
+            ctx.fillStyle = svColor;
+            ctx.font = '30px "JetBrains Mono", monospace';
+            const engStr = `[${c.severity.toUpperCase()}] CPLX: ${c.complexity} | TAGS: ${(c.tags || []).join(', ')}`;
+            ctx.fillText(engStr, 160, y);
+            y += 70;
           });
-          y += 12;
+          y += 30; // 领域隔离
         });
       } else if (nodeData.type === 'category') {
         (nodeData.cases || []).forEach(c => {
-          if (y > CH - 80) return;
-          ctx.fillStyle = '#E8E8F0';
-          ctx.font = '26px sans-serif';
+          if (y > CH - 150) return;
+          // 中文行
+          ctx.fillStyle = '#FFFFFF';
+          ctx.font = 'bold 40px "Inter", sans-serif';
           let title = c.title || '';
-          if (title.length > 40) title = title.substring(0, 40) + '...';
-          ctx.fillText(`💊 ${title}`, 80, y);
-          y += 34;
-          ctx.fillStyle = svColors[c.severity] || '#888';
-          ctx.font = '20px monospace';
-          ctx.fillText(`   ${c.severity} · ${c.complexity} · ${(c.tags || []).join(', ')}`, 100, y);
-          y += 42;
+          if (title.length > 50) title = title.substring(0, 50) + '...';
+          ctx.fillText(title, 120, y);
+          y += 50;
+
+          // 英文行
+          const svColor = svColors[c.severity] || '#888';
+          ctx.fillStyle = svColor;
+          ctx.font = '32px "JetBrains Mono", monospace';
+          const engStr = `[${c.severity.toUpperCase()}] LEVEL: ${c.complexity} | META: ${(c.tags || []).join(', ')}`;
+          ctx.fillText(engStr, 120, y);
+          y += 80;
         });
       }
 
       // 底部印章
-      ctx.fillStyle = fColor + '60';
-      ctx.font = '20px monospace';
+      ctx.fillStyle = fColor + '80';
+      ctx.font = '28px "JetBrains Mono", monospace';
       ctx.textAlign = 'center';
-      ctx.fillText('🩺 赛博华佗 · CyberHuaTuo Prescription Universe', W / 2, CH - 55);
+      ctx.fillText('🩺 CyberHuaTuo · 赛博华佗 3D Prescription Scroll', W / 2, CH - 80);
 
       return cvs;
     }
@@ -1863,56 +1880,67 @@
     function createScrollModel(nodeData) {
       const group = new THREE.Group();
       const fColor = new THREE.Color(nodeData.color || '#00D09C');
-      const scrollW = 8.5, scrollH = 5.8;
-      const rodR = 0.12, rodL = scrollH + 0.7;
+      const scrollW = 10.0, scrollH = 6.6; // Wider for high res
+      const rodR = 0.15, rodL = scrollH + 0.9;
 
-      // 木轴材质
+      // 暗金卷轴木轴材质 (Cyber Obsidian)
       const rodMat = new THREE.MeshStandardMaterial({
-        color: 0x8B6914, roughness: 0.55, metalness: 0.25,
+        color: 0x111622, roughness: 0.2, metalness: 0.8,
       });
 
-      // 左右木轴
-      const leftRod = new THREE.Mesh(new THREE.CylinderGeometry(rodR, rodR, rodL, 16), rodMat);
-      leftRod.position.set(-scrollW / 2 - 0.18, 0, 0);
-      group.add(leftRod);
-      const rightRod = leftRod.clone();
-      rightRod.position.set(scrollW / 2 + 0.18, 0, 0);
-      group.add(rightRod);
-
-      // 轴头装饰球
+      // 轴头装饰球材质 (Cyber Glowing Jade)
       const knobMat = new THREE.MeshStandardMaterial({
-        color: fColor, emissive: fColor, emissiveIntensity: 0.35,
-        roughness: 0.3, metalness: 0.7,
+        color: fColor, emissive: fColor, emissiveIntensity: 0.8,
+        roughness: 0.1, metalness: 0.9,
       });
-      const knobGeom = new THREE.SphereGeometry(0.2, 16, 16);
-      [[-scrollW / 2 - 0.18, rodL / 2], [-scrollW / 2 - 0.18, -rodL / 2],
-       [scrollW / 2 + 0.18, rodL / 2], [scrollW / 2 + 0.18, -rodL / 2]].forEach(([x, yp]) => {
-        const knob = new THREE.Mesh(knobGeom, knobMat);
-        knob.position.set(x, yp, 0);
-        group.add(knob);
-      });
+      const knobGeom = new THREE.SphereGeometry(0.25, 32, 32);
 
-      // 纸面（Canvas 贴图）
+      // 左轴 Group
+      const leftGroup = new THREE.Group();
+      const leftRod = new THREE.Mesh(new THREE.CylinderGeometry(rodR, rodR, rodL, 32), rodMat);
+      leftGroup.add(leftRod);
+      const leftKnobTop = new THREE.Mesh(knobGeom, knobMat);
+      leftKnobTop.position.y = rodL / 2;
+      const leftKnobBot = new THREE.Mesh(knobGeom, knobMat);
+      leftKnobBot.position.y = -rodL / 2;
+      leftGroup.add(leftKnobTop, leftKnobBot);
+
+      // 右轴 Group
+      const rightGroup = leftGroup.clone();
+
+      group.add(leftGroup, rightGroup);
+
+      // 纸面（Canvas 贴图） -> 全息玻璃质感 (Glassmorphism)
       const canvasEl = renderPrescriptionCanvas(nodeData);
       const tex = new THREE.CanvasTexture(canvasEl);
+      tex.colorSpace = THREE.SRGBColorSpace;
       tex.needsUpdate = true;
-      const paperMat = new THREE.MeshStandardMaterial({
+      const paperMat = new THREE.MeshPhysicalMaterial({
         map: tex, side: THREE.DoubleSide, transparent: true,
-        opacity: 0.96, roughness: 0.85, metalness: 0.0,
+        opacity: 0.95, roughness: 0.15, metalness: 0.1,
+        clearcoat: 1.0, clearcoatRoughness: 0.1,
+        transmission: 0.4, thickness: 0.1, // Glassmorphism
+        emissive: fColor, emissiveMap: tex, emissiveIntensity: 0.6 // Text Glow
       });
-      const paper = new THREE.Mesh(new THREE.PlaneGeometry(scrollW, scrollH), paperMat);
+      const paper = new THREE.Mesh(new THREE.PlaneGeometry(scrollW, scrollH, 32, 32), paperMat);
+
+      // 边缘背光辉光效果
+      const edgeMat = new THREE.MeshBasicMaterial({
+        color: fColor, transparent: true, opacity: 0.15, side: THREE.DoubleSide,
+      });
+      const edge = new THREE.Mesh(new THREE.PlaneGeometry(scrollW + 0.3, scrollH + 0.3), edgeMat);
+      edge.position.z = -0.05;
+      paper.add(edge);
+
       group.add(paper);
 
-      // 边缘辉光
-      const edgeMat = new THREE.MeshBasicMaterial({
-        color: fColor, transparent: true, opacity: 0.06, side: THREE.DoubleSide,
-      });
-      const edge = new THREE.Mesh(new THREE.PlaneGeometry(scrollW + 0.4, scrollH + 0.4), edgeMat);
-      edge.position.z = -0.03;
-      group.add(edge);
-
       // 初始状态: 收缩
-      group.scale.x = 0.01;
+      paper.scale.x = 0.001;
+      leftGroup.position.x = 0;
+      rightGroup.position.x = 0;
+
+      // 通过 userData 传递给渲染循环作独立控制
+      group.userData = { paper, leftGroup, rightGroup, targetW: scrollW };
       return group;
     }
 
@@ -1948,15 +1976,17 @@
     // 收起卷轴
     function closeScrollDetail(restoreCam = true) {
       if (!activeScroll) return;
+      const scrollToRemove = activeScroll;
+      activeScroll = null; // 立即分离以解除控制反馈
+
       scrollAnimState = {
         phase: 'closing', progress: 0,
         startTime: performance.now(), duration: 500,
+        scrollTarget: scrollToRemove // 存入引用以便动画循环继续渲染
       };
       document.getElementById('scroll-close-btn').style.display = 'none';
       document.getElementById('scroll-hint').classList.remove('visible');
 
-      const scrollToRemove = activeScroll;
-      activeScroll = null;
       setTimeout(() => {
         scene.remove(scrollToRemove);
         if (restoreCam) controls.autoRotate = true;
@@ -2040,20 +2070,30 @@
       if (scrollAnimState) {
         const elapsed = (performance.now() - scrollAnimState.startTime) / scrollAnimState.duration;
         const progress = Math.min(elapsed, 1);
-        const scrollTarget = scrollAnimState.phase === 'opening'
-          ? activeScroll : scene.getObjectByProperty('uuid', scrollAnimState.scrollUuid);
+        const targetScroll = scrollAnimState.phase === 'opening' ? activeScroll : scrollAnimState.scrollTarget;
 
-        if (scrollAnimState.phase === 'opening' && activeScroll) {
-          activeScroll.scale.x = easeOutCubic(progress);
-          activeScroll.scale.y = 0.85 + easeOutCubic(progress) * 0.15;
-          activeScroll.scale.z = 0.85 + easeOutCubic(progress) * 0.15;
+        if (targetScroll && targetScroll.userData) {
+          let easeVal = scrollAnimState.phase === 'opening' ? easeOutCubic(progress) : 1 - easeInCubic(progress);
+          const ud = targetScroll.userData;
+
+          // 画卷独立放缩，避免木轴被压缩
+          ud.paper.scale.x = Math.max(0.001, easeVal);
+          let yzScale = 0.8 + easeVal * 0.2;
+          targetScroll.scale.set(1, yzScale, yzScale);
+
+          // 木轴向两侧平移
+          const maxW = ud.targetW;
+          ud.leftGroup.position.x = (-maxW / 2) * easeVal - 0.18;
+          ud.rightGroup.position.x = (maxW / 2) * easeVal + 0.18;
+
+          targetScroll.lookAt(camera.position);
         }
 
         if (progress >= 1) scrollAnimState = null;
       }
 
-      // 卷轴始终面向相机
-      if (activeScroll) {
+      // 正常的跟随朝向 (当不在收起动画中时)
+      if (activeScroll && !scrollAnimState) {
         activeScroll.lookAt(camera.position);
       }
 

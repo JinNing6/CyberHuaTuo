@@ -9,19 +9,18 @@ CyberHuaTuo MCP Server — 赛博华佗 MCP 服务
 
 import json
 import logging
-from pathlib import Path
-from typing import Any
 
 from mcp.server.fastmcp import FastMCP
 
 from .config import config
-from .indexer import build_index, scan_cases
-from .searcher import search_cases, SearchResult
 from .doc_sources import (
     ALL_FRAMEWORKS,
     get_frameworks_by_category,
     search_frameworks,
 )
+from .indexer import build_index, scan_cases
+from .searcher import SearchResult, search_cases
+from .contributor import CaseSubmission, save_case_file
 
 logger = logging.getLogger("cyberhuatuo.mcp")
 
@@ -158,11 +157,11 @@ async def security_checkup(code: str) -> str:
 
         # 格式化输出
         output_parts = [
-            f"# 🩺 赛博华佗安全体检报告",
-            f"",
+            "# 🩺 赛博华佗安全体检报告",
+            "",
             f"**健康评分**: {result.get('health_score', 'N/A')} / 100",
             f"**健康等级**: {result.get('level', 'N/A')}",
-            f"",
+            "",
         ]
 
         # 各维度评分
@@ -284,12 +283,12 @@ async def mine_github_issue(
         if "error" in result and "issue" not in result:
             return f"⚠️ {result['error']}"
 
-        output_parts = [f"# ⛏️ GitHub Issue 淘金结果\n"]
+        output_parts = ["# ⛏️ GitHub Issue 淘金结果\n"]
 
         # Issue 信息
         issue = result.get("issue", {})
         if issue:
-            output_parts.append(f"## 原始 Issue")
+            output_parts.append("## 原始 Issue")
             output_parts.append(f"- **标题**: {issue.get('title', 'N/A')}")
             output_parts.append(f"- **链接**: {issue.get('url', 'N/A')}")
             output_parts.append(f"- **👍 Reactions**: {issue.get('reactions_thumbs_up', 0)}")
@@ -300,7 +299,7 @@ async def mine_github_issue(
         # 提炼结果
         refined = result.get("refined", {})
         if refined:
-            output_parts.append(f"## 提炼后的病例")
+            output_parts.append("## 提炼后的病例")
             output_parts.append(f"- **标题**: {refined.get('title', 'N/A')}")
             output_parts.append(f"- **标题(EN)**: {refined.get('title_en', 'N/A')}")
             output_parts.append(f"- **严重性**: {refined.get('severity', 'N/A')}")
@@ -324,6 +323,90 @@ async def mine_github_issue(
 
     except Exception as e:
         return f"⚠️ Issue 淘金失败: {str(e)}"
+
+
+@mcp.tool()
+def save_prescription(
+    title: str,
+    prescription: str,
+    framework: str,
+    symptom: str = "",
+    error_message: str = "",
+    root_cause: str = "",
+    severity: str = "medium",
+    complexity: str = "moderate",
+    tags: list[str] = None,
+    title_en: str = "",
+    framework_version: str = "",
+    language: str = "python",
+    contributor_github: str = "anonymous",
+    source_url: str = "",
+) -> str:
+    """
+    📥 保存贡献的药方（病例）到知识库
+    Save a contributed prescription (case) to the CyberHuaTuo knowledge base.
+
+    将新发现的问题和对应的解决方案保存为标准 Markdown 病例文件，
+    保存后会自动分类并存入对应的知识库目录中。
+
+    Args:
+        title: 问题标题 (中文为主，建议 20 字内)
+        prescription: 详细修复方案 (Markdown 格式)
+        framework: 框架标识 (如 langchain, pytorch)
+        symptom: 症状详细描述
+        error_message: 纯报错日志或 Traceback
+        root_cause: 根本原因分析
+        severity: 严重性 (low / medium / high / critical)
+        complexity: 复杂度 (simple / moderate / complex / extreme)
+        tags: 标签数组 (英文或中文标签)
+        title_en: 英文问题标题
+        framework_version: 框架版本
+        language: 编程语言 (如 python, typescript)
+        contributor_github: 贡献者的 Github 用户名
+        source_url: 参考链接
+    """
+    try:
+        if tags is None:
+            tags = []
+
+        submission = CaseSubmission(
+            title=title,
+            prescription=prescription,
+            framework=framework,
+            symptom=symptom,
+            error_message=error_message,
+            root_cause=root_cause,
+            severity=severity,
+            complexity=complexity,
+            tags=tags,
+            title_en=title_en,
+            framework_version=framework_version,
+            language=language,
+            contributor_github=contributor_github,
+            source_url=source_url,
+        )
+
+        result = save_case_file(submission)
+        
+        # 获取现有的客户端判断是否需要强制触发一次重新索引
+        global _chroma_client
+        if _chroma_client is not None:
+             # 由于当前版本不支持增量添加单个 Case 到 ChromaDB
+             # 此处简单的将全局变量重置，以便下次查询时重新加载整个 cases 目录
+             # (此为一种简单的懒加载重置策略进行缓存失效)
+             _chroma_client = None
+             logger.info("✅ 新药方已落盘，已清除 ChromaDB 实例缓存以便下次重载索引。")
+
+        return (
+            f"✅ 药方保存成功！\n\n"
+            f"- **病例 ID**: {result['case_id']}\n"
+            f"- **保存路径**: {result['filepath']}\n"
+            f"- **温馨提示**: 系统缓存已标记过期，将在您下次诊断时自动重新构建最新知识库索引。"
+        )
+
+    except Exception as e:
+        logger.error(f"保存药方失败: {e}", exc_info=True)
+        return f"⚠️ 药方保存失败: {str(e)}"
 
 
 @mcp.tool()
@@ -366,7 +449,7 @@ def list_frameworks(
         "infrastructure": "⚙️ 基础设施与 MLOps",
     }
 
-    output_parts = [f"# 📋 赛博华佗支持框架列表\n"]
+    output_parts = ["# 📋 赛博华佗支持框架列表\n"]
     output_parts.append(f"共 **{len(frameworks)}** 个框架\n")
 
     for cat, fws in groups.items():
@@ -505,7 +588,7 @@ def _format_search_results(query: str, results: list[SearchResult]) -> str:
         )
 
     output_parts = [
-        f"# 🔍 赛博华佗知识库搜索结果\n",
+        "# 🔍 赛博华佗知识库搜索结果\n",
         f"查询: 「{query}」\n",
         f"找到 **{len(results)}** 个相关病例：\n",
     ]

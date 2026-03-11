@@ -8,13 +8,11 @@ import asyncio
 import json
 import time
 from dataclasses import dataclass, field
-from typing import Any
 
 import httpx
 
 from .config import config
-from .contributor import CaseSubmission, save_case_file, generate_case_markdown
-
+from .contributor import CaseSubmission, generate_case_markdown, save_case_file
 
 # ===== 目标仓库注册表 =====
 

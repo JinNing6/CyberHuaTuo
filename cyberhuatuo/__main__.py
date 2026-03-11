@@ -67,6 +67,7 @@ def main():
 
     if args.command == "serve":
         import uvicorn
+
         from .config import config
 
         host = args.host or config.HOST
@@ -98,7 +99,7 @@ def main():
         from .indexer import scan_cases
         cases = scan_cases()
 
-        print(f"\n🩺 CyberHuaTuo 知识库统计")
+        print("\n🩺 CyberHuaTuo 知识库统计")
         print("=" * 40)
         print(f"📦 总病例数: {len(cases)}")
 
@@ -109,19 +110,20 @@ def main():
             fw_stats[fw] = fw_stats.get(fw, 0) + 1
 
         if fw_stats:
-            print(f"\n📊 按框架统计:")
+            print("\n📊 按框架统计:")
             for fw, count in sorted(fw_stats.items(), key=lambda x: -x[1]):
                 print(f"  {fw}: {count}")
 
     elif args.command == "generate-3d":
-        from pathlib import Path as _Path
         import subprocess
+        from pathlib import Path as _Path
         tools_script = _Path(__file__).parent.parent / "tools" / "generate_3d_universe.py"
         subprocess.run([sys.executable, str(tools_script)], check=True)
 
     elif args.command == "mine":
         import asyncio as _aio
-        from .issue_miner import IssueMiner, TARGET_REPOS
+
+        from .issue_miner import TARGET_REPOS, IssueMiner
 
         miner = IssueMiner()
 
@@ -186,8 +188,9 @@ def main():
 
     else:
         # 没有子命令时默认启动 serve
-        from .config import config
         import uvicorn
+
+        from .config import config
 
         host = config.HOST
         port = config.PORT

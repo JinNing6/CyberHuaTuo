@@ -477,6 +477,20 @@ curl -o .github/workflows/bot-prescribe.yml \
 
 ---
 
+## 🔌 MCP Server — AI Editor Integration
+
+CyberHuaTuo provides a native **Model Context Protocol (MCP)** server, seamlessly integrating the ancient wisdom of **望闻问切 (Look, Listen, Ask, Diagnose)** directly into your AI editors (e.g., Cursor, VS Code Copilot, Claude Desktop).
+
+Simply configure the MCP Server, and your AI assistant gains access to these powerful tools:
+*   **Diagnose (`diagnose`)**: Send error messages to the AI, and it will automatically generate targeted prescriptions using our knowledge base.
+*   **Security Checkup (`security_checkup`)**: Perform comprehensive six-meridian security and performance audits on your Agent code.
+*   **Search Prescriptions (`search_knowledge_base`)**: Instantly query CyberHuaTuo's vast library of historical cases during your AI chats.
+*   **Save Prescriptions (`save_prescription`)**: Did the LLM solve an unrecorded issue? Let it directly submit the new prescription to the local knowledge base with one click.
+
+> 👉 **For detailed installation and configuration instructions, please refer to [README_MCP.md](README_MCP.md)**
+
+---
+
 ## ✊ Join the Movement
 
 ### This isn't just a project. This is a mission.

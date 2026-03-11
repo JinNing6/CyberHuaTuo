@@ -165,6 +165,23 @@ pip install -r requirements.txt
 | `category` | string | ❌ | 按分类过滤（agent/foundation/infrastructure） |
 | `search` | string | ❌ | 关键词搜索 |
 
+### 📥 `save_prescription` — 自动保存贡献药方
+
+直接将新发现的问题及修复药方保存至赛博华佗的知识库系统。保存后，系统将会自动分配 ID 并在您的下次查询前重载缓存。
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `title` | string | ✅ | 标题（建议以中文为主，20字以内） |
+| `prescription` | string | ✅ | 详细修复方案 (能解决问题的代码/思路等) |
+| `framework` | string | ✅ | 框架表示 (如 `langchain`, `fastapi`) |
+| `symptom` | string | ❌ | 针对症状的详细描述 |
+| `error_message`| string | ❌ | 极简报错或 Traceback 会有助于之后被匹配 |
+| `root_cause` | string | ❌ | 根本原因分析解释 |
+| `severity` | string | ❌ | 严重性 (`low`/`medium`/`high`/`critical`) |
+| `complexity` | string | ❌ | 复杂性等级 (`simple`/`moderate`/`complex`/`extreme`) |
+| `tags` | array | ❌ | 自定义标签集 |
+| `title_en` | string | ❌ | 对应的英文标题 |
+
 ---
 
 ## 资源 (Resources)

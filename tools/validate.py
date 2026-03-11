@@ -9,12 +9,11 @@ CyberHuaTuo 病例格式校验工具
     python tools/validate.py --fix-dates  # 自动修复日期格式
 """
 
-import sys
-import json
-import re
 import argparse
-from pathlib import Path
+import json
+import sys
 from collections import Counter
+from pathlib import Path
 
 try:
     import yaml
@@ -48,7 +47,7 @@ def load_schema() -> dict:
     if not SCHEMA_PATH.exists():
         print(f"⚠️  Schema 文件未找到: {SCHEMA_PATH}")
         return {}
-    with open(SCHEMA_PATH, "r", encoding="utf-8") as f:
+    with open(SCHEMA_PATH, encoding="utf-8") as f:
         return json.load(f)
 
 
