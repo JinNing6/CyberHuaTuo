@@ -103,10 +103,7 @@ def scan_all_cases() -> dict:
         # 从目录结构推断 category
         rel = fp.relative_to(CASES_DIR)
         parts = rel.parts
-        if len(parts) >= 2:
-            category = parts[-2]  # 父目录名即分类
-        else:
-            category = "general"
+        category = parts[-2] if len(parts) >= 2 else "general"
 
         case_info = {
             "id": meta.get("id", fp.stem),
@@ -141,12 +138,12 @@ def generate_svg(data: dict) -> str:
     total = data["total"]
     fw_count = len(frameworks)
 
-    W, H = 900, 520
-    CX, CY = W / 2, H / 2 - 20
-    ORBIT_RX, ORBIT_RY = 280, 140  # 椭圆轨道半径
+    w, h = 900, 520
+    cx, cy = w / 2, h / 2 - 20
+    orbit_rx, orbit_ry = 280, 140  # 椭圆轨道半径
 
     lines = []
-    lines.append(f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" width="{W}" height="{H}">')
+    lines.append(f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {w} {h}" width="{w}" height="{h}">')
     lines.append('<defs>')
     # 发光滤镜
     lines.append('''
@@ -213,7 +210,7 @@ def generate_svg(data: dict) -> str:
 
     # 为每个框架生成轨道动画
     fw_list = list(frameworks.keys())
-    for i, fw in enumerate(fw_list):
+    for i, _fw in enumerate(fw_list):
         duration = 20 + i * 5  # 不同速度
         # 行星沿椭圆轨道运动的关键帧
         lines.append(f'''
@@ -223,7 +220,7 @@ def generate_svg(data: dict) -> str:
       }}
       .planet-{i} {{
         animation: orbit-{i} {duration}s linear infinite;
-        transform-origin: {CX}px {CY}px;
+        transform-origin: {cx}px {cy}px;
       }}
       .planet-label-{i} {{
         animation: float-y {2 + i * 0.5}s ease-in-out infinite;
@@ -233,14 +230,14 @@ def generate_svg(data: dict) -> str:
     lines.append('</style>')
 
     # ─── 背景 ───
-    lines.append(f'<rect width="{W}" height="{H}" fill="#0A0E1A" rx="12"/>')
+    lines.append(f'<rect width="{w}" height="{h}" fill="#0A0E1A" rx="12"/>')
 
     # 背景网格
     lines.append('<g opacity="0.04">')
-    for x in range(0, W, 40):
-        lines.append(f'<line x1="{x}" y1="0" x2="{x}" y2="{H}" stroke="#00D09C" stroke-width="0.5"/>')
-    for y in range(0, H, 40):
-        lines.append(f'<line x1="0" y1="{y}" x2="{W}" y2="{y}" stroke="#00D09C" stroke-width="0.5"/>')
+    for x in range(0, w, 40):
+        lines.append(f'<line x1="{x}" y1="0" x2="{x}" y2="{h}" stroke="#00D09C" stroke-width="0.5"/>')
+    for y in range(0, h, 40):
+        lines.append(f'<line x1="0" y1="{y}" x2="{w}" y2="{y}" stroke="#00D09C" stroke-width="0.5"/>')
     lines.append('</g>')
 
     # 随机星星
@@ -248,8 +245,8 @@ def generate_svg(data: dict) -> str:
     random.seed(42)  # 固定种子保证一致性
     lines.append('<g>')
     for _ in range(60):
-        sx = random.randint(10, W - 10)
-        sy = random.randint(10, H - 60)
+        sx = random.randint(10, w - 10)
+        sy = random.randint(10, h - 60)
         sr = random.uniform(0.3, 1.2)
         dur = random.uniform(2, 6)
         delay = random.uniform(0, 4)
@@ -262,21 +259,21 @@ def generate_svg(data: dict) -> str:
     # ─── 轨道线 ───
     for i in range(fw_count):
         scale = 0.6 + (i * 0.15)
-        rx = ORBIT_RX * scale
-        ry = ORBIT_RY * scale
+        rx = orbit_rx * scale
+        ry = orbit_ry * scale
         color = list(FRAMEWORK_COLORS.values())[i % len(FRAMEWORK_COLORS)]
         lines.append(
-            f'<ellipse cx="{CX}" cy="{CY}" rx="{rx}" ry="{ry}" '
+            f'<ellipse cx="{cx}" cy="{cy}" rx="{rx}" ry="{ry}" '
             f'class="orbit-line" stroke="{color["primary"]}" stroke-opacity="0.2" stroke-width="1"/>'
         )
 
     # ─── 中心太阳 ───
-    lines.append(f'<circle cx="{CX}" cy="{CY}" r="50" fill="url(#sun-grad)" class="core-glow" filter="url(#glow-strong)"/>')
-    lines.append(f'<circle cx="{CX}" cy="{CY}" r="22" fill="#0A0E1A" stroke="#00D09C" stroke-width="2" filter="url(#glow)"/>')
+    lines.append(f'<circle cx="{cx}" cy="{cy}" r="50" fill="url(#sun-grad)" class="core-glow" filter="url(#glow-strong)"/>')
+    lines.append(f'<circle cx="{cx}" cy="{cy}" r="22" fill="#0A0E1A" stroke="#00D09C" stroke-width="2" filter="url(#glow)"/>')
     # 中心文字
-    lines.append(f'<text x="{CX}" y="{CY - 4}" text-anchor="middle" fill="#00D09C" font-family="sans-serif" font-size="7" font-weight="700" letter-spacing="0.5">CYBER</text>')
-    lines.append(f'<text x="{CX}" y="{CY + 6}" text-anchor="middle" fill="#00D09C" font-family="sans-serif" font-size="6" font-weight="500">HUATUO</text>')
-    lines.append(f'<text x="{CX}" y="{CY + 16}" text-anchor="middle" fill="#00D09C" font-family="sans-serif" font-size="5" opacity="0.6">赛博华佗</text>')
+    lines.append(f'<text x="{cx}" y="{cy - 4}" text-anchor="middle" fill="#00D09C" font-family="sans-serif" font-size="7" font-weight="700" letter-spacing="0.5">CYBER</text>')
+    lines.append(f'<text x="{cx}" y="{cy + 6}" text-anchor="middle" fill="#00D09C" font-family="sans-serif" font-size="6" font-weight="500">HUATUO</text>')
+    lines.append(f'<text x="{cx}" y="{cy + 16}" text-anchor="middle" fill="#00D09C" font-family="sans-serif" font-size="5" opacity="0.6">赛博华佗</text>')
 
     # ─── 行星节点 ───
     for i, fw in enumerate(fw_list):
@@ -289,15 +286,15 @@ def generate_svg(data: dict) -> str:
         # 计算椭圆轨道上的初始位置
         angle = (2 * math.pi / fw_count) * i - math.pi / 2
         scale = 0.6 + (i * 0.15)
-        px = CX + ORBIT_RX * scale * math.cos(angle)
-        py = CY + ORBIT_RY * scale * math.sin(angle)
+        px = cx + orbit_rx * scale * math.cos(angle)
+        py = cy + orbit_ry * scale * math.sin(angle)
 
         node_r = 10 + case_count * 1.5  # 节点大小与案例数正比
         node_r = min(node_r, 30)
 
         # 连线
         lines.append(
-            f'<line x1="{CX}" y1="{CY}" x2="{px}" y2="{py}" '
+            f'<line x1="{cx}" y1="{cy}" x2="{px}" y2="{py}" '
             f'stroke="{color}" stroke-opacity="0.15" stroke-width="1" stroke-dasharray="3 5"'
             f' class="orbit-line"/>'
         )
@@ -333,24 +330,24 @@ def generate_svg(data: dict) -> str:
         lines.append('</g>')
 
     # ─── 底部统计条 ───
-    bar_y = H - 38
-    lines.append(f'<rect x="0" y="{bar_y - 5}" width="{W}" height="43" fill="#0A0E1A" fill-opacity="0.8"/>')
-    lines.append(f'<line x1="60" y1="{bar_y}" x2="{W - 60}" y2="{bar_y}" stroke="#00D09C" stroke-opacity="0.15" stroke-width="1"/>')
+    bar_y = h - 38
+    lines.append(f'<rect x="0" y="{bar_y - 5}" width="{w}" height="43" fill="#0A0E1A" fill-opacity="0.8"/>')
+    lines.append(f'<line x1="60" y1="{bar_y}" x2="{w - 60}" y2="{bar_y}" stroke="#00D09C" stroke-opacity="0.15" stroke-width="1"/>')
 
     stats_text = f'{total} Prescriptions · {fw_count} Frameworks · 100% Open Source'
     lines.append(
-        f'<text x="{CX}" y="{bar_y + 20}" text-anchor="middle" fill="#00D09C" '
+        f'<text x="{cx}" y="{bar_y + 20}" text-anchor="middle" fill="#00D09C" '
         f'font-family="monospace" font-size="10" opacity="0.6" letter-spacing="1">'
         f'{stats_text}</text>'
     )
 
     # 左右装饰
     lines.append(f'<text x="30" y="{bar_y + 20}" fill="#00D09C" font-family="sans-serif" font-size="10" opacity="0.4">🩺</text>')
-    lines.append(f'<text x="{W - 40}" y="{bar_y + 20}" fill="#00D09C" font-family="sans-serif" font-size="10" opacity="0.4">💊</text>')
+    lines.append(f'<text x="{w - 40}" y="{bar_y + 20}" fill="#00D09C" font-family="sans-serif" font-size="10" opacity="0.4">💊</text>')
 
     # 顶部标题
-    lines.append(f'<text x="{CX}" y="25" text-anchor="middle" fill="#00D09C" font-family="monospace" font-size="9" font-weight="700" letter-spacing="2" opacity="0.5">PRESCRIPTION UNIVERSE</text>')
-    lines.append(f'<text x="{CX}" y="37" text-anchor="middle" fill="#8892B0" font-family="sans-serif" font-size="8" opacity="0.5">药方宇宙 · 点击进入可交互 3D 版本</text>')
+    lines.append(f'<text x="{cx}" y="25" text-anchor="middle" fill="#00D09C" font-family="monospace" font-size="9" font-weight="700" letter-spacing="2" opacity="0.5">PRESCRIPTION UNIVERSE</text>')
+    lines.append(f'<text x="{cx}" y="37" text-anchor="middle" fill="#8892B0" font-family="sans-serif" font-size="8" opacity="0.5">药方宇宙 · 点击进入可交互 3D 版本</text>')
 
     lines.append('</svg>')
     return '\n'.join(lines)
@@ -408,8 +405,10 @@ def generate_html(data: dict) -> str:
       align-items: center;
       justify-content: space-between;
       padding: 16px 28px;
-      background: linear-gradient(180deg, rgba(10,14,26,0.95) 0%, rgba(10,14,26,0) 100%);
+      background: linear-gradient(180deg, rgba(10,14,26,0.95) 0%, rgba(10,14,26,0.6) 60%, rgba(10,14,26,0) 100%);
       pointer-events: none;
+      flex-wrap: wrap;
+      gap: 8px;
     }}
 
     .top-bar > * {{ pointer-events: auto; }}
@@ -424,11 +423,11 @@ def generate_html(data: dict) -> str:
 
     .brand-text {{
       font-family: 'Orbitron', sans-serif;
-      font-size: 0.85rem;
+      font-size: 1rem;
       font-weight: 700;
       color: #00D09C;
-      letter-spacing: 0.1em;
-      text-shadow: 0 0 20px rgba(0,208,156,0.3);
+      letter-spacing: 0.15em;
+      text-shadow: 0 0 30px rgba(0,208,156,0.4);
     }}
 
     .brand-sub {{
@@ -459,13 +458,18 @@ def generate_html(data: dict) -> str:
       transform: translateX(-50%);
       z-index: 100;
       display: flex;
-      gap: 8px;
-      padding: 8px 16px;
-      background: rgba(26,31,46,0.85);
-      backdrop-filter: blur(12px);
+      gap: 6px;
+      padding: 8px 14px;
+      background: rgba(26,31,46,0.88);
+      backdrop-filter: blur(16px);
       border: 1px solid rgba(42,48,80,0.6);
       border-radius: 30px;
+      max-width: 95vw;
+      overflow-x: auto;
+      scrollbar-width: none;
     }}
+
+    .filter-bar::-webkit-scrollbar {{ display: none; }}
 
     .filter-chip {{
       padding: 6px 14px;
@@ -651,11 +655,72 @@ def generate_html(data: dict) -> str:
       left: 50%;
       transform: translateX(-50%);
       z-index: 50;
-      font-size: 0.68rem;
+      font-size: 0.72rem;
       color: #4A5070;
       font-family: 'JetBrains Mono', monospace;
-      opacity: 0.6;
+      opacity: 0.5;
       pointer-events: none;
+      white-space: nowrap;
+      text-align: center;
+      letter-spacing: 0.05em;
+    }}
+
+    @media (max-width: 768px) {{
+      .top-bar {{ padding: 12px 16px; }}
+      .brand-text {{ font-size: 0.8rem; }}
+      .stats-bar {{ font-size: 0.65rem; gap: 12px; }}
+      .hint {{ font-size: 0.6rem; bottom: 72px; }}
+      .filter-chip {{ padding: 5px 10px; font-size: 0.65rem; }}
+      .detail-panel {{ width: 85vw; right: -90vw; }}
+    }}
+
+    /* ─── 卷轴关闭按钮 ─── */
+    .scroll-close-btn {{
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 300;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,71,87,0.4);
+      background: rgba(10,14,26,0.88);
+      backdrop-filter: blur(12px);
+      color: #FF4757;
+      font-size: 1.3rem;
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.25s;
+      box-shadow: 0 0 20px rgba(255,71,87,0.15);
+    }}
+
+    .scroll-close-btn:hover {{
+      border-color: #FF4757;
+      background: rgba(255,71,87,0.18);
+      transform: scale(1.12);
+      box-shadow: 0 0 30px rgba(255,71,87,0.3);
+    }}
+
+    .scroll-hint {{
+      position: fixed;
+      bottom: 100px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 300;
+      font-size: 0.72rem;
+      color: #00D09C;
+      font-family: 'JetBrains Mono', monospace;
+      opacity: 0;
+      pointer-events: none;
+      white-space: nowrap;
+      transition: opacity 0.4s;
+      text-shadow: 0 0 15px rgba(0,208,156,0.3);
+    }}
+
+    .scroll-hint.visible {{
+      opacity: 0.6;
     }}
 
     /* ─── 加载动画 ─── */
@@ -744,6 +809,10 @@ def generate_html(data: dict) -> str:
   <!-- Tooltip -->
   <div class="tooltip" id="tooltip"></div>
 
+  <!-- 卷轴关闭按钮 -->
+  <button class="scroll-close-btn" id="scroll-close-btn">✕</button>
+  <div class="scroll-hint" id="scroll-hint">ESC 关闭卷轴 · Press ESC to close</div>
+
   <!-- Three.js CDN -->
   <script type="importmap">
   {{
@@ -771,8 +840,8 @@ def generate_html(data: dict) -> str:
     // ─── 场景初始化 ───
     const container = document.getElementById('canvas-container');
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 2000);
-    camera.position.set(0, 8, 22);
+    const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 2000);
+    camera.position.set(0, 6, 18);
 
     const renderer = new THREE.WebGLRenderer({{ antialias: true, alpha: true }});
     renderer.setSize(window.innerWidth, window.innerHeight);
@@ -786,7 +855,7 @@ def generate_html(data: dict) -> str:
     composer.addPass(new RenderPass(scene, camera));
     const bloomPass = new UnrealBloomPass(
       new THREE.Vector2(window.innerWidth, window.innerHeight),
-      0.8, 0.4, 0.85
+      1.2, 0.3, 0.75
     );
     composer.addPass(bloomPass);
 
@@ -802,7 +871,7 @@ def generate_html(data: dict) -> str:
 
     // ─── 背景星空 ───
     const starGeom = new THREE.BufferGeometry();
-    const starCount = 2000;
+    const starCount = 4000;
     const starPos = new Float32Array(starCount * 3);
     const starSizes = new Float32Array(starCount);
     for (let i = 0; i < starCount; i++) {{
@@ -815,9 +884,9 @@ def generate_html(data: dict) -> str:
     starGeom.setAttribute('size', new THREE.BufferAttribute(starSizes, 1));
     const starMat = new THREE.PointsMaterial({{
       color: 0xffffff,
-      size: 0.12,
+      size: 0.15,
       transparent: true,
-      opacity: 0.6,
+      opacity: 0.7,
       sizeAttenuation: true,
     }});
     scene.add(new THREE.Points(starGeom, starMat));
@@ -833,7 +902,7 @@ def generate_html(data: dict) -> str:
       const group = new THREE.Group();
 
       // 核心发光球
-      const coreGeom = new THREE.SphereGeometry(1.5, 64, 64);
+      const coreGeom = new THREE.SphereGeometry(2.0, 64, 64);
       const coreMat = new THREE.MeshStandardMaterial({{
         color: 0x00D09C,
         emissive: 0x00D09C,
@@ -847,7 +916,7 @@ def generate_html(data: dict) -> str:
       group.add(core);
 
       // 外层光环
-      const ringGeom = new THREE.TorusGeometry(2.5, 0.03, 16, 100);
+      const ringGeom = new THREE.TorusGeometry(3.5, 0.04, 16, 100);
       const ringMat = new THREE.MeshBasicMaterial({{
         color: 0x00D09C,
         transparent: true,
@@ -876,20 +945,19 @@ def generate_html(data: dict) -> str:
       const cases = DATA.tree[fw] || {{}};
       const caseCount = Object.values(cases).reduce((s, arr) => s + arr.length, 0);
 
-      // 计算球面坐标
-      const phi = Math.acos(-1 + (2 * (index + 1)) / (totalFw + 1));
-      const theta = Math.sqrt(totalFw * Math.PI) * phi;
-      const radius = 8 + caseCount * 0.3;
+      // 等角水平环形分布 — 避免聚集
+      const angle = (2 * Math.PI / totalFw) * index;
+      const radius = 10 + caseCount * 0.2;
 
-      const x = radius * Math.sin(phi) * Math.cos(theta);
-      const y = radius * Math.cos(phi) * 0.6;  // 压扁 y 轴
-      const z = radius * Math.sin(phi) * Math.sin(theta);
+      const x = radius * Math.cos(angle);
+      const y = (Math.sin(index * 1.2) * 2.5);  // 微小 Y 偏移增加层次
+      const z = radius * Math.sin(angle);
 
       group.position.set(x, y, z);
 
-      // 节点球体
-      const size = 0.6 + caseCount * 0.08;
-      const geom = new THREE.SphereGeometry(Math.min(size, 1.8), 32, 32);
+      // 节点球体 — 放大尺寸
+      const size = 1.0 + caseCount * 0.12;
+      const geom = new THREE.SphereGeometry(Math.min(size, 2.5), 32, 32);
       const mat = new THREE.MeshStandardMaterial({{
         color: color,
         emissive: color,
@@ -914,8 +982,8 @@ def generate_html(data: dict) -> str:
         categories: cases,
       }});
 
-      // 光环
-      const haloGeom = new THREE.RingGeometry(size + 0.2, size + 0.35, 32);
+      // 光环 — 放大
+      const haloGeom = new THREE.RingGeometry(size + 0.4, size + 0.65, 32);
       const haloMat = new THREE.MeshBasicMaterial({{
         color: color,
         transparent: true,
@@ -941,12 +1009,12 @@ def generate_html(data: dict) -> str:
       catKeys.forEach((cat, catIdx) => {{
         const catCases = cases[cat];
         const catAngle = (2 * Math.PI / catKeys.length) * catIdx;
-        const catRadius = 2.2 + catCases.length * 0.3;
+        const catRadius = 3.0 + catCases.length * 0.4;
         const cx = catRadius * Math.cos(catAngle);
-        const cy = (Math.random() - 0.5) * 1.5;
+        const cy = (Math.sin(catIdx * 2.1) - 0.5) * 2.0;
         const cz = catRadius * Math.sin(catAngle);
 
-        const catGeom = new THREE.SphereGeometry(0.22 + catCases.length * 0.05, 16, 16);
+        const catGeom = new THREE.SphereGeometry(0.35 + catCases.length * 0.08, 16, 16);
         const catMat = new THREE.MeshStandardMaterial({{
           color: color,
           emissive: color,
@@ -992,7 +1060,7 @@ def generate_html(data: dict) -> str:
       const fws = Object.keys(DATA.tree);
       fws.forEach((fw, i) => {{
         const colorStr = FW_COLORS[fw]?.primary || '#888888';
-        const ringGeom = new THREE.TorusGeometry(8 + i * 1.5, 0.01, 8, 100);
+        const ringGeom = new THREE.TorusGeometry(10 + i * 1.8, 0.015, 8, 120);
         const ringMat = new THREE.MeshBasicMaterial({{
           color: new THREE.Color(colorStr),
           transparent: true,
@@ -1089,61 +1157,244 @@ def generate_html(data: dict) -> str:
       }});
     }}
 
-    // ─── 详情面板 ───
-    const detailPanel = document.getElementById('detail-panel');
-    const detailContent = document.getElementById('detail-content');
-    document.getElementById('detail-close').onclick = () => detailPanel.classList.remove('open');
+    // ─── 3D 书轴系统 ───
+    let activeScroll = null;
+    let scrollAnimState = null;
+    const savedCamPos = new THREE.Vector3();
+    const savedCamTarget = new THREE.Vector3();
 
-    function showDetail(data) {{
-      let html = '';
-      const badgeBg = data.color + '18';
-      const badgeBorder = data.color + '40';
+    function easeOutCubic(t) {{ return 1 - Math.pow(1 - t, 3); }}
+    function easeInCubic(t) {{ return t * t * t; }}
 
-      if (data.type === 'framework') {{
-        html += `<div class="detail-fw-badge" style="background:${{badgeBg}};border:1px solid ${{badgeBorder}};color:${{data.color}}">
-          ${{data.icon}} ${{data.name}}
-        </div>`;
-        html += `<div class="detail-title">${{data.name}} 药方库</div>`;
-        html += `<div class="detail-title-en">${{data.caseCount}} prescriptions across ${{Object.keys(data.categories).length}} categories</div>`;
+    // 离屏 Canvas 渲染药方内容
+    function renderPrescriptionCanvas(nodeData) {{
+      const cvs = document.createElement('canvas');
+      const W = 2048, CH = 1400;
+      cvs.width = W; cvs.height = CH;
+      const ctx = cvs.getContext('2d');
 
-        Object.entries(data.categories).forEach(([cat, cases]) => {{
-          html += `<div class="detail-section">`;
-          html += `<div class="detail-section-title">${{cat.replace(/-/g, ' ')}} (${{cases.length}})</div>`;
-          html += `<ul class="cases-list">`;
-          cases.forEach(c => {{
-            const svColor = SV_COLORS[c.severity] || '#888';
-            html += `<li>
-              <div class="case-title">${{c.title}}</div>
-              <div class="case-meta">
-                <span class="severity-badge" style="background:${{svColor}}15;color:${{svColor}};border:1px solid ${{svColor}}30">${{c.severity}}</span>
-                · ${{c.complexity}} · ${{c.tags?.join(', ') || ''}}
-              </div>
-            </li>`;
-          }});
-          html += `</ul></div>`;
-        }});
-      }} else if (data.type === 'category') {{
-        html += `<div class="detail-fw-badge" style="background:${{badgeBg}};border:1px solid ${{badgeBorder}};color:${{data.color}}">
-          ${{data.icon}} ${{data.name}}
-        </div>`;
-        html += `<div class="detail-title">${{data.name}}</div>`;
-        html += `<div class="detail-title-en">${{data.cases.length}} prescriptions</div>`;
-        html += `<ul class="cases-list">`;
-        data.cases.forEach(c => {{
-          const svColor = SV_COLORS[c.severity] || '#888';
-          html += `<li>
-            <div class="case-title">${{c.title}}</div>
-            <div class="case-meta">
-              <span class="severity-badge" style="background:${{svColor}}15;color:${{svColor}};border:1px solid ${{svColor}}30">${{c.severity}}</span>
-              · ${{c.complexity}} · ${{c.tags?.join(', ') || ''}}
-            </div>
-          </li>`;
-        }});
-        html += `</ul>`;
+      // 纸面底色 — 深色羊皮纸
+      const grad = ctx.createLinearGradient(0, 0, 0, CH);
+      grad.addColorStop(0, '#151925');
+      grad.addColorStop(0.5, '#1A1F2E');
+      grad.addColorStop(1, '#151925');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, W, CH);
+
+      const fColor = nodeData.color || '#00D09C';
+
+      // 外边框
+      ctx.strokeStyle = fColor;
+      ctx.lineWidth = 4;
+      ctx.strokeRect(24, 24, W - 48, CH - 48);
+      // 内边框
+      ctx.strokeStyle = fColor + '30';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(44, 44, W - 88, CH - 88);
+
+      // 顶部四角纹饰
+      ctx.strokeStyle = fColor + '50';
+      ctx.lineWidth = 2;
+      [[50, 50], [W - 50, 50], [50, CH - 50], [W - 50, CH - 50]].forEach(([x, y]) => {{
+        ctx.beginPath();
+        const dx = x < W / 2 ? 1 : -1;
+        const dy = y < CH / 2 ? 1 : -1;
+        ctx.moveTo(x + dx * 30, y);
+        ctx.lineTo(x, y);
+        ctx.lineTo(x, y + dy * 30);
+        ctx.stroke();
+      }});
+
+      // 标题 Icon + 名称
+      ctx.fillStyle = fColor;
+      ctx.font = 'bold 52px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(`${{nodeData.icon || '📦'}} ${{nodeData.name || ''}}`, W / 2, 120);
+
+      // 副标题
+      ctx.fillStyle = '#8892B0';
+      ctx.font = '28px sans-serif';
+      if (nodeData.type === 'framework') {{
+        const catCount = Object.keys(nodeData.categories || {{}}).length;
+        ctx.fillText(`${{nodeData.caseCount}} prescriptions · ${{catCount}} categories`, W / 2, 170);
+      }} else {{
+        ctx.fillText(`${{(nodeData.cases || []).length}} prescriptions`, W / 2, 170);
       }}
 
-      detailContent.innerHTML = html;
-      detailPanel.classList.add('open');
+      // 分隔线
+      ctx.strokeStyle = fColor + '40';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(80, 200);
+      ctx.lineTo(W - 80, 200);
+      ctx.stroke();
+
+      // 内容
+      let y = 250;
+      ctx.textAlign = 'left';
+      const svColors = {{ critical: '#FF4757', high: '#FF6B35', medium: '#FFA500', low: '#00D09C' }};
+
+      if (nodeData.type === 'framework') {{
+        Object.entries(nodeData.categories || {{}}).forEach(([cat, cases]) => {{
+          if (y > CH - 120) return;
+          ctx.fillStyle = fColor;
+          ctx.font = 'bold 28px monospace';
+          ctx.fillText(`▸ ${{cat.replace(/-/g, ' ')}} (${{cases.length}})`, 80, y);
+          y += 45;
+          cases.forEach(c => {{
+            if (y > CH - 80) return;
+            ctx.fillStyle = '#E8E8F0';
+            ctx.font = '24px sans-serif';
+            let title = c.title || '';
+            if (title.length > 42) title = title.substring(0, 42) + '...';
+            ctx.fillText(`💊 ${{title}}`, 110, y);
+            y += 32;
+            ctx.fillStyle = svColors[c.severity] || '#888';
+            ctx.font = '18px monospace';
+            ctx.fillText(`    ${{c.severity}} · ${{c.complexity}}`, 130, y);
+            y += 38;
+          }});
+          y += 12;
+        }});
+      }} else if (nodeData.type === 'category') {{
+        (nodeData.cases || []).forEach(c => {{
+          if (y > CH - 80) return;
+          ctx.fillStyle = '#E8E8F0';
+          ctx.font = '26px sans-serif';
+          let title = c.title || '';
+          if (title.length > 40) title = title.substring(0, 40) + '...';
+          ctx.fillText(`💊 ${{title}}`, 80, y);
+          y += 34;
+          ctx.fillStyle = svColors[c.severity] || '#888';
+          ctx.font = '20px monospace';
+          ctx.fillText(`   ${{c.severity}} · ${{c.complexity}} · ${{(c.tags || []).join(', ')}}`, 100, y);
+          y += 42;
+        }});
+      }}
+
+      // 底部印章
+      ctx.fillStyle = fColor + '60';
+      ctx.font = '20px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('🩺 赛博华佗 · CyberHuaTuo Prescription Universe', W / 2, CH - 55);
+
+      return cvs;
+    }}
+
+    // 创建 3D 卷轴模型
+    function createScrollModel(nodeData) {{
+      const group = new THREE.Group();
+      const fColor = new THREE.Color(nodeData.color || '#00D09C');
+      const scrollW = 8.5, scrollH = 5.8;
+      const rodR = 0.12, rodL = scrollH + 0.7;
+
+      // 木轴材质
+      const rodMat = new THREE.MeshStandardMaterial({{
+        color: 0x8B6914, roughness: 0.55, metalness: 0.25,
+      }});
+
+      // 左右木轴
+      const leftRod = new THREE.Mesh(new THREE.CylinderGeometry(rodR, rodR, rodL, 16), rodMat);
+      leftRod.position.set(-scrollW / 2 - 0.18, 0, 0);
+      group.add(leftRod);
+      const rightRod = leftRod.clone();
+      rightRod.position.set(scrollW / 2 + 0.18, 0, 0);
+      group.add(rightRod);
+
+      // 轴头装饰球
+      const knobMat = new THREE.MeshStandardMaterial({{
+        color: fColor, emissive: fColor, emissiveIntensity: 0.35,
+        roughness: 0.3, metalness: 0.7,
+      }});
+      const knobGeom = new THREE.SphereGeometry(0.2, 16, 16);
+      [[-scrollW / 2 - 0.18, rodL / 2], [-scrollW / 2 - 0.18, -rodL / 2],
+       [scrollW / 2 + 0.18, rodL / 2], [scrollW / 2 + 0.18, -rodL / 2]].forEach(([x, yp]) => {{
+        const knob = new THREE.Mesh(knobGeom, knobMat);
+        knob.position.set(x, yp, 0);
+        group.add(knob);
+      }});
+
+      // 纸面（Canvas 贴图）
+      const canvasEl = renderPrescriptionCanvas(nodeData);
+      const tex = new THREE.CanvasTexture(canvasEl);
+      tex.needsUpdate = true;
+      const paperMat = new THREE.MeshStandardMaterial({{
+        map: tex, side: THREE.DoubleSide, transparent: true,
+        opacity: 0.96, roughness: 0.85, metalness: 0.0,
+      }});
+      const paper = new THREE.Mesh(new THREE.PlaneGeometry(scrollW, scrollH), paperMat);
+      group.add(paper);
+
+      // 边缘辉光
+      const edgeMat = new THREE.MeshBasicMaterial({{
+        color: fColor, transparent: true, opacity: 0.06, side: THREE.DoubleSide,
+      }});
+      const edge = new THREE.Mesh(new THREE.PlaneGeometry(scrollW + 0.4, scrollH + 0.4), edgeMat);
+      edge.position.z = -0.03;
+      group.add(edge);
+
+      // 初始状态: 收缩
+      group.scale.x = 0.01;
+      return group;
+    }}
+
+    // 展开卷轴
+    function showScrollDetail(nodeData) {{
+      if (activeScroll) closeScrollDetail(false);
+
+      savedCamPos.copy(camera.position);
+      savedCamTarget.copy(controls.target);
+
+      const scroll = createScrollModel(nodeData);
+
+      // 定位：在摄像机正前方
+      const dir = new THREE.Vector3();
+      camera.getWorldDirection(dir);
+      const pos = camera.position.clone().add(dir.multiplyScalar(14));
+      scroll.position.copy(pos);
+      scroll.lookAt(camera.position);
+
+      scene.add(scroll);
+      activeScroll = scroll;
+
+      scrollAnimState = {{
+        phase: 'opening', progress: 0,
+        startTime: performance.now(), duration: 900,
+      }};
+
+      document.getElementById('scroll-close-btn').style.display = 'flex';
+      document.getElementById('scroll-hint').classList.add('visible');
+      controls.autoRotate = false;
+    }}
+
+    // 收起卷轴
+    function closeScrollDetail(restoreCam = true) {{
+      if (!activeScroll) return;
+      scrollAnimState = {{
+        phase: 'closing', progress: 0,
+        startTime: performance.now(), duration: 500,
+      }};
+      document.getElementById('scroll-close-btn').style.display = 'none';
+      document.getElementById('scroll-hint').classList.remove('visible');
+
+      const scrollToRemove = activeScroll;
+      activeScroll = null;
+      setTimeout(() => {{
+        scene.remove(scrollToRemove);
+        if (restoreCam) controls.autoRotate = true;
+      }}, 600);
+    }}
+
+    // 关闭按钮 + ESC
+    document.getElementById('scroll-close-btn').onclick = () => closeScrollDetail();
+    document.addEventListener('keydown', (e) => {{
+      if (e.key === 'Escape') closeScrollDetail();
+    }});
+
+    // showDetail 保留旧面板作为降级 + 触发3D卷轴
+    const detailPanel = document.getElementById('detail-panel');
+    function showDetail(data) {{
+      showScrollDetail(data);
     }}
 
     // ─── 交互：点击 & Hover ───
@@ -1206,6 +1457,27 @@ def generate_html(data: dict) -> str:
         const offset = i * 0.7;
         group.position.y += Math.sin(t * 0.5 + offset) * 0.001;
       }});
+
+      // 卷轴展开/收起动画
+      if (scrollAnimState) {{
+        const elapsed = (performance.now() - scrollAnimState.startTime) / scrollAnimState.duration;
+        const progress = Math.min(elapsed, 1);
+        const scrollTarget = scrollAnimState.phase === 'opening'
+          ? activeScroll : scene.getObjectByProperty('uuid', scrollAnimState.scrollUuid);
+
+        if (scrollAnimState.phase === 'opening' && activeScroll) {{
+          activeScroll.scale.x = easeOutCubic(progress);
+          activeScroll.scale.y = 0.85 + easeOutCubic(progress) * 0.15;
+          activeScroll.scale.z = 0.85 + easeOutCubic(progress) * 0.15;
+        }}
+
+        if (progress >= 1) scrollAnimState = null;
+      }}
+
+      // 卷轴始终面向相机
+      if (activeScroll) {{
+        activeScroll.lookAt(camera.position);
+      }}
 
       controls.update();
       composer.render();
@@ -1271,7 +1543,7 @@ def main():
     print("🎉 生成完成！")
     print(f"   📊 SVG 预览图:  {SVG_OUTPUT}")
     print(f"   🌐 3D 交互页面: {HTML_OUTPUT}")
-    print(f"\n💡 直接在浏览器中打开 index.html 即可体验 3D 药方宇宙:")
+    print("\n💡 直接在浏览器中打开 index.html 即可体验 3D 药方宇宙:")
     print(f"   file:///{HTML_OUTPUT.as_posix()}")
 
 

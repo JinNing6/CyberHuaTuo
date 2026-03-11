@@ -28,8 +28,8 @@ def _github_api_request(method: str, url: str, token: str, data: dict | None = N
     """
     使用 urllib 发送 GitHub API 请求（避免依赖 httpx/requests）
     """
-    import urllib.request
     import urllib.error
+    import urllib.request
 
     headers = {
         "Accept": "application/vnd.github+json",
@@ -66,16 +66,15 @@ def _post_comment(token: str, repo: str, issue_number: int, body: str) -> bool:
 
 def _add_label(token: str, repo: str, issue_number: int, label: str) -> bool:
     """为 Issue 添加标签"""
-    # 先确保标签存在
+    # 先确保标签存在（标签可能已存在，忽略错误）
+    import contextlib
     label_url = f"https://api.github.com/repos/{repo}/labels"
-    try:
+    with contextlib.suppress(Exception):
         _github_api_request("POST", label_url, token, {
             "name": label,
             "color": "00D09C",
             "description": "CyberHuaTuo Bot 已处理",
         })
-    except Exception:
-        pass  # 标签可能已存在
 
     url = f"https://api.github.com/repos/{repo}/issues/{issue_number}/labels"
     try:
@@ -118,7 +117,7 @@ def handle_issue_opened(event: dict, token: str, repo: str) -> None:
     issue_number = issue.get("number")
     issue_title = issue.get("title", "")
     issue_body = issue.get("body", "")
-    issue_user = issue.get("user", {}).get("login", "")
+    issue.get("user", {}).get("login", "")
 
     if not issue_number:
         print("⚠️ 无法获取 Issue 编号", file=sys.stderr)
@@ -133,7 +132,7 @@ def handle_issue_opened(event: dict, token: str, repo: str) -> None:
         return
 
     # 加载药方库
-    from .bot_matcher import load_prescriptions, match_prescriptions, format_bot_reply
+    from .bot_matcher import format_bot_reply, load_prescriptions, match_prescriptions
 
     cases_dir = ROOT_DIR / "cases"
     prescriptions = load_prescriptions(cases_dir)
@@ -174,7 +173,7 @@ def handle_issue_comment(event: dict, token: str, repo: str) -> None:
     """处理 Issue 评论事件（@CyberHuaTuo 提及触发）"""
     comment = event.get("comment", {})
     comment_body = comment.get("body", "")
-    comment_user = comment.get("user", {}).get("login", "")
+    comment.get("user", {}).get("login", "")
 
     issue = event.get("issue", {})
     issue_number = issue.get("number")
@@ -198,7 +197,7 @@ def handle_issue_comment(event: dict, token: str, repo: str) -> None:
     print(f"🩺 收到 @CyberHuaTuo 提及，处理 Issue #{issue_number}")
 
     # 加载药方库
-    from .bot_matcher import load_prescriptions, match_prescriptions, format_bot_reply
+    from .bot_matcher import format_bot_reply, load_prescriptions, match_prescriptions
 
     cases_dir = ROOT_DIR / "cases"
     prescriptions = load_prescriptions(cases_dir)
@@ -266,7 +265,7 @@ def main() -> None:
     with open(event_path, encoding="utf-8") as f:
         event = json.load(f)
 
-    print(f"🤖 CyberHuaTuo Bot 启动")
+    print("🤖 CyberHuaTuo Bot 启动")
     print(f"📋 事件类型: {args.event_type}")
     print(f"📦 仓库: {repo}")
 
