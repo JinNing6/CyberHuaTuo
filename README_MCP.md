@@ -1,0 +1,215 @@
+# 🩺 CyberHuaTuo MCP Server
+
+> 让所有 AI Coding 工具都能调用赛博华佗的「望闻问切」诊断能力
+> Make CyberHuaTuo available in every AI coding tool
+
+## 什么是 MCP？
+
+**MCP (Model Context Protocol)** 是由 Anthropic 发起的开放协议，让 AI 助手能够连接外部工具和数据源。支持 MCP 的工具包括：
+
+- **Claude Desktop** (Anthropic)
+- **Cursor** (AI 代码编辑器)
+- **Windsurf** (Codeium)
+- **VS Code + GitHub Copilot**
+- **Gemini CLI** (Google)
+- **Continue** (开源 AI 编程助手)
+- 以及更多...
+
+## 快速开始
+
+### 1. 安装依赖
+
+```bash
+cd CyberHuaTuo
+pip install -r requirements.txt
+```
+
+### 2. 配置 AI 工具
+
+#### Claude Desktop
+
+编辑 `claude_desktop_config.json`：
+
+```json
+{
+  "mcpServers": {
+    "cyberhuatuo": {
+      "command": "python",
+      "args": ["-m", "cyberhuatuo.mcp_server"],
+      "cwd": "/path/to/CyberHuaTuo"
+    }
+  }
+}
+```
+
+#### Cursor
+
+在 Cursor 设置中添加 MCP Server：
+
+```json
+{
+  "mcpServers": {
+    "cyberhuatuo": {
+      "command": "python",
+      "args": ["-m", "cyberhuatuo.mcp_server"],
+      "cwd": "/path/to/CyberHuaTuo"
+    }
+  }
+}
+```
+
+#### VS Code (Copilot Chat)
+
+在 `.vscode/settings.json` 中添加：
+
+```json
+{
+  "mcp": {
+    "servers": {
+      "cyberhuatuo": {
+        "command": "python",
+        "args": ["-m", "cyberhuatuo.mcp_server"],
+        "cwd": "/path/to/CyberHuaTuo"
+      }
+    }
+  }
+}
+```
+
+#### Gemini CLI
+
+在 `~/.gemini/settings.json` 中添加：
+
+```json
+{
+  "mcpServers": {
+    "cyberhuatuo": {
+      "command": "python",
+      "args": ["-m", "cyberhuatuo.mcp_server"],
+      "cwd": "/path/to/CyberHuaTuo"
+    }
+  }
+}
+```
+
+> **提示**: 将 `/path/to/CyberHuaTuo` 替换为你的实际项目路径。
+
+### 3. 开始使用
+
+配置完成后，在 AI 助手中直接提问即可：
+
+- *"帮我诊断这个 LangChain 报错: ImportError: cannot import name 'ChatOpenAI' from 'langchain'"*
+- *"搜索一下 CrewAI 相关的已知问题"*
+- *"对这段 Agent 代码做安全体检"*
+
+---
+
+## 可用工具 (Tools)
+
+### 🩺 `diagnose` — 望闻问切 AI 诊断
+
+使用知识库 + LLM 对报错信息进行「望闻问切」诊断，给出药方。
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `query` | string | ✅ | 报错信息或问题描述 |
+| `framework` | string | ❌ | 按框架过滤 |
+| `top_k` | int | ❌ | 参考病例数量（默认 5） |
+
+### 🔍 `search_knowledge_base` — 向量语义搜索
+
+在病例知识库中进行向量语义搜索，无需 LLM API Key。
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `query` | string | ✅ | 搜索查询 |
+| `framework` | string | ❌ | 按框架过滤 |
+| `severity` | string | ❌ | 按严重性过滤（low/medium/high/critical） |
+| `complexity` | string | ❌ | 按复杂度过滤（simple/moderate/complex/extreme） |
+| `top_k` | int | ❌ | 返回数量（默认 5） |
+
+### 🛡️ `security_checkup` — Agent 代码安全体检
+
+六经脉安全检测：沙箱隔离、密钥安全、Prompt 安全、输出安全、韧性设计、可观测性。
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `code` | string | ✅ | 要检测的代码 |
+
+### 📚 `fetch_official_docs` — 获取官方文档
+
+通过 Context7 获取 50+ 框架的最新官方文档（LangChain、PyTorch、FastAPI 等）。
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `framework` | string | ✅ | 框架标识（如 langchain, pytorch） |
+| `query` | string | ✅ | 查询内容 |
+| `top_k` | int | ❌ | 文档片段数量（默认 5） |
+
+### ⛏️ `mine_github_issue` — GitHub Issue 淘金
+
+从 GitHub Issue 中提取问题和解决方案，提炼为标准病例格式。
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `owner` | string | ✅ | 仓库所有者 |
+| `repo` | string | ✅ | 仓库名称 |
+| `issue_number` | int | ✅ | Issue 编号 |
+
+### 📋 `list_frameworks` — 查询支持框架
+
+列出赛博华佗覆盖的所有框架和技术栈。
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `category` | string | ❌ | 按分类过滤（agent/foundation/infrastructure） |
+| `search` | string | ❌ | 关键词搜索 |
+
+---
+
+## 资源 (Resources)
+
+| URI | 描述 |
+|-----|------|
+| `cyberhuatuo://knowledge-base/stats` | 知识库统计（病例数、框架分布） |
+| `cyberhuatuo://knowledge-base/schema` | 病例 JSON Schema |
+
+---
+
+## 提示词模板 (Prompts)
+
+| 名称 | 描述 | 参数 |
+|------|------|------|
+| `diagnose-error` | 望闻问切诊断模式 | `error_message` |
+| `security-audit` | Agent 安全体检模式 | `code` |
+| `contribute-case` | 贡献药方模式 | `problem`, `solution`, `framework?` |
+
+---
+
+## 环境配置
+
+MCP Server 会自动读取项目根目录的 `.env` 文件配置。最小配置只需：
+
+```bash
+# .env  — 最小配置（纯搜索模式，无需 API Key）
+CONTEXT7_ENABLED=true
+```
+
+如需使用 `diagnose` 和 `security_checkup` 等 LLM 功能，需配置至少一个 LLM API Key：
+
+```bash
+# 选一个即可
+OPENAI_API_KEY=sk-your-key
+# 或
+DEEPSEEK_API_KEY=sk-your-key
+# 或
+GEMINI_API_KEY=AIzaSy-your-key
+```
+
+完整配置选项请参考 [`.env.example`](.env.example)。
+
+---
+
+## 协议
+
+Apache-2.0 License

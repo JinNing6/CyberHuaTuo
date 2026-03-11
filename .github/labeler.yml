@@ -1,0 +1,38 @@
+# ============================================================
+# 🏷️ CyberHuaTuo — PR 路径-标签映射
+# 供 actions/labeler 使用
+# ============================================================
+
+prescription:
+  - changed-files:
+      - any-glob-to-any-file: "cases/**"
+
+engine:
+  - changed-files:
+      - any-glob-to-any-file: "cyberhuatuo/**"
+
+tooling:
+  - changed-files:
+      - any-glob-to-any-file: "tools/**"
+
+documentation:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "*.md"
+          - "docs/**"
+
+testing:
+  - changed-files:
+      - any-glob-to-any-file: "tests/**"
+
+ci:
+  - changed-files:
+      - any-glob-to-any-file: ".github/**"
+
+schema:
+  - changed-files:
+      - any-glob-to-any-file: "schema/**"
+
+frontend:
+  - changed-files:
+      - any-glob-to-any-file: "cyberhuatuo/templates/**"

@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberHuaTuo 赛博华佗 · 滋补药方 · 上医治未病</title>
+    <meta name="description" content="赛博华佗滋补药方 — AI Agent 安全体检与养生最佳实践。上医治未病，养生重于治疗。">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+SC:wght@300;400;500;700&family=Orbitron:wght@500;700&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github-dark-dimmed.min.css">
+    <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+
+    <style>
+        :root {
+            --bg-deep: #0A0E1A;
+            --bg-surface: #1A1F2E;
+            --bg-surface-hover: #222840;
+            --border: #2A3050;
+            --text-1: #E8E8F0;
+            --text-2: #8892B0;
+            --text-3: #4A5070;
+
+            /* 滋补药方专属色彩 — 琥珀金 + 翡翠 */
+            --amber: #F59E0B;
+            --amber-dim: rgba(245, 158, 11, 0.10);
+            --amber-glow: rgba(245, 158, 11, 0.25);
+            --emerald: #00D09C;
+            --emerald-dim: rgba(0, 208, 156, 0.10);
+            --cyan: #00FFFF;
+            --gold: #FFD700;
+            --gold-dim: rgba(255, 215, 0, 0.10);
+            --red: #FF4757;
+            --green-heal: #2ED573;
+            --blue: #60A5FA;
+            --blue-dim: rgba(96, 165, 250, 0.10);
+            --purple: #A78BFA;
+
+            --font-display: 'Orbitron', sans-serif;
+            --font-sans: 'Inter', 'Noto Sans SC', -apple-system, system-ui, sans-serif;
+            --font-mono: 'JetBrains Mono', 'Cascadia Code', monospace;
+            --radius-lg: 20px;
+            --radius-md: 14px;
+            --radius-sm: 8px;
+        }
+
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        html { height: 100%; scroll-behavior: smooth; }
+
+        body {
+            font-family: var(--font-sans);
+            background: var(--bg-deep);
+            color: var(--text-1);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed; inset: 0;
+            background:
+                linear-gradient(rgba(245, 158, 11, 0.012) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(245, 158, 11, 0.012) 1px, transparent 1px);
+            background-size: 64px 64px;
+            pointer-events: none; z-index: 0;
+        }
+
+        body::after {
+            content: '';
+            position: fixed; top: -40%; left: 50%;
+            transform: translateX(-50%);
+            width: 800px; height: 800px;
+            background: radial-gradient(ellipse, rgba(245, 158, 11, 0.05) 0%, transparent 70%);
+            pointer-events: none; z-index: 0;
+        }
+
+        .main { width: 100%; max-width: 820px; padding: 0 24px; position: relative; z-index: 1; }
+
+        /* Header */
+        .header { text-align: center; padding: 48px 0 8px; animation: fadeInDown 0.6s ease; }
+        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-16px); } to { opacity: 1; transform: translateY(0); } }
+
+        .logo { font-family: var(--font-display); font-size: 1.3rem; font-weight: 700; color: var(--amber); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px; text-shadow: 0 0 24px rgba(245, 158, 11, 0.3); }
+        .logo-icon { font-family: var(--font-sans); font-size: 1.3rem; margin-right: 6px; }
+        .tagline { font-size: 0.82rem; color: var(--text-3); font-weight: 400; letter-spacing: 0.02em; }
+        .tagline-cn { color: var(--text-2); }
+
+        .nav-back { display: inline-flex; align-items: center; gap: 6px; color: var(--text-3); font-size: 0.75rem; text-decoration: none; margin-top: 10px; transition: color 0.2s; }
+        .nav-back:hover { color: var(--emerald); }
+
+        /* 分区标题 */
+        .section-title {
+            font-size: 0.95rem; font-weight: 600; color: var(--amber);
+            margin: 32px 0 14px; display: flex; align-items: center; gap: 8px;
+            animation: fadeInUp 0.5s ease both;
+        }
+        .section-title .line { flex: 1; height: 1px; background: linear-gradient(90deg, rgba(245, 158, 11, 0.3), transparent); }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* 体检输入区 */
+        .checkup-area {
+            animation: fadeInUp 0.5s ease 0.1s both;
+        }
+
+        .code-input-wrap {
+            background: var(--bg-surface);
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-md);
+            transition: border-color 0.3s, box-shadow 0.3s;
+            overflow: hidden;
+        }
+
+        .code-input-wrap:focus-within {
+            border-color: var(--amber);
+            box-shadow: 0 0 0 4px var(--amber-dim), 0 0 24px rgba(245, 158, 11, 0.1);
+        }
+
+        .code-textarea {
+            width: 100%; min-height: 200px; padding: 16px 18px;
+            background: transparent; border: none; outline: none;
+            color: var(--text-1); font-family: var(--font-mono); font-size: 0.82rem;
+            line-height: 1.7; resize: vertical;
+        }
+
+        .code-textarea::placeholder { color: var(--text-3); }
+
+        .checkup-toolbar {
+            display: flex; align-items: center; gap: 10px;
+            padding: 10px 18px; border-top: 1px solid var(--border);
+            background: rgba(26, 31, 46, 0.5);
+        }
+
+        .btn-checkup {
+            padding: 8px 24px; border-radius: 20px;
+            border: 1px solid rgba(245, 158, 11, 0.4);
+            background: var(--amber-dim);
+            color: var(--amber); font-family: var(--font-sans);
+            font-size: 0.78rem; font-weight: 600;
+            cursor: pointer; transition: all 0.25s;
+        }
+
+        .btn-checkup:hover {
+            background: rgba(245, 158, 11, 0.2);
+            border-color: var(--amber);
+            box-shadow: 0 0 16px rgba(245, 158, 11, 0.15);
+        }
+
+        .btn-checkup:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .checkup-hint { font-size: 0.7rem; color: var(--text-3); margin-left: auto; }
+
+        /* 加载动画 */
+        .loading-bar {
+            position: absolute; bottom: -1px; left: 20px; right: 20px;
+            height: 2px; border-radius: 1px; overflow: hidden; opacity: 0; transition: opacity 0.25s;
+        }
+        .loading-bar.active { opacity: 1; }
+        .loading-bar::after {
+            content: ''; display: block; width: 35%; height: 100%;
+            background: linear-gradient(90deg, var(--amber), var(--gold));
+            border-radius: 1px; animation: loadSlide 1s ease-in-out infinite;
+        }
+        @keyframes loadSlide { 0% { transform: translateX(-100%); } 100% { transform: translateX(380%); } }
+
+        /* 体检报告 */
+        .report-card {
+            background: rgba(26, 31, 46, 0.8); backdrop-filter: blur(16px);
+            border: 1.5px solid rgba(245, 158, 11, 0.3);
+            border-radius: var(--radius-md); margin: 20px 0;
+            overflow: hidden; animation: cardIn 0.5s ease both;
+            box-shadow: 0 0 24px rgba(245, 158, 11, 0.06);
+        }
+
+        @keyframes cardIn { from { opacity: 0; transform: translateY(12px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+
+        .report-header {
+            padding: 16px 20px;
+            background: linear-gradient(135deg, var(--amber-dim), rgba(255, 215, 0, 0.05));
+            border-bottom: 1px solid rgba(245, 158, 11, 0.15);
+            display: flex; align-items: center; gap: 12px;
+        }
+
+        .health-score {
+            font-family: var(--font-display); font-size: 2rem; font-weight: 700;
+            min-width: 60px; text-align: center;
+        }
+
+        .health-info { flex: 1; }
+        .health-level { font-size: 0.92rem; font-weight: 600; margin-bottom: 2px; }
+        .health-summary { font-size: 0.75rem; color: var(--text-2); line-height: 1.5; }
+
+        /* 六经脉维度 */
+        .dimensions { padding: 18px 20px; }
+
+        .dim-item {
+            display: flex; align-items: flex-start; gap: 12px;
+            padding: 12px 0; border-bottom: 1px solid rgba(42, 48, 80, 0.4);
+        }
+        .dim-item:last-child { border-bottom: none; }
+
+        .dim-emoji { font-size: 1.2rem; flex-shrink: 0; margin-top: 2px; }
+        .dim-body { flex: 1; min-width: 0; }
+        .dim-head { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+        .dim-name { font-size: 0.82rem; font-weight: 600; }
+        .dim-score-bar {
+            flex: 1; height: 4px; background: rgba(42, 48, 80, 0.6);
+            border-radius: 2px; overflow: hidden;
+        }
+        .dim-score-fill { height: 100%; border-radius: 2px; transition: width 0.8s ease; }
+        .dim-score-num { font-size: 0.7rem; font-family: var(--font-mono); font-weight: 600; min-width: 32px; text-align: right; }
+        .dim-status { font-size: 0.68rem; font-weight: 600; padding: 1px 6px; border-radius: 4px; }
+        .dim-findings { font-size: 0.75rem; color: var(--text-2); line-height: 1.6; }
+        .dim-findings li { margin: 3px 0; }
+        .dim-advice { font-size: 0.72rem; color: var(--amber); margin-top: 6px; font-style: italic; }
+
+        /* 紧急问题 */
+        .top-issues { padding: 0 20px 18px; }
+        .top-issue-title { font-size: 0.82rem; font-weight: 600; color: var(--red); margin-bottom: 8px; }
+        .top-issue-item {
+            font-size: 0.78rem; color: var(--text-2); padding: 6px 0;
+            border-bottom: 1px dashed rgba(42, 48, 80, 0.4);
+            display: flex; align-items: flex-start; gap: 8px;
+        }
+        .top-issue-item:last-child { border-bottom: none; }
+        .issue-num { color: var(--red); font-weight: 700; font-family: var(--font-mono); flex-shrink: 0; }
+
+        /* 分类卡片 */
+        .category-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin-bottom: 30px; }
+
+        .cat-card {
+            background: var(--bg-surface); border: 1px solid var(--border);
+            border-radius: var(--radius-md); padding: 18px 20px;
+            cursor: pointer; transition: all 0.25s;
+            animation: fadeInUp 0.5s ease both;
+        }
+        .cat-card:nth-child(1) { animation-delay: 0.1s; }
+        .cat-card:nth-child(2) { animation-delay: 0.15s; }
+        .cat-card:nth-child(3) { animation-delay: 0.2s; }
+
+        .cat-card:hover {
+            border-color: rgba(245, 158, 11, 0.4);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .cat-name { font-size: 0.92rem; font-weight: 600; margin-bottom: 4px; }
+        .cat-name-en { font-size: 0.7rem; color: var(--text-3); margin-bottom: 8px; font-family: var(--font-mono); }
+        .cat-desc { font-size: 0.75rem; color: var(--text-2); line-height: 1.5; }
+
+        /* 药方列表 */
+        .nourish-card {
+            background: rgba(26, 31, 46, 0.7); backdrop-filter: blur(12px);
+            border: 1px solid rgba(42, 48, 80, 0.6);
+            border-radius: var(--radius-md); margin-bottom: 10px;
+            transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+            overflow: hidden; animation: cardIn 0.4s ease both;
+        }
+        .nourish-card:hover {
+            border-color: rgba(245, 158, 11, 0.3);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2); transform: translateY(-1px);
+        }
+
+        .nourish-card-head {
+            padding: 16px 18px; cursor: pointer;
+            display: flex; align-items: flex-start; gap: 12px;
+        }
+        .nourish-card-body { flex: 1; min-width: 0; }
+        .nourish-card-title { font-size: 0.92rem; font-weight: 600; line-height: 1.45; margin-bottom: 3px; }
+        .nourish-card-subtitle { font-size: 0.75rem; color: var(--text-3); margin-bottom: 6px; }
+        .nourish-tag {
+            display: inline-block; padding: 2px 9px; border-radius: var(--radius-sm);
+            font-size: 0.65rem; font-weight: 500; border: 1px solid;
+            color: var(--amber); border-color: rgba(245, 158, 11, 0.25); background: var(--amber-dim);
+            margin-right: 4px;
+        }
+
+        .nourish-card-detail { display: none; border-top: 1px solid rgba(42, 48, 80, 0.5); }
+        .nourish-card-detail.open { display: block; }
+        .nourish-card-detail-content {
+            padding: 16px 18px; font-size: 0.84rem; line-height: 1.8; color: var(--text-2);
+        }
+        .nourish-card-detail-content pre {
+            background: var(--bg-deep); border: 1px solid var(--border);
+            border-radius: var(--radius-sm); padding: 14px; overflow-x: auto; margin: 8px 0;
+        }
+        .nourish-card-detail-content code { font-family: var(--font-mono); font-size: 0.8rem; }
+        .nourish-card-detail-content p code { background: rgba(96, 165, 250, 0.12); padding: 1px 6px; border-radius: 4px; color: var(--blue); }
+        .nourish-card-detail-content h2, .nourish-card-detail-content h3 { color: var(--amber); margin: 14px 0 6px; }
+        .nourish-card-detail-content table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 0.82rem; }
+        .nourish-card-detail-content th, .nourish-card-detail-content td { padding: 8px 12px; border: 1px solid var(--border); text-align: left; }
+        .nourish-card-detail-content th { background: rgba(42, 48, 80, 0.5); font-weight: 600; }
+        .nourish-card-detail-content blockquote { border-left: 3px solid var(--amber); padding: 8px 16px; margin: 10px 0; background: var(--amber-dim); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; color: var(--text-2); }
+
+        /* 开发者设置 */
+        .dev-settings { animation: fadeInUp 0.5s ease 0.25s both; }
+        .dev-settings-toggle { display: flex; align-items: center; gap: 6px; padding: 8px 0; cursor: pointer; user-select: none; color: var(--text-3); font-size: 0.75rem; transition: color 0.2s; }
+        .dev-settings-toggle:hover { color: var(--text-2); }
+        .dev-settings-toggle .arrow { transition: transform 0.25s; font-size: 0.6rem; }
+        .dev-settings-toggle.open .arrow { transform: rotate(90deg); }
+        .dev-panel { max-height: 0; overflow: hidden; transition: max-height 0.35s ease, padding 0.35s ease; background: var(--bg-surface); border-radius: var(--radius-md); border: 1px solid transparent; }
+        .dev-panel.open { max-height: 300px; padding: 18px 20px; border-color: var(--border); margin-bottom: 8px; }
+        .dev-panel-row { display: grid; grid-template-columns: 1fr 160px; gap: 12px; align-items: end; }
+        .dev-label { display: block; font-size: 0.72rem; color: var(--text-3); margin-bottom: 5px; font-weight: 500; }
+        .dev-input { width: 100%; padding: 9px 36px 9px 12px; background: var(--bg-deep); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text-1); font-family: var(--font-mono); font-size: 0.8rem; outline: none; transition: border-color 0.2s; }
+        .dev-input:focus { border-color: var(--amber); }
+        .dev-input::placeholder { color: var(--text-3); }
+        .dev-select { width: 100%; padding: 9px 12px; background: var(--bg-deep); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text-1); font-family: var(--font-sans); font-size: 0.8rem; outline: none; cursor: pointer; }
+        .dev-select:focus { border-color: var(--amber); }
+        .key-input-wrap { position: relative; }
+        .key-toggle-vis { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-3); cursor: pointer; font-size: 0.85rem; padding: 2px; }
+        .dev-hint { font-size: 0.68rem; color: var(--text-3); margin-top: 10px; line-height: 1.5; }
+
+        /* Footer */
+        .footer { text-align: center; padding: 40px 0; font-size: 0.72rem; color: var(--text-3); }
+        .footer a { color: var(--amber); text-decoration: none; transition: opacity 0.2s; }
+        .footer a:hover { opacity: 0.8; }
+
+        /* Empty */
+        .empty { text-align: center; padding: 50px 24px; color: var(--text-3); }
+        .empty-icon { font-size: 2.5rem; margin-bottom: 12px; opacity: 0.35; animation: breathe 3s ease-in-out infinite; }
+        @keyframes breathe { 0%, 100% { opacity: 0.3; transform: scale(1); } 50% { opacity: 0.5; transform: scale(1.05); } }
+        .empty-text { font-size: 0.85rem; color: var(--text-2); }
+
+        /* 分数颜色 */
+        .score-green { color: var(--green-heal); }
+        .score-blue { color: var(--blue); }
+        .score-yellow { color: var(--amber); }
+        .score-orange { color: #FB923C; }
+        .score-red { color: var(--red); }
+
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+        @media (max-width: 640px) {
+            .header { padding: 36px 0 8px; }
+            .logo { font-size: 1.1rem; }
+            .category-grid { grid-template-columns: 1fr; }
+            .dev-panel-row { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="main">
+
+        <header class="header">
+            <div class="logo">
+                <span class="logo-icon">🧬</span>CyberHuaTuo · 养生堂
+            </div>
+            <div class="tagline">
+                <span class="tagline-cn">上医治未病，养生重于治疗</span> · Prevent. Fortify. Nourish.
+            </div>
+            <a href="/" class="nav-back">← 返回诊所 Back to Clinic</a>
+        </header>
+
+        <!-- 安全体检区 -->
+        <div class="section-title">
+            <span>🩺 安全体检</span>
+            <span style="font-size:0.72rem;color:var(--text-3);font-weight:400;">Security Checkup</span>
+            <span class="line"></span>
+        </div>
+
+        <div class="checkup-area">
+            <div class="code-input-wrap" style="position:relative;">
+                <textarea id="codeInput" class="code-textarea"
+                    placeholder="粘贴你的 Agent 代码到这里...&#10;&#10;我会扫描以下六大经脉：&#10;🛡️ 沙箱隔离  🔑 密钥安全  🧠 Prompt 安全&#10;🔒 输出安全  ⏱️ 韧性设计  📊 可观测性"></textarea>
+                <div class="checkup-toolbar">
+                    <button class="btn-checkup" id="btnCheckup" onclick="doCheckup()">🧬 开始体检</button>
+                    <span class="checkup-hint">需要 API Key · 使用 LLM 进行深度分析</span>
+                </div>
+                <div class="loading-bar" id="loadingBar"></div>
+            </div>
+        </div>
+
+        <!-- 开发者设置 -->
+        <section class="dev-settings">
+            <div class="dev-settings-toggle" id="devToggle" onclick="toggleDevPanel()">
+                <span class="arrow">▸</span>
+                <span>🔑 开发者设置</span>
+                <span>Developer Settings</span>
+            </div>
+            <div class="dev-panel" id="devPanel">
+                <div class="dev-panel-row">
+                    <div style="flex: 2;">
+                        <label class="dev-label">API Key</label>
+                        <div class="key-input-wrap">
+                            <input id="apiKeyInput" class="dev-input" type="password" placeholder="sk-xxxxx..."
+                                autocomplete="off" oninput="saveApiKey()" />
+                            <button class="key-toggle-vis" onclick="toggleKeyVis()" title="显示/隐藏 Key">👁</button>
+                        </div>
+                    </div>
+                    <div style="flex: 1;">
+                        <label class="dev-label">提供商 Provider</label>
+                        <select id="providerSelect" class="dev-select" onchange="saveApiKey()">
+                            <option value="openai">OpenAI</option>
+                            <option value="anthropic">Anthropic</option>
+                            <option value="deepseek">DeepSeek</option>
+                            <option value="kimi">Kimi (Moonshot)</option>
+                            <option value="doubao">豆包 (Doubao)</option>
+                            <option value="minimax">MiniMax</option>
+                            <option value="groq">Groq</option>
+                            <option value="google">Google / Gemini</option>
+                            <option value="cohere">Cohere</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="dev-hint">
+                    🔒 API Key 仅保存在你的浏览器本地，不会上传到服务器存储。
+                </div>
+            </div>
+        </section>
+
+        <!-- 体检结果区 -->
+        <div id="reportArea"></div>
+
+        <!-- 滋补药方分类 -->
+        <div class="section-title" style="animation-delay: 0.15s;">
+            <span>📚 滋补药方</span>
+            <span style="font-size:0.72rem;color:var(--text-3);font-weight:400;">Nourishing Prescriptions</span>
+            <span class="line"></span>
+        </div>
+
+        <div class="category-grid" id="categoryGrid">
+            {% for cat in categories %}
+            <div class="cat-card" onclick="loadCategory('{{ cat.key }}')">
+                <div class="cat-name">{{ cat.name }}</div>
+                <div class="cat-name-en">{{ cat.name_en }}</div>
+                <div class="cat-desc">{{ cat.description }}</div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- 药方列表 -->
+        <div id="casesArea"></div>
+
+        <footer class="footer">
+            <a href="/">🩺 诊断</a>
+            &nbsp;·&nbsp;
+            <a href="/mine">⛏️ 淘金</a>
+            &nbsp;·&nbsp;
+            <a href="/contribute">+ 开药方</a>
+            &nbsp;·&nbsp;
+            <a href="https://github.com/JinNing6/CyberHuaTuo" target="_blank">GitHub</a>
+            &nbsp;·&nbsp;
+            CyberHuaTuo 赛博华佗 · 养生堂
+        </footer>
+    </div>
+
+    <script>
+        marked.setOptions({
+            highlight: function (code, lang) {
+                if (lang && hljs.getLanguage(lang)) return hljs.highlight(code, { language: lang }).value;
+                return hljs.highlightAuto(code).value;
+            },
+            breaks: true, gfm: true,
+        });
+
+        function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+        function renderMarkdown(text) { try { return marked.parse(text); } catch(e) { return '<pre>' + esc(text) + '</pre>'; } }
+        function showLoader() { document.getElementById('loadingBar').classList.add('active'); }
+        function hideLoader() { document.getElementById('loadingBar').classList.remove('active'); }
+
+        function scoreColor(score) {
+            if (score >= 90) return 'score-green';
+            if (score >= 70) return 'score-blue';
+            if (score >= 50) return 'score-yellow';
+            if (score >= 30) return 'score-orange';
+            return 'score-red';
+        }
+
+        function dimBarColor(score) {
+            if (score >= 70) return 'var(--green-heal)';
+            if (score >= 50) return 'var(--amber)';
+            if (score >= 30) return '#FB923C';
+            return 'var(--red)';
+        }
+
+        // ===== 安全体检 =====
+        async function doCheckup() {
+            const code = document.getElementById('codeInput').value.trim();
+            if (!code) {
+                document.getElementById('codeInput').focus();
+                return;
+            }
+
+            const btn = document.getElementById('btnCheckup');
+            btn.disabled = true;
+            btn.textContent = '🔄 体检中...';
+            showLoader();
+
+            try {
+                const fd = new FormData();
+                fd.append('code', code);
+
+                const apiKey = localStorage.getItem('cht_api_key') || '';
+                const provider = localStorage.getItem('cht_provider') || 'openai';
+                const model = localStorage.getItem('cht_model') || '';
+                if (apiKey) {
+                    fd.append('api_key', apiKey);
+                    fd.append('provider', provider);
+                    if (model) fd.append('model', model);
+                }
+
+                const r = await fetch('/api/nourish/checkup', { method: 'POST', body: fd });
+                const d = await r.json();
+                hideLoader();
+                btn.disabled = false;
+                btn.textContent = '🧬 开始体检';
+
+                if (d.error) {
+                    document.getElementById('reportArea').innerHTML = `
+                        <div class="report-card">
+                            <div class="report-header">
+                                <div class="health-info">
+                                    <div class="health-level" style="color:var(--red)">⚠️ 体检失败</div>
+                                    <div class="health-summary">${esc(d.error)}</div>
+                                </div>
+                            </div>
+                        </div>`;
+                    return;
+                }
+
+                renderReport(d);
+            } catch(e) {
+                hideLoader();
+                btn.disabled = false;
+                btn.textContent = '🧬 开始体检';
+                console.error('体检失败:', e);
+            }
+        }
+
+        function renderReport(data) {
+            const score = data.health_score || 0;
+            const level = data.level || '';
+            const dims = data.dimensions || [];
+            const issues = data.top_issues || [];
+            const summary = data.summary || '';
+
+            let dimsHtml = dims.map(dim => `
+                <div class="dim-item">
+                    <span class="dim-emoji">${dim.emoji || '📋'}</span>
+                    <div class="dim-body">
+                        <div class="dim-head">
+                            <span class="dim-name">${esc(dim.name)}</span>
+                            <div class="dim-score-bar">
+                                <div class="dim-score-fill" style="width:${dim.score}%;background:${dimBarColor(dim.score)}"></div>
+                            </div>
+                            <span class="dim-score-num ${scoreColor(dim.score)}">${dim.score}</span>
+                        </div>
+                        ${dim.findings ? `<ul class="dim-findings">${dim.findings.map(f => `<li>${esc(f)}</li>`).join('')}</ul>` : ''}
+                        ${dim.advice ? `<div class="dim-advice">💡 ${esc(dim.advice)}</div>` : ''}
+                    </div>
+                </div>
+            `).join('');
+
+            let issuesHtml = issues.length ? `
+                <div class="top-issues">
+                    <div class="top-issue-title">🚨 最紧急的问题 Top Issues</div>
+                    ${issues.map((issue, i) => `
+                        <div class="top-issue-item">
+                            <span class="issue-num">#${i + 1}</span>
+                            <span>${esc(issue)}</span>
+                        </div>
+                    `).join('')}
+                </div>
+            ` : '';
+
+            document.getElementById('reportArea').innerHTML = `
+                <div class="report-card">
+                    <div class="report-header">
+                        <div class="health-score ${scoreColor(score)}">${score}</div>
+                        <div class="health-info">
+                            <div class="health-level">${esc(level)}</div>
+                            <div class="health-summary">${esc(summary)}</div>
+                        </div>
+                    </div>
+                    <div class="dimensions">${dimsHtml}</div>
+                    ${issuesHtml}
+                </div>
+            `;
+        }
+
+        // ===== 加载药方分类 =====
+        async function loadCategory(cat) {
+            const area = document.getElementById('casesArea');
+            area.innerHTML = '<div class="empty"><div class="empty-icon">⏳</div><div class="empty-text">加载中...</div></div>';
+
+            try {
+                const r = await fetch(`/api/nourish/cases?category=${cat}&top_k=20`);
+                const d = await r.json();
+
+                if (!d.results || d.results.length === 0) {
+                    area.innerHTML = '<div class="empty"><div class="empty-icon">📭</div><div class="empty-text">暂无该分类的滋补药方</div></div>';
+                    return;
+                }
+
+                area.innerHTML = d.results.map((r, i) => {
+                    const tags = r.tags ? r.tags.split(',').filter(Boolean) : [];
+                    return `<div class="nourish-card" style="animation-delay:${i * 0.06}s">
+                        <div class="nourish-card-head" onclick="toggleNourishCard(${i})">
+                            <div class="nourish-card-body">
+                                <div class="nourish-card-title">${esc(r.title)}</div>
+                                ${r.title_en ? `<div class="nourish-card-subtitle">${esc(r.title_en)}</div>` : ''}
+                                <div>${tags.map(t => `<span class="nourish-tag">${t.trim()}</span>`).join('')}</div>
+                            </div>
+                        </div>
+                        <div class="nourish-card-detail" id="nourishDetail${i}">
+                            <div class="nourish-card-detail-content">${r.content ? renderMarkdown(r.content) : '<em>无详细内容</em>'}</div>
+                        </div>
+                    </div>`;
+                }).join('');
+            } catch(e) {
+                area.innerHTML = '<div class="empty"><div class="empty-icon">❌</div><div class="empty-text">加载失败</div></div>';
+                console.error(e);
+            }
+        }
+
+        function toggleNourishCard(i) {
+            document.getElementById('nourishDetail' + i).classList.toggle('open');
+        }
+
+        // ===== 开发者设置 =====
+        function toggleDevPanel() {
+            document.getElementById('devToggle').classList.toggle('open');
+            document.getElementById('devPanel').classList.toggle('open');
+        }
+        function toggleKeyVis() {
+            const input = document.getElementById('apiKeyInput');
+            input.type = input.type === 'password' ? 'text' : 'password';
+        }
+        function saveApiKey() {
+            localStorage.setItem('cht_api_key', document.getElementById('apiKeyInput').value.trim());
+            localStorage.setItem('cht_provider', document.getElementById('providerSelect').value);
+        }
+        function loadApiKey() {
+            document.getElementById('apiKeyInput').value = localStorage.getItem('cht_api_key') || '';
+            document.getElementById('providerSelect').value = localStorage.getItem('cht_provider') || 'openai';
+        }
+
+        loadApiKey();
+    </script>
+</body>
+
+</html>

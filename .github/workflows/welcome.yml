@@ -1,0 +1,115 @@
+# ============================================================
+# 🏥 CyberHuaTuo — 首次贡献者迎新
+# Welcome first-time contributors with a TCM-themed message
+# ============================================================
+
+name: 🏥 新医师迎新
+
+on:
+  pull_request_target:
+    types: [opened]
+
+permissions:
+  pull-requests: write
+
+jobs:
+  welcome:
+    name: 🩺 迎新 · Welcome New Doctor
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🏥 检查是否为首次贡献
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const creator = context.payload.pull_request.user.login;
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+
+            // 检查该用户之前是否有 merged PR
+            const { data: prs } = await github.rest.pulls.list({
+              owner,
+              repo,
+              state: 'closed',
+              sort: 'created',
+              direction: 'desc',
+              per_page: 100,
+            });
+
+            const previousMerged = prs.filter(
+              pr => pr.user.login === creator && pr.merged_at !== null
+            );
+
+            if (previousMerged.length > 0) {
+              console.log(`${creator} has ${previousMerged.length} merged PRs, not first-time`);
+              return;
+            }
+
+            // 首次贡献者！发送欢迎消息
+            const lines = [
+              '## 🏥 欢迎新坐堂医师！Welcome, New Resident Doctor!',
+              '',
+              `你好 @${creator}，感谢你为 **CyberHuaTuo 赛博华佗** 提交第一份贡献！🎉`,
+              '',
+              '> *最伟大的医者从不将医术据为己有——他们行走于村落之间，救死扶伤，薪火相传。*',
+              '>',
+              '> *The greatest physicians didn\'t hoard knowledge — they traveled between villages, healing the sick and training the next generation.*',
+              '',
+              '### 🩺 你现在是 **坐堂医师** 了！',
+              '',
+              '你的 PR 已进入 **望闻问切** 四步审核流程：',
+              '',
+              '| 步骤 | 名称 | 状态 |',
+              '|:----:|:----:|:----:|',
+              '| 🔮 | 望 (Look) | 格式校验中... |',
+              '| 🩺 | 闻 (Listen) | 代码质量检查中... |',
+              '| 🧪 | 问 (Ask) | 功能测试中... |',
+              '| 💊 | 切 (Diagnose) | 智能审查中... |',
+              '',
+              'CI 通过后，维护者会尽快 Review 你的 PR。',
+              '',
+              '### 📚 贡献者称号体系',
+              '',
+              '| 称号 | 条件 |',
+              '|:---:|:---:|',
+              '| 🏥 坐堂医师 | ← **你在这里！** |',
+              '| ⚕️ 主治医师 | 3+ 贡献 |',
+              '| 👨‍⚕️ 名医 | 5+ 贡献 |',
+              '| 🌟 神医 | 10+ 贡献 |',
+              '| 👑 华佗再世 | 20+ 贡献 |',
+              '',
+              '继续贡献，升级你的医术等级！每一份药方都能帮助无数开发者。',
+              '',
+              '---',
+              '*此消息由 🩺 赛博华佗 CI 自动发送*',
+            ];
+            const welcomeMessage = lines.join('\n');
+
+            await github.rest.issues.createComment({
+              owner,
+              repo,
+              issue_number: context.payload.pull_request.number,
+              body: welcomeMessage,
+            });
+
+            // 添加首次贡献标签
+            try {
+              await github.rest.issues.getLabel({ owner, repo, name: 'first-contribution' });
+            } catch (e) {
+              await github.rest.issues.createLabel({
+                owner, repo,
+                name: 'first-contribution',
+                color: '7057FF',
+                description: 'First-time contributor PR',
+              });
+            }
+
+            await github.rest.issues.addLabels({
+              owner,
+              repo,
+              issue_number: context.payload.pull_request.number,
+              labels: ['first-contribution'],
+            });
+
+            console.log(`Welcome message sent for first-time contributor ${creator}`);

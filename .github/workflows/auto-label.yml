@@ -1,0 +1,100 @@
+# ============================================================
+# 🏷️ CyberHuaTuo — Issue 自动标签
+# Auto-label Issues based on template type
+# ============================================================
+
+name: 🏷️ Issue 自动标签
+
+on:
+  issues:
+    types: [opened, edited]
+
+permissions:
+  issues: write
+
+jobs:
+  label-issue:
+    name: 🔮 望诊 · 自动分类
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🏷️ 自动为 Issue 打标
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const issue = context.payload.issue;
+            const title = issue.title || '';
+            const body = issue.body || '';
+            const labelsToAdd = new Set();
+
+            // 基于 Issue 标题前缀判断类型
+            if (title.startsWith('[药方]') || title.includes('Prescription')) {
+              labelsToAdd.add('prescription');
+              labelsToAdd.add('community');
+            } else if (title.startsWith('[Bug]')) {
+              labelsToAdd.add('bug');
+            } else if (title.startsWith('[Feature]')) {
+              labelsToAdd.add('enhancement');
+            }
+
+            // 基于 Issue 内容判断框架
+            const frameworks = [
+              'langchain', 'llamaindex', 'crewai', 'autogen',
+              'openai-sdk', 'openai-agents', 'mcp', 'dspy',
+              'haystack', 'semantic-kernel', 'pydantic-ai',
+              'langflow', 'langgraph', 'agno', 'strands-agents',
+              'anthropic-sdk', 'google-genai'
+            ];
+
+            for (const fw of frameworks) {
+              if (body.toLowerCase().includes(fw) || title.toLowerCase().includes(fw)) {
+                labelsToAdd.add(`framework:${fw}`);
+                break; // 只匹配第一个框架
+              }
+            }
+
+            // 基于 severity 判断优先级
+            if (body.includes('critical')) {
+              labelsToAdd.add('priority:critical');
+            } else if (body.includes('high')) {
+              labelsToAdd.add('priority:high');
+            }
+
+            if (labelsToAdd.size === 0) return;
+
+            // 确保标签存在
+            for (const label of labelsToAdd) {
+              try {
+                await github.rest.issues.getLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name: label,
+                });
+              } catch (e) {
+                const colorMap = {
+                  'prescription': '00D09C',
+                  'community': '7057FF',
+                  'bug': 'D73A4A',
+                  'enhancement': 'A2EEEF',
+                  'priority:critical': 'B60205',
+                  'priority:high': 'D93F0B',
+                };
+                const color = Object.entries(colorMap).find(([k]) => label.includes(k))?.[1] || 'EDEDED';
+                await github.rest.issues.createLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name: label,
+                  color: color,
+                });
+              }
+            }
+
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue.number,
+              labels: [...labelsToAdd],
+            });
+
+            console.log(`✅ 已为 Issue #${issue.number} 添加标签: ${[...labelsToAdd].join(', ')}`);

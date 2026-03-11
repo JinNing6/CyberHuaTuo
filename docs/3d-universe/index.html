@@ -1,0 +1,1805 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CyberHuaTuo · 3D 药方宇宙 · Prescription Universe</title>
+  <meta name="description" content="赛博华佗 3D 药方宇宙 — 可交互的处方知识图谱可视化">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Orbitron:wght@500;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #0A0E1A;
+      color: #E8E8F0;
+      font-family: 'Inter', 'Noto Sans SC', sans-serif;
+      overflow: hidden;
+      height: 100vh;
+      width: 100vw;
+    }
+
+    #canvas-container {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+    }
+
+    /* ─── 顶部导航 ─── */
+    .top-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 28px;
+      background: linear-gradient(180deg, rgba(10,14,26,0.95) 0%, rgba(10,14,26,0) 100%);
+      pointer-events: none;
+    }
+
+    .top-bar > * { pointer-events: auto; }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-icon { font-size: 1.3rem; }
+
+    .brand-text {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #00D09C;
+      letter-spacing: 0.1em;
+      text-shadow: 0 0 20px rgba(0,208,156,0.3);
+    }
+
+    .brand-sub {
+      font-family: 'Noto Sans SC', sans-serif;
+      font-size: 0.65rem;
+      color: #4A5070;
+      margin-top: 2px;
+    }
+
+    .stats-bar {
+      display: flex;
+      gap: 20px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      color: #4A5070;
+    }
+
+    .stat-value {
+      color: #00D09C;
+      font-weight: 600;
+    }
+
+    /* ─── 框架过滤器 ─── */
+    .filter-bar {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 100;
+      display: flex;
+      gap: 8px;
+      padding: 8px 16px;
+      background: rgba(26,31,46,0.85);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(42,48,80,0.6);
+      border-radius: 30px;
+    }
+
+    .filter-chip {
+      padding: 6px 14px;
+      border-radius: 20px;
+      border: 1px solid rgba(42,48,80,0.8);
+      background: transparent;
+      color: #8892B0;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.72rem;
+      cursor: pointer;
+      transition: all 0.25s;
+      white-space: nowrap;
+    }
+
+    .filter-chip:hover {
+      border-color: rgba(0,208,156,0.4);
+      color: #E8E8F0;
+    }
+
+    .filter-chip.active {
+      border-color: #00D09C;
+      background: rgba(0,208,156,0.12);
+      color: #00D09C;
+    }
+
+    /* ─── 详情面板 ─── */
+    .detail-panel {
+      position: fixed;
+      top: 0;
+      right: -420px;
+      width: 400px;
+      height: 100vh;
+      z-index: 200;
+      background: rgba(10,14,26,0.96);
+      backdrop-filter: blur(20px);
+      border-left: 1px solid rgba(0,208,156,0.2);
+      transition: right 0.4s cubic-bezier(0.22,1,0.36,1);
+      overflow-y: auto;
+      padding: 28px 24px;
+    }
+
+    .detail-panel.open {
+      right: 0;
+    }
+
+    .detail-close {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 1px solid rgba(42,48,80,0.6);
+      background: transparent;
+      color: #8892B0;
+      font-size: 1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .detail-close:hover {
+      border-color: #FF4757;
+      color: #FF4757;
+    }
+
+    .detail-fw-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+
+    .detail-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      line-height: 1.5;
+      margin-bottom: 6px;
+    }
+
+    .detail-title-en {
+      font-size: 0.82rem;
+      color: #4A5070;
+      margin-bottom: 16px;
+      line-height: 1.4;
+    }
+
+    .detail-section {
+      margin-bottom: 16px;
+    }
+
+    .detail-section-title {
+      font-size: 0.72rem;
+      color: #4A5070;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 8px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .detail-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .detail-tag {
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 0.68rem;
+      font-weight: 500;
+      border: 1px solid;
+    }
+
+    .severity-badge {
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 0.7rem;
+      font-weight: 600;
+    }
+
+    .cases-list {
+      list-style: none;
+    }
+
+    .cases-list li {
+      padding: 12px 14px;
+      border: 1px solid rgba(42,48,80,0.4);
+      border-radius: 10px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .cases-list li:hover {
+      border-color: rgba(0,208,156,0.3);
+      background: rgba(0,208,156,0.04);
+    }
+
+    .case-title {
+      font-size: 0.82rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .case-meta {
+      font-size: 0.68rem;
+      color: #4A5070;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* ─── Tooltip ─── */
+    .tooltip {
+      position: fixed;
+      padding: 8px 14px;
+      background: rgba(26,31,46,0.95);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(0,208,156,0.3);
+      border-radius: 8px;
+      font-size: 0.75rem;
+      color: #E8E8F0;
+      pointer-events: none;
+      z-index: 300;
+      opacity: 0;
+      transition: opacity 0.15s;
+      white-space: nowrap;
+    }
+
+    .tooltip.visible {
+      opacity: 1;
+    }
+
+    /* ─── 操作提示 ─── */
+    .hint {
+      position: fixed;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 50;
+      font-size: 0.68rem;
+      color: #4A5070;
+      font-family: 'JetBrains Mono', monospace;
+      opacity: 0.6;
+      pointer-events: none;
+    }
+
+    /* ─── 加载动画 ─── */
+    .loader {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      background: #0A0E1A;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.6s;
+    }
+
+    .loader.hide {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .loader-text {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1rem;
+      color: #00D09C;
+      letter-spacing: 0.15em;
+      margin-top: 20px;
+      animation: pulse-load 1.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse-load {
+      0%, 100% { opacity: 0.4; }
+      50% { opacity: 1; }
+    }
+
+    .loader-ring {
+      width: 48px;
+      height: 48px;
+      border: 2px solid rgba(0,208,156,0.15);
+      border-top-color: #00D09C;
+      border-radius: 50%;
+      animation: spin-load 1s linear infinite;
+    }
+
+    @keyframes spin-load {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <!-- 加载动画 -->
+  <div class="loader" id="loader">
+    <div class="loader-ring"></div>
+    <div class="loader-text">INITIALIZING UNIVERSE</div>
+  </div>
+
+  <!-- 3D 画布 -->
+  <div id="canvas-container"></div>
+
+  <!-- 顶部导航 -->
+  <div class="top-bar">
+    <div class="brand">
+      <span class="brand-icon">🩺</span>
+      <div>
+        <div class="brand-text">CYBERHUATUO</div>
+        <div class="brand-sub">3D 药方宇宙 · Prescription Universe</div>
+      </div>
+    </div>
+    <div class="stats-bar">
+      <span>💊 <span class="stat-value" id="stat-total">30</span> prescriptions</span>
+      <span>🔧 <span class="stat-value" id="stat-fw">6</span> frameworks</span>
+    </div>
+  </div>
+
+  <!-- 框架过滤器 -->
+  <div class="filter-bar" id="filter-bar"></div>
+
+  <!-- 操作提示 -->
+  <div class="hint">拖拽旋转 · 滚轮缩放 · 点击节点查看详情</div>
+
+  <!-- 详情面板 -->
+  <div class="detail-panel" id="detail-panel">
+    <button class="detail-close" id="detail-close">✕</button>
+    <div id="detail-content"></div>
+  </div>
+
+  <!-- Tooltip -->
+  <div class="tooltip" id="tooltip"></div>
+
+  <!-- Three.js CDN -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.170.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.170.0/examples/jsm/"
+    }
+  }
+  </script>
+
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+    import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+    import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+    import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+
+    // ─── 数据注入 ───
+    const DATA = {
+  "tree": {
+    "_nourishing": {
+      "sandbox": [
+        {
+          "id": "nourishing-sandbox-best-practices-001",
+          "title": "AI Agent 安全沙箱最佳实践总指南",
+          "title_en": "Comprehensive Guide to Secure Sandbox for AI Agents",
+          "framework": "_nourishing",
+          "category": "sandbox",
+          "severity": "high",
+          "complexity": "complex",
+          "tags": [
+            "sandbox",
+            "security",
+            "best-practice",
+            "isolation"
+          ],
+          "filepath": "_nourishing\\sandbox\\agent-sandbox-best-practices-001.md"
+        },
+        {
+          "id": "nourishing-sandbox-docker-isolation-002",
+          "title": "Docker 隔离方案 — AI Agent 安全执行环境",
+          "title_en": "Docker Isolation for Secure AI Agent Code Execution",
+          "framework": "_nourishing",
+          "category": "sandbox",
+          "severity": "high",
+          "complexity": "moderate",
+          "tags": [
+            "docker",
+            "sandbox",
+            "container",
+            "isolation"
+          ],
+          "filepath": "_nourishing\\sandbox\\docker-isolation-for-agents-002.md"
+        },
+        {
+          "id": "nourishing-sandbox-restrictedpython-003",
+          "title": "RestrictedPython 轻量级安全执行方案",
+          "title_en": "Lightweight Safe Execution with RestrictedPython",
+          "framework": "_nourishing",
+          "category": "sandbox",
+          "severity": "medium",
+          "complexity": "moderate",
+          "tags": [
+            "restrictedpython",
+            "sandbox",
+            "lightweight",
+            "safe-execution"
+          ],
+          "filepath": "_nourishing\\sandbox\\restrictedpython-safe-execution-003.md"
+        }
+      ],
+      "security": [
+        {
+          "id": "nourishing-security-api-key-protection-001",
+          "title": "API Key 保护三十六计",
+          "title_en": "36 Strategies for API Key Protection in AI Agents",
+          "framework": "_nourishing",
+          "category": "security",
+          "severity": "critical",
+          "complexity": "simple",
+          "tags": [
+            "api-key",
+            "secrets",
+            "security",
+            "best-practice"
+          ],
+          "filepath": "_nourishing\\security\\api-key-protection-001.md"
+        },
+        {
+          "id": "nourishing-security-llm-output-sanitization-003",
+          "title": "LLM 输出消毒指南",
+          "title_en": "LLM Output Sanitization Guide for AI Agents",
+          "framework": "_nourishing",
+          "category": "security",
+          "severity": "high",
+          "complexity": "moderate",
+          "tags": [
+            "output-sanitization",
+            "xss",
+            "injection",
+            "llm-safety"
+          ],
+          "filepath": "_nourishing\\security\\llm-output-sanitization-003.md"
+        },
+        {
+          "id": "nourishing-security-prompt-injection-002",
+          "title": "Prompt 注入防御术",
+          "title_en": "Prompt Injection Defense Strategies for AI Agents",
+          "framework": "_nourishing",
+          "category": "security",
+          "severity": "critical",
+          "complexity": "complex",
+          "tags": [
+            "prompt-injection",
+            "security",
+            "llm-safety",
+            "input-validation"
+          ],
+          "filepath": "_nourishing\\security\\prompt-injection-defense-002.md"
+        }
+      ]
+    },
+    "crewai": {
+      "agent-behavior": [
+        {
+          "id": "crewai-agent-infinite-loop-001",
+          "title": "CrewAI Agent 陷入无限循环，不断重复相同工具调用",
+          "title_en": "CrewAI Agent stuck in infinite loop repeating the same tool call",
+          "framework": "crewai",
+          "category": "agent-behavior",
+          "severity": "high",
+          "complexity": "complex",
+          "tags": [
+            "infinite-loop",
+            "tool-calling",
+            "agent-behavior",
+            "llm-reasoning"
+          ],
+          "filepath": "crewai\\agent-behavior\\agent-infinite-loop-001.md"
+        },
+        {
+          "id": "crewai-nonetype-startswith-002",
+          "title": "CrewAI Agent 执行时报 NoneType object has no attribute startswith",
+          "title_en": "CrewAI Agent raises NoneType object has no attribute startswith during execution",
+          "framework": "crewai",
+          "category": "agent-behavior",
+          "severity": "high",
+          "complexity": "moderate",
+          "tags": [
+            "agent-behavior",
+            "tool-calling"
+          ],
+          "filepath": "crewai\\agent-behavior\\nonetype-startswith-002.md"
+        }
+      ],
+      "configuration": [
+        {
+          "id": "crewai-ollama-embedder-003",
+          "title": "CrewAI 配置 Ollama 本地 Embedding 时报 embedder provider not found",
+          "title_en": "CrewAI Ollama not found in embedder provider list",
+          "framework": "crewai",
+          "category": "configuration",
+          "severity": "medium",
+          "complexity": "simple",
+          "tags": [
+            "configuration",
+            "authentication"
+          ],
+          "filepath": "crewai\\configuration\\ollama-embedder-003.md"
+        }
+      ]
+    },
+    "langchain": {
+      "agent-behavior": [
+        {
+          "id": "langchain-agent-loop-008",
+          "title": "Agent 在工具返回空值时陷入无限循环",
+          "title_en": "Agent enters infinite loop when tool returns empty value",
+          "framework": "langchain",
+          "category": "agent-behavior",
+          "severity": "critical",
+          "complexity": "moderate",
+          "tags": [
+            "agent-behavior",
+            "tool-calling"
+          ],
+          "filepath": "langchain\\agent-behavior\\agent-loop-empty-tool-008.md"
+        },
+        {
+          "id": "langchain-agent-parse-error-012",
+          "title": "Agent 无法解析 LLM 输出导致 ValueError: Could not parse LLM output",
+          "title_en": "ValueError: Could not parse LLM output in Agent execution",
+          "framework": "langchain",
+          "category": "agent-behavior",
+          "severity": "critical",
+          "complexity": "moderate",
+          "tags": [
+            "agent-behavior",
+            "general"
+          ],
+          "filepath": "langchain\\agent-behavior\\parse-llm-output-012.md"
+        }
+      ],
+      "authentication": [
+        {
+          "id": "langchain-auth-azure-010",
+          "title": "Azure OpenAI 配置参数在 LangChain 0.3 中变更",
+          "title_en": "Azure OpenAI configuration parameters changed in LangChain 0.3",
+          "framework": "langchain",
+          "category": "authentication",
+          "severity": "medium",
+          "complexity": "simple",
+          "tags": [
+            "authentication",
+            "configuration",
+            "breaking-change"
+          ],
+          "filepath": "langchain\\authentication\\azure-config-change-010.md"
+        }
+      ],
+      "breaking-change": [
+        {
+          "id": "langchain-breaking-prompt-011",
+          "title": "ChatPromptTemplate.from_messages 参数格式变化导致运行报错",
+          "title_en": "ChatPromptTemplate.from_messages parameter format change causes runtime error",
+          "framework": "langchain",
+          "category": "breaking-change",
+          "severity": "medium",
+          "complexity": "simple",
+          "tags": [
+            "breaking-change",
+            "configuration"
+          ],
+          "filepath": "langchain\\breaking-change\\prompt-template-format-011.md"
+        },
+        {
+          "id": "langchain-breaking-vectorstore-002",
+          "title": "LangChain 0.3 向量存储 API 从 similarity_search 迁移到新接口",
+          "title_en": "LangChain 0.3 VectorStore API migration from similarity_search",
+          "framework": "langchain",
+          "category": "breaking-change",
+          "severity": "high",
+          "complexity": "moderate",
+          "tags": [
+            "breaking-change",
+            "retrieval",
+            "migration"
+          ],
+          "filepath": "langchain\\breaking-change\\vectorstore-api-002.md"
+        }
+      ],
+      "import-error": [
+        {
+          "id": "langchain-import-chatmodel-001",
+          "title": "LangChain 0.3 升级后 ChatOpenAI 导入失败",
+          "title_en": "ChatOpenAI import error after upgrading to LangChain 0.3",
+          "framework": "langchain",
+          "category": "import-error",
+          "severity": "medium",
+          "complexity": "simple",
+          "tags": [
+            "import-error",
+            "breaking-change",
+            "migration"
+          ],
+          "filepath": "langchain\\import-error\\chatmodel-import-001.md"
+        },
+        {
+          "id": "langchain-import-community-007",
+          "title": "langchain-community 与 langchain-core 版本冲突导致导入失败",
+          "title_en": "langchain-community and langchain-core version conflict causes import failure",
+          "framework": "langchain",
+          "category": "import-error",
+          "severity": "high",
+          "complexity": "simple",
+          "tags": [
+            "import-error",
+            "configuration"
+          ],
+          "filepath": "langchain\\import-error\\community-core-conflict-007.md"
+        }
+      ],
+      "memory": [
+        {
+          "id": "langchain-memory-leak-003",
+          "title": "ConversationBufferMemory 在长对话中导致 OOM 崩溃",
+          "title_en": "ConversationBufferMemory causes OOM crash in long conversations",
+          "framework": "langchain",
+          "category": "memory",
+          "severity": "high",
+          "complexity": "moderate",
+          "tags": [
+            "memory",
+            "performance"
+          ],
+          "filepath": "langchain\\memory\\conversation-buffer-oom-003.md"
+        },
+        {
+          "id": "langchain-memory-retrieval-chain-013",
+          "title": "ConversationalRetrievalChain 与 Memory 结合时对话历史丢失",
+          "title_en": "ConversationalRetrievalChain loses conversation history when combined with Memory",
+          "framework": "langchain",
+          "category": "memory",
+          "severity": "high",
+          "complexity": "complex",
+          "tags": [
+            "memory",
+            "retrieval"
+          ],
+          "filepath": "langchain\\memory\\conversational-retrieval-memory-013.md"
+        }
+      ],
+      "performance": [
+        {
+          "id": "langchain-context-length-014",
+          "title": "LLM 上下文长度超限导致 InvalidRequestError",
+          "title_en": "Model context length exceeded causing InvalidRequestError",
+          "framework": "langchain",
+          "category": "performance",
+          "severity": "high",
+          "complexity": "moderate",
+          "tags": [
+            "performance",
+            "configuration"
+          ],
+          "filepath": "langchain\\performance\\context-length-exceeded-014.md"
+        }
+      ],
+      "retrieval": [
+        {
+          "id": "langchain-retrieval-precision-005",
+          "title": "RetrievalQA 在大文档集上检索精度骤降",
+          "title_en": "RetrievalQA retrieval precision drops significantly on large document sets",
+          "framework": "langchain",
+          "category": "retrieval",
+          "severity": "medium",
+          "complexity": "complex",
+          "tags": [
+            "retrieval",
+            "performance"
+          ],
+          "filepath": "langchain\\retrieval\\retrieval-precision-drop-005.md"
+        }
+      ],
+      "tool-calling": [
+        {
+          "id": "langchain-tool-calling-bind-004",
+          "title": "bind_tools 返回格式不一致导致 Agent 无法解析工具调用",
+          "title_en": "bind_tools returns inconsistent format causing Agent tool call parsing failure",
+          "framework": "langchain",
+          "category": "tool-calling",
+          "severity": "high",
+          "complexity": "moderate",
+          "tags": [
+            "tool-calling",
+            "agent-behavior"
+          ],
+          "filepath": "langchain\\tool-calling\\bind-tools-format-004.md"
+        }
+      ]
+    },
+    "llamaindex": {
+      "breaking-change": [
+        {
+          "id": "llamaindex-breaking-v10-001",
+          "title": "LlamaIndex 0.10+ 核心包拆分迁移",
+          "title_en": "LlamaIndex 0.10+ core package split migration",
+          "framework": "llamaindex",
+          "category": "breaking-change",
+          "severity": "critical",
+          "complexity": "moderate",
+          "tags": [
+            "breaking-change",
+            "import-error",
+            "migration"
+          ],
+          "filepath": "llamaindex\\breaking-change\\v10-package-split-001.md"
+        }
+      ],
+      "configuration": [
+        {
+          "id": "llamaindex-chromadb-error-002",
+          "title": "LlamaIndex 使用 ChromaDB 时连接错误或数据丢失",
+          "title_en": "LlamaIndex ChromaDB connection error or data loss",
+          "framework": "llamaindex",
+          "category": "configuration",
+          "severity": "high",
+          "complexity": "moderate",
+          "tags": [
+            "configuration",
+            "retrieval"
+          ],
+          "filepath": "llamaindex\\configuration\\chromadb-connection-002.md"
+        }
+      ]
+    },
+    "mcp": {
+      "agent-behavior": [
+        {
+          "id": "mcp-cancel-scope-task-002",
+          "title": "MCP Server RuntimeError: Attempted to exit cancel scope in different task",
+          "title_en": "MCP Server RuntimeError: Attempted to exit cancel scope in different task",
+          "framework": "mcp",
+          "category": "agent-behavior",
+          "severity": "critical",
+          "complexity": "complex",
+          "tags": [
+            "agent-behavior",
+            "performance"
+          ],
+          "filepath": "mcp\\agent-behavior\\cancel-scope-task-002.md"
+        }
+      ],
+      "authentication": [
+        {
+          "id": "mcp-ssl-verification-004",
+          "title": "MCP Server SSL 证书验证失败导致连接被拒绝",
+          "title_en": "MCP Server SSL certificate verification failure causes connection refused",
+          "framework": "mcp",
+          "category": "authentication",
+          "severity": "high",
+          "complexity": "moderate",
+          "tags": [
+            "authentication",
+            "configuration"
+          ],
+          "filepath": "mcp\\authentication\\ssl-verification-004.md"
+        }
+      ],
+      "tool-calling": [
+        {
+          "id": "mcp-tool-serialization-003",
+          "title": "MCP CallToolResult 序列化失败导致工具调用无响应",
+          "title_en": "MCP CallToolResult serialization fails causing tool call to hang",
+          "framework": "mcp",
+          "category": "tool-calling",
+          "severity": "high",
+          "complexity": "moderate",
+          "tags": [
+            "tool-calling",
+            "general"
+          ],
+          "filepath": "mcp\\tool-calling\\tool-result-serialization-003.md"
+        },
+        {
+          "id": "mcp-tool-timeout-001",
+          "title": "MCP Server 工具调用超时，Agent 收到空响应",
+          "title_en": "MCP Server tool call timeout with empty response to Agent",
+          "framework": "mcp",
+          "category": "tool-calling",
+          "severity": "high",
+          "complexity": "moderate",
+          "tags": [
+            "timeout",
+            "tool-calling",
+            "server-connection",
+            "mcp-protocol"
+          ],
+          "filepath": "mcp\\tool-calling\\tool-timeout-001.md"
+        }
+      ]
+    },
+    "openai-sdk": {
+      "authentication": [
+        {
+          "id": "openai-sdk-auth-no-key-002",
+          "title": "AuthenticationError: No API key provided 但明明已配置",
+          "title_en": "AuthenticationError: No API key provided despite being configured",
+          "framework": "openai-sdk",
+          "category": "authentication",
+          "severity": "high",
+          "complexity": "simple",
+          "tags": [
+            "authentication",
+            "configuration"
+          ],
+          "filepath": "openai-sdk\\authentication\\no-api-key-002.md"
+        }
+      ],
+      "breaking-change": [
+        {
+          "id": "openai-sdk-v1-migration-001",
+          "title": "openai Python SDK v1.0 重大 API 变更迁移指南",
+          "title_en": "openai Python SDK v1.0 major API migration guide",
+          "framework": "openai-sdk",
+          "category": "breaking-change",
+          "severity": "critical",
+          "complexity": "moderate",
+          "tags": [
+            "breaking-change",
+            "migration"
+          ],
+          "filepath": "openai-sdk\\breaking-change\\v1-migration-001.md"
+        }
+      ],
+      "configuration": [
+        {
+          "id": "openai-sdk-httpx-proxy-003",
+          "title": "openai SDK 升级 httpx 后代理配置报错",
+          "title_en": "openai SDK proxy configuration breaks after httpx upgrade",
+          "framework": "openai-sdk",
+          "category": "configuration",
+          "severity": "high",
+          "complexity": "simple",
+          "tags": [
+            "configuration",
+            "breaking-change"
+          ],
+          "filepath": "openai-sdk\\configuration\\httpx-proxy-003.md"
+        }
+      ]
+    }
+  },
+  "all_cases": [
+    {
+      "id": "nourishing-sandbox-best-practices-001",
+      "title": "AI Agent 安全沙箱最佳实践总指南",
+      "title_en": "Comprehensive Guide to Secure Sandbox for AI Agents",
+      "framework": "_nourishing",
+      "category": "sandbox",
+      "severity": "high",
+      "complexity": "complex",
+      "tags": [
+        "sandbox",
+        "security",
+        "best-practice",
+        "isolation"
+      ],
+      "filepath": "_nourishing\\sandbox\\agent-sandbox-best-practices-001.md"
+    },
+    {
+      "id": "nourishing-sandbox-docker-isolation-002",
+      "title": "Docker 隔离方案 — AI Agent 安全执行环境",
+      "title_en": "Docker Isolation for Secure AI Agent Code Execution",
+      "framework": "_nourishing",
+      "category": "sandbox",
+      "severity": "high",
+      "complexity": "moderate",
+      "tags": [
+        "docker",
+        "sandbox",
+        "container",
+        "isolation"
+      ],
+      "filepath": "_nourishing\\sandbox\\docker-isolation-for-agents-002.md"
+    },
+    {
+      "id": "nourishing-sandbox-restrictedpython-003",
+      "title": "RestrictedPython 轻量级安全执行方案",
+      "title_en": "Lightweight Safe Execution with RestrictedPython",
+      "framework": "_nourishing",
+      "category": "sandbox",
+      "severity": "medium",
+      "complexity": "moderate",
+      "tags": [
+        "restrictedpython",
+        "sandbox",
+        "lightweight",
+        "safe-execution"
+      ],
+      "filepath": "_nourishing\\sandbox\\restrictedpython-safe-execution-003.md"
+    },
+    {
+      "id": "nourishing-security-api-key-protection-001",
+      "title": "API Key 保护三十六计",
+      "title_en": "36 Strategies for API Key Protection in AI Agents",
+      "framework": "_nourishing",
+      "category": "security",
+      "severity": "critical",
+      "complexity": "simple",
+      "tags": [
+        "api-key",
+        "secrets",
+        "security",
+        "best-practice"
+      ],
+      "filepath": "_nourishing\\security\\api-key-protection-001.md"
+    },
+    {
+      "id": "nourishing-security-llm-output-sanitization-003",
+      "title": "LLM 输出消毒指南",
+      "title_en": "LLM Output Sanitization Guide for AI Agents",
+      "framework": "_nourishing",
+      "category": "security",
+      "severity": "high",
+      "complexity": "moderate",
+      "tags": [
+        "output-sanitization",
+        "xss",
+        "injection",
+        "llm-safety"
+      ],
+      "filepath": "_nourishing\\security\\llm-output-sanitization-003.md"
+    },
+    {
+      "id": "nourishing-security-prompt-injection-002",
+      "title": "Prompt 注入防御术",
+      "title_en": "Prompt Injection Defense Strategies for AI Agents",
+      "framework": "_nourishing",
+      "category": "security",
+      "severity": "critical",
+      "complexity": "complex",
+      "tags": [
+        "prompt-injection",
+        "security",
+        "llm-safety",
+        "input-validation"
+      ],
+      "filepath": "_nourishing\\security\\prompt-injection-defense-002.md"
+    },
+    {
+      "id": "crewai-agent-infinite-loop-001",
+      "title": "CrewAI Agent 陷入无限循环，不断重复相同工具调用",
+      "title_en": "CrewAI Agent stuck in infinite loop repeating the same tool call",
+      "framework": "crewai",
+      "category": "agent-behavior",
+      "severity": "high",
+      "complexity": "complex",
+      "tags": [
+        "infinite-loop",
+        "tool-calling",
+        "agent-behavior",
+        "llm-reasoning"
+      ],
+      "filepath": "crewai\\agent-behavior\\agent-infinite-loop-001.md"
+    },
+    {
+      "id": "crewai-nonetype-startswith-002",
+      "title": "CrewAI Agent 执行时报 NoneType object has no attribute startswith",
+      "title_en": "CrewAI Agent raises NoneType object has no attribute startswith during execution",
+      "framework": "crewai",
+      "category": "agent-behavior",
+      "severity": "high",
+      "complexity": "moderate",
+      "tags": [
+        "agent-behavior",
+        "tool-calling"
+      ],
+      "filepath": "crewai\\agent-behavior\\nonetype-startswith-002.md"
+    },
+    {
+      "id": "crewai-ollama-embedder-003",
+      "title": "CrewAI 配置 Ollama 本地 Embedding 时报 embedder provider not found",
+      "title_en": "CrewAI Ollama not found in embedder provider list",
+      "framework": "crewai",
+      "category": "configuration",
+      "severity": "medium",
+      "complexity": "simple",
+      "tags": [
+        "configuration",
+        "authentication"
+      ],
+      "filepath": "crewai\\configuration\\ollama-embedder-003.md"
+    },
+    {
+      "id": "langchain-agent-loop-008",
+      "title": "Agent 在工具返回空值时陷入无限循环",
+      "title_en": "Agent enters infinite loop when tool returns empty value",
+      "framework": "langchain",
+      "category": "agent-behavior",
+      "severity": "critical",
+      "complexity": "moderate",
+      "tags": [
+        "agent-behavior",
+        "tool-calling"
+      ],
+      "filepath": "langchain\\agent-behavior\\agent-loop-empty-tool-008.md"
+    },
+    {
+      "id": "langchain-agent-parse-error-012",
+      "title": "Agent 无法解析 LLM 输出导致 ValueError: Could not parse LLM output",
+      "title_en": "ValueError: Could not parse LLM output in Agent execution",
+      "framework": "langchain",
+      "category": "agent-behavior",
+      "severity": "critical",
+      "complexity": "moderate",
+      "tags": [
+        "agent-behavior",
+        "general"
+      ],
+      "filepath": "langchain\\agent-behavior\\parse-llm-output-012.md"
+    },
+    {
+      "id": "langchain-auth-azure-010",
+      "title": "Azure OpenAI 配置参数在 LangChain 0.3 中变更",
+      "title_en": "Azure OpenAI configuration parameters changed in LangChain 0.3",
+      "framework": "langchain",
+      "category": "authentication",
+      "severity": "medium",
+      "complexity": "simple",
+      "tags": [
+        "authentication",
+        "configuration",
+        "breaking-change"
+      ],
+      "filepath": "langchain\\authentication\\azure-config-change-010.md"
+    },
+    {
+      "id": "langchain-breaking-prompt-011",
+      "title": "ChatPromptTemplate.from_messages 参数格式变化导致运行报错",
+      "title_en": "ChatPromptTemplate.from_messages parameter format change causes runtime error",
+      "framework": "langchain",
+      "category": "breaking-change",
+      "severity": "medium",
+      "complexity": "simple",
+      "tags": [
+        "breaking-change",
+        "configuration"
+      ],
+      "filepath": "langchain\\breaking-change\\prompt-template-format-011.md"
+    },
+    {
+      "id": "langchain-breaking-vectorstore-002",
+      "title": "LangChain 0.3 向量存储 API 从 similarity_search 迁移到新接口",
+      "title_en": "LangChain 0.3 VectorStore API migration from similarity_search",
+      "framework": "langchain",
+      "category": "breaking-change",
+      "severity": "high",
+      "complexity": "moderate",
+      "tags": [
+        "breaking-change",
+        "retrieval",
+        "migration"
+      ],
+      "filepath": "langchain\\breaking-change\\vectorstore-api-002.md"
+    },
+    {
+      "id": "langchain-import-chatmodel-001",
+      "title": "LangChain 0.3 升级后 ChatOpenAI 导入失败",
+      "title_en": "ChatOpenAI import error after upgrading to LangChain 0.3",
+      "framework": "langchain",
+      "category": "import-error",
+      "severity": "medium",
+      "complexity": "simple",
+      "tags": [
+        "import-error",
+        "breaking-change",
+        "migration"
+      ],
+      "filepath": "langchain\\import-error\\chatmodel-import-001.md"
+    },
+    {
+      "id": "langchain-import-community-007",
+      "title": "langchain-community 与 langchain-core 版本冲突导致导入失败",
+      "title_en": "langchain-community and langchain-core version conflict causes import failure",
+      "framework": "langchain",
+      "category": "import-error",
+      "severity": "high",
+      "complexity": "simple",
+      "tags": [
+        "import-error",
+        "configuration"
+      ],
+      "filepath": "langchain\\import-error\\community-core-conflict-007.md"
+    },
+    {
+      "id": "langchain-memory-leak-003",
+      "title": "ConversationBufferMemory 在长对话中导致 OOM 崩溃",
+      "title_en": "ConversationBufferMemory causes OOM crash in long conversations",
+      "framework": "langchain",
+      "category": "memory",
+      "severity": "high",
+      "complexity": "moderate",
+      "tags": [
+        "memory",
+        "performance"
+      ],
+      "filepath": "langchain\\memory\\conversation-buffer-oom-003.md"
+    },
+    {
+      "id": "langchain-memory-retrieval-chain-013",
+      "title": "ConversationalRetrievalChain 与 Memory 结合时对话历史丢失",
+      "title_en": "ConversationalRetrievalChain loses conversation history when combined with Memory",
+      "framework": "langchain",
+      "category": "memory",
+      "severity": "high",
+      "complexity": "complex",
+      "tags": [
+        "memory",
+        "retrieval"
+      ],
+      "filepath": "langchain\\memory\\conversational-retrieval-memory-013.md"
+    },
+    {
+      "id": "langchain-context-length-014",
+      "title": "LLM 上下文长度超限导致 InvalidRequestError",
+      "title_en": "Model context length exceeded causing InvalidRequestError",
+      "framework": "langchain",
+      "category": "performance",
+      "severity": "high",
+      "complexity": "moderate",
+      "tags": [
+        "performance",
+        "configuration"
+      ],
+      "filepath": "langchain\\performance\\context-length-exceeded-014.md"
+    },
+    {
+      "id": "langchain-retrieval-precision-005",
+      "title": "RetrievalQA 在大文档集上检索精度骤降",
+      "title_en": "RetrievalQA retrieval precision drops significantly on large document sets",
+      "framework": "langchain",
+      "category": "retrieval",
+      "severity": "medium",
+      "complexity": "complex",
+      "tags": [
+        "retrieval",
+        "performance"
+      ],
+      "filepath": "langchain\\retrieval\\retrieval-precision-drop-005.md"
+    },
+    {
+      "id": "langchain-tool-calling-bind-004",
+      "title": "bind_tools 返回格式不一致导致 Agent 无法解析工具调用",
+      "title_en": "bind_tools returns inconsistent format causing Agent tool call parsing failure",
+      "framework": "langchain",
+      "category": "tool-calling",
+      "severity": "high",
+      "complexity": "moderate",
+      "tags": [
+        "tool-calling",
+        "agent-behavior"
+      ],
+      "filepath": "langchain\\tool-calling\\bind-tools-format-004.md"
+    },
+    {
+      "id": "llamaindex-breaking-v10-001",
+      "title": "LlamaIndex 0.10+ 核心包拆分迁移",
+      "title_en": "LlamaIndex 0.10+ core package split migration",
+      "framework": "llamaindex",
+      "category": "breaking-change",
+      "severity": "critical",
+      "complexity": "moderate",
+      "tags": [
+        "breaking-change",
+        "import-error",
+        "migration"
+      ],
+      "filepath": "llamaindex\\breaking-change\\v10-package-split-001.md"
+    },
+    {
+      "id": "llamaindex-chromadb-error-002",
+      "title": "LlamaIndex 使用 ChromaDB 时连接错误或数据丢失",
+      "title_en": "LlamaIndex ChromaDB connection error or data loss",
+      "framework": "llamaindex",
+      "category": "configuration",
+      "severity": "high",
+      "complexity": "moderate",
+      "tags": [
+        "configuration",
+        "retrieval"
+      ],
+      "filepath": "llamaindex\\configuration\\chromadb-connection-002.md"
+    },
+    {
+      "id": "mcp-cancel-scope-task-002",
+      "title": "MCP Server RuntimeError: Attempted to exit cancel scope in different task",
+      "title_en": "MCP Server RuntimeError: Attempted to exit cancel scope in different task",
+      "framework": "mcp",
+      "category": "agent-behavior",
+      "severity": "critical",
+      "complexity": "complex",
+      "tags": [
+        "agent-behavior",
+        "performance"
+      ],
+      "filepath": "mcp\\agent-behavior\\cancel-scope-task-002.md"
+    },
+    {
+      "id": "mcp-ssl-verification-004",
+      "title": "MCP Server SSL 证书验证失败导致连接被拒绝",
+      "title_en": "MCP Server SSL certificate verification failure causes connection refused",
+      "framework": "mcp",
+      "category": "authentication",
+      "severity": "high",
+      "complexity": "moderate",
+      "tags": [
+        "authentication",
+        "configuration"
+      ],
+      "filepath": "mcp\\authentication\\ssl-verification-004.md"
+    },
+    {
+      "id": "mcp-tool-serialization-003",
+      "title": "MCP CallToolResult 序列化失败导致工具调用无响应",
+      "title_en": "MCP CallToolResult serialization fails causing tool call to hang",
+      "framework": "mcp",
+      "category": "tool-calling",
+      "severity": "high",
+      "complexity": "moderate",
+      "tags": [
+        "tool-calling",
+        "general"
+      ],
+      "filepath": "mcp\\tool-calling\\tool-result-serialization-003.md"
+    },
+    {
+      "id": "mcp-tool-timeout-001",
+      "title": "MCP Server 工具调用超时，Agent 收到空响应",
+      "title_en": "MCP Server tool call timeout with empty response to Agent",
+      "framework": "mcp",
+      "category": "tool-calling",
+      "severity": "high",
+      "complexity": "moderate",
+      "tags": [
+        "timeout",
+        "tool-calling",
+        "server-connection",
+        "mcp-protocol"
+      ],
+      "filepath": "mcp\\tool-calling\\tool-timeout-001.md"
+    },
+    {
+      "id": "openai-sdk-auth-no-key-002",
+      "title": "AuthenticationError: No API key provided 但明明已配置",
+      "title_en": "AuthenticationError: No API key provided despite being configured",
+      "framework": "openai-sdk",
+      "category": "authentication",
+      "severity": "high",
+      "complexity": "simple",
+      "tags": [
+        "authentication",
+        "configuration"
+      ],
+      "filepath": "openai-sdk\\authentication\\no-api-key-002.md"
+    },
+    {
+      "id": "openai-sdk-v1-migration-001",
+      "title": "openai Python SDK v1.0 重大 API 变更迁移指南",
+      "title_en": "openai Python SDK v1.0 major API migration guide",
+      "framework": "openai-sdk",
+      "category": "breaking-change",
+      "severity": "critical",
+      "complexity": "moderate",
+      "tags": [
+        "breaking-change",
+        "migration"
+      ],
+      "filepath": "openai-sdk\\breaking-change\\v1-migration-001.md"
+    },
+    {
+      "id": "openai-sdk-httpx-proxy-003",
+      "title": "openai SDK 升级 httpx 后代理配置报错",
+      "title_en": "openai SDK proxy configuration breaks after httpx upgrade",
+      "framework": "openai-sdk",
+      "category": "configuration",
+      "severity": "high",
+      "complexity": "simple",
+      "tags": [
+        "configuration",
+        "breaking-change"
+      ],
+      "filepath": "openai-sdk\\configuration\\httpx-proxy-003.md"
+    }
+  ],
+  "total": 30,
+  "frameworks": [
+    "_nourishing",
+    "crewai",
+    "langchain",
+    "llamaindex",
+    "mcp",
+    "openai-sdk"
+  ],
+  "generated_at": "2026-03-11T15:18:18.462450"
+};
+    const FW_COLORS = {"langchain": {"primary": "#00D09C", "glow": "rgba(0,208,156,0.5)"}, "crewai": {"primary": "#FF6B6B", "glow": "rgba(255,107,107,0.5)"}, "mcp": {"primary": "#60A5FA", "glow": "rgba(96,165,250,0.5)"}, "llamaindex": {"primary": "#A78BFA", "glow": "rgba(167,139,250,0.5)"}, "openai-sdk": {"primary": "#FFD700", "glow": "rgba(255,215,0,0.5)"}, "_nourishing": {"primary": "#2ED573", "glow": "rgba(46,213,115,0.5)"}};
+    const FW_ICONS = {"langchain": "🔗", "crewai": "🤖", "mcp": "🔌", "llamaindex": "📚", "openai-sdk": "🧠", "_nourishing": "🌿"};
+    const FW_NAMES = {"langchain": "LangChain", "crewai": "CrewAI", "mcp": "MCP", "llamaindex": "LlamaIndex", "openai-sdk": "OpenAI SDK", "_nourishing": "养生药方"};
+    const SV_COLORS = {"critical": "#FF4757", "high": "#FF6B6B", "medium": "#FFD700", "low": "#2ED573"};
+
+    // ─── 场景初始化 ───
+    const container = document.getElementById('canvas-container');
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 2000);
+    camera.position.set(0, 8, 22);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.2;
+    container.appendChild(renderer.domElement);
+
+    // 后处理 - Bloom
+    const composer = new EffectComposer(renderer);
+    composer.addPass(new RenderPass(scene, camera));
+    const bloomPass = new UnrealBloomPass(
+      new THREE.Vector2(window.innerWidth, window.innerHeight),
+      0.8, 0.4, 0.85
+    );
+    composer.addPass(bloomPass);
+
+    // 控制器
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+    controls.autoRotate = true;
+    controls.autoRotateSpeed = 0.3;
+    controls.minDistance = 8;
+    controls.maxDistance = 50;
+    controls.maxPolarAngle = Math.PI * 0.85;
+
+    // ─── 背景星空 ───
+    const starGeom = new THREE.BufferGeometry();
+    const starCount = 2000;
+    const starPos = new Float32Array(starCount * 3);
+    const starSizes = new Float32Array(starCount);
+    for (let i = 0; i < starCount; i++) {
+      starPos[i * 3]     = (Math.random() - 0.5) * 200;
+      starPos[i * 3 + 1] = (Math.random() - 0.5) * 200;
+      starPos[i * 3 + 2] = (Math.random() - 0.5) * 200;
+      starSizes[i] = Math.random() * 1.5 + 0.3;
+    }
+    starGeom.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+    starGeom.setAttribute('size', new THREE.BufferAttribute(starSizes, 1));
+    const starMat = new THREE.PointsMaterial({
+      color: 0xffffff,
+      size: 0.12,
+      transparent: true,
+      opacity: 0.6,
+      sizeAttenuation: true,
+    });
+    scene.add(new THREE.Points(starGeom, starMat));
+
+    // ─── 节点存储 ───
+    const nodeObjects = [];
+    const nodeDataMap = new Map();       // mesh -> data
+    const frameworkGroups = new Map();    // fw -> group
+    let activeFilter = 'all';
+
+    // ─── 创建中心节点 ───
+    function createCore() {
+      const group = new THREE.Group();
+
+      // 核心发光球
+      const coreGeom = new THREE.SphereGeometry(1.5, 64, 64);
+      const coreMat = new THREE.MeshStandardMaterial({
+        color: 0x00D09C,
+        emissive: 0x00D09C,
+        emissiveIntensity: 0.8,
+        transparent: true,
+        opacity: 0.9,
+        roughness: 0.2,
+        metalness: 0.8,
+      });
+      const core = new THREE.Mesh(coreGeom, coreMat);
+      group.add(core);
+
+      // 外层光环
+      const ringGeom = new THREE.TorusGeometry(2.5, 0.03, 16, 100);
+      const ringMat = new THREE.MeshBasicMaterial({
+        color: 0x00D09C,
+        transparent: true,
+        opacity: 0.3,
+      });
+      const ring = new THREE.Mesh(ringGeom, ringMat);
+      ring.rotation.x = Math.PI / 2;
+      group.add(ring);
+
+      // 第二光环
+      const ring2 = ring.clone();
+      ring2.rotation.x = Math.PI / 3;
+      ring2.rotation.z = Math.PI / 4;
+      ring2.scale.setScalar(1.15);
+      group.add(ring2);
+
+      scene.add(group);
+      return group;
+    }
+
+    // ─── 创建框架节点 ───
+    function createFrameworkNode(fw, index, totalFw) {
+      const group = new THREE.Group();
+      const colorStr = FW_COLORS[fw]?.primary || '#888888';
+      const color = new THREE.Color(colorStr);
+      const cases = DATA.tree[fw] || {};
+      const caseCount = Object.values(cases).reduce((s, arr) => s + arr.length, 0);
+
+      // 计算球面坐标
+      const phi = Math.acos(-1 + (2 * (index + 1)) / (totalFw + 1));
+      const theta = Math.sqrt(totalFw * Math.PI) * phi;
+      const radius = 8 + caseCount * 0.3;
+
+      const x = radius * Math.sin(phi) * Math.cos(theta);
+      const y = radius * Math.cos(phi) * 0.6;  // 压扁 y 轴
+      const z = radius * Math.sin(phi) * Math.sin(theta);
+
+      group.position.set(x, y, z);
+
+      // 节点球体
+      const size = 0.6 + caseCount * 0.08;
+      const geom = new THREE.SphereGeometry(Math.min(size, 1.8), 32, 32);
+      const mat = new THREE.MeshStandardMaterial({
+        color: color,
+        emissive: color,
+        emissiveIntensity: 0.5,
+        transparent: true,
+        opacity: 0.9,
+        roughness: 0.3,
+        metalness: 0.6,
+      });
+      const mesh = new THREE.Mesh(geom, mat);
+      group.add(mesh);
+
+      // 节点数据
+      nodeObjects.push(mesh);
+      nodeDataMap.set(mesh, {
+        type: 'framework',
+        framework: fw,
+        name: FW_NAMES[fw] || fw,
+        icon: FW_ICONS[fw] || '📦',
+        color: colorStr,
+        caseCount,
+        categories: cases,
+      });
+
+      // 光环
+      const haloGeom = new THREE.RingGeometry(size + 0.2, size + 0.35, 32);
+      const haloMat = new THREE.MeshBasicMaterial({
+        color: color,
+        transparent: true,
+        opacity: 0.15,
+        side: THREE.DoubleSide,
+      });
+      const halo = new THREE.Mesh(haloGeom, haloMat);
+      halo.lookAt(camera.position);
+      group.add(halo);
+
+      // 连线到中心
+      const linePoints = [new THREE.Vector3(0, 0, 0), new THREE.Vector3(x, y, z)];
+      const lineGeom = new THREE.BufferGeometry().setFromPoints(linePoints);
+      const lineMat = new THREE.LineBasicMaterial({
+        color: color,
+        transparent: true,
+        opacity: 0.12,
+      });
+      scene.add(new THREE.Line(lineGeom, lineMat));
+
+      // ─── 创建分类子节点 ───
+      const catKeys = Object.keys(cases);
+      catKeys.forEach((cat, catIdx) => {
+        const catCases = cases[cat];
+        const catAngle = (2 * Math.PI / catKeys.length) * catIdx;
+        const catRadius = 2.2 + catCases.length * 0.3;
+        const cx = catRadius * Math.cos(catAngle);
+        const cy = (Math.random() - 0.5) * 1.5;
+        const cz = catRadius * Math.sin(catAngle);
+
+        const catGeom = new THREE.SphereGeometry(0.22 + catCases.length * 0.05, 16, 16);
+        const catMat = new THREE.MeshStandardMaterial({
+          color: color,
+          emissive: color,
+          emissiveIntensity: 0.3,
+          transparent: true,
+          opacity: 0.75,
+        });
+        const catMesh = new THREE.Mesh(catGeom, catMat);
+        catMesh.position.set(cx, cy, cz);
+        group.add(catMesh);
+
+        nodeObjects.push(catMesh);
+        nodeDataMap.set(catMesh, {
+          type: 'category',
+          framework: fw,
+          category: cat,
+          name: cat.replace(/-/g, ' '),
+          icon: FW_ICONS[fw] || '📦',
+          color: colorStr,
+          cases: catCases,
+        });
+
+        // 子节点连线到框架节点
+        const catLineGeom = new THREE.BufferGeometry().setFromPoints([
+          new THREE.Vector3(0, 0, 0),
+          new THREE.Vector3(cx, cy, cz),
+        ]);
+        const catLineMat = new THREE.LineBasicMaterial({
+          color: color,
+          transparent: true,
+          opacity: 0.08,
+        });
+        group.add(new THREE.Line(catLineGeom, catLineMat));
+      });
+
+      scene.add(group);
+      frameworkGroups.set(fw, group);
+      return group;
+    }
+
+    // ─── 轨道环 ───
+    function createOrbitRings() {
+      const fws = Object.keys(DATA.tree);
+      fws.forEach((fw, i) => {
+        const colorStr = FW_COLORS[fw]?.primary || '#888888';
+        const ringGeom = new THREE.TorusGeometry(8 + i * 1.5, 0.01, 8, 100);
+        const ringMat = new THREE.MeshBasicMaterial({
+          color: new THREE.Color(colorStr),
+          transparent: true,
+          opacity: 0.06,
+        });
+        const ring = new THREE.Mesh(ringGeom, ringMat);
+        ring.rotation.x = Math.PI / 2 + (i * 0.15);
+        ring.rotation.z = i * 0.3;
+        scene.add(ring);
+      });
+    }
+
+    // ─── 粒子流 ───
+    function createParticleStream() {
+      const particleCount = 300;
+      const geom = new THREE.BufferGeometry();
+      const positions = new Float32Array(particleCount * 3);
+      const colors = new Float32Array(particleCount * 3);
+      const sizes = new Float32Array(particleCount);
+
+      for (let i = 0; i < particleCount; i++) {
+        const theta = Math.random() * Math.PI * 2;
+        const r = 3 + Math.random() * 15;
+        positions[i * 3]     = r * Math.cos(theta);
+        positions[i * 3 + 1] = (Math.random() - 0.5) * 6;
+        positions[i * 3 + 2] = r * Math.sin(theta);
+
+        const c = new THREE.Color(Math.random() > 0.5 ? 0x00D09C : 0x00FFFF);
+        colors[i * 3] = c.r;
+        colors[i * 3 + 1] = c.g;
+        colors[i * 3 + 2] = c.b;
+        sizes[i] = Math.random() * 0.08 + 0.02;
+      }
+
+      geom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+      geom.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+      const mat = new THREE.PointsMaterial({
+        size: 0.06,
+        vertexColors: true,
+        transparent: true,
+        opacity: 0.5,
+        sizeAttenuation: true,
+      });
+      const points = new THREE.Points(geom, mat);
+      scene.add(points);
+      return points;
+    }
+
+    // ─── 环境光 ───
+    scene.add(new THREE.AmbientLight(0x404050, 0.5));
+    const pointLight = new THREE.PointLight(0x00D09C, 2, 50);
+    pointLight.position.set(0, 5, 0);
+    scene.add(pointLight);
+    const pointLight2 = new THREE.PointLight(0x00FFFF, 0.5, 30);
+    pointLight2.position.set(10, -3, 5);
+    scene.add(pointLight2);
+
+    // ─── 构建场景 ───
+    createCore();
+    createOrbitRings();
+    const particles = createParticleStream();
+
+    const fwKeys = Object.keys(DATA.tree);
+    fwKeys.forEach((fw, i) => createFrameworkNode(fw, i, fwKeys.length));
+
+    // ─── 过滤器 UI ───
+    const filterBar = document.getElementById('filter-bar');
+    const allChip = document.createElement('button');
+    allChip.className = 'filter-chip active';
+    allChip.textContent = '🌐 All';
+    allChip.onclick = () => setFilter('all');
+    filterBar.appendChild(allChip);
+
+    fwKeys.forEach(fw => {
+      const chip = document.createElement('button');
+      chip.className = 'filter-chip';
+      chip.dataset.fw = fw;
+      const icon = FW_ICONS[fw] || '📦';
+      const name = FW_NAMES[fw] || fw;
+      const count = Object.values(DATA.tree[fw]).reduce((s, a) => s + a.length, 0);
+      chip.textContent = `${icon} ${name} (${count})`;
+      chip.onclick = () => setFilter(fw);
+      filterBar.appendChild(chip);
+    });
+
+    function setFilter(fw) {
+      activeFilter = fw;
+      document.querySelectorAll('.filter-chip').forEach(c => {
+        c.classList.toggle('active', (fw === 'all' && c.textContent.includes('All')) || c.dataset.fw === fw);
+      });
+      frameworkGroups.forEach((group, key) => {
+        const visible = fw === 'all' || key === fw;
+        group.visible = visible;
+      });
+    }
+
+    // ─── 详情面板 ───
+    const detailPanel = document.getElementById('detail-panel');
+    const detailContent = document.getElementById('detail-content');
+    document.getElementById('detail-close').onclick = () => detailPanel.classList.remove('open');
+
+    function showDetail(data) {
+      let html = '';
+      const badgeBg = data.color + '18';
+      const badgeBorder = data.color + '40';
+
+      if (data.type === 'framework') {
+        html += `<div class="detail-fw-badge" style="background:${badgeBg};border:1px solid ${badgeBorder};color:${data.color}">
+          ${data.icon} ${data.name}
+        </div>`;
+        html += `<div class="detail-title">${data.name} 药方库</div>`;
+        html += `<div class="detail-title-en">${data.caseCount} prescriptions across ${Object.keys(data.categories).length} categories</div>`;
+
+        Object.entries(data.categories).forEach(([cat, cases]) => {
+          html += `<div class="detail-section">`;
+          html += `<div class="detail-section-title">${cat.replace(/-/g, ' ')} (${cases.length})</div>`;
+          html += `<ul class="cases-list">`;
+          cases.forEach(c => {
+            const svColor = SV_COLORS[c.severity] || '#888';
+            html += `<li>
+              <div class="case-title">${c.title}</div>
+              <div class="case-meta">
+                <span class="severity-badge" style="background:${svColor}15;color:${svColor};border:1px solid ${svColor}30">${c.severity}</span>
+                · ${c.complexity} · ${c.tags?.join(', ') || ''}
+              </div>
+            </li>`;
+          });
+          html += `</ul></div>`;
+        });
+      } else if (data.type === 'category') {
+        html += `<div class="detail-fw-badge" style="background:${badgeBg};border:1px solid ${badgeBorder};color:${data.color}">
+          ${data.icon} ${data.name}
+        </div>`;
+        html += `<div class="detail-title">${data.name}</div>`;
+        html += `<div class="detail-title-en">${data.cases.length} prescriptions</div>`;
+        html += `<ul class="cases-list">`;
+        data.cases.forEach(c => {
+          const svColor = SV_COLORS[c.severity] || '#888';
+          html += `<li>
+            <div class="case-title">${c.title}</div>
+            <div class="case-meta">
+              <span class="severity-badge" style="background:${svColor}15;color:${svColor};border:1px solid ${svColor}30">${c.severity}</span>
+              · ${c.complexity} · ${c.tags?.join(', ') || ''}
+            </div>
+          </li>`;
+        });
+        html += `</ul>`;
+      }
+
+      detailContent.innerHTML = html;
+      detailPanel.classList.add('open');
+    }
+
+    // ─── 交互：点击 & Hover ───
+    const raycaster = new THREE.Raycaster();
+    const mouse = new THREE.Vector2();
+    const tooltip = document.getElementById('tooltip');
+
+    renderer.domElement.addEventListener('click', (e) => {
+      mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+      mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+      raycaster.setFromCamera(mouse, camera);
+      const intersects = raycaster.intersectObjects(nodeObjects);
+      if (intersects.length > 0) {
+        const data = nodeDataMap.get(intersects[0].object);
+        if (data) showDetail(data);
+      }
+    });
+
+    renderer.domElement.addEventListener('mousemove', (e) => {
+      mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+      mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+      raycaster.setFromCamera(mouse, camera);
+      const intersects = raycaster.intersectObjects(nodeObjects);
+
+      if (intersects.length > 0) {
+        const data = nodeDataMap.get(intersects[0].object);
+        if (data) {
+          const label = data.type === 'framework'
+            ? `${data.icon} ${data.name} · ${data.caseCount} 药方`
+            : `${data.icon} ${data.name} · ${data.cases.length} 药方`;
+
+          tooltip.textContent = label;
+          tooltip.style.left = (e.clientX + 15) + 'px';
+          tooltip.style.top = (e.clientY - 10) + 'px';
+          tooltip.classList.add('visible');
+          renderer.domElement.style.cursor = 'pointer';
+        }
+      } else {
+        tooltip.classList.remove('visible');
+        renderer.domElement.style.cursor = 'grab';
+      }
+    });
+
+    // ─── 动画循环 ───
+    const clock = new THREE.Clock();
+
+    function animate() {
+      requestAnimationFrame(animate);
+      const t = clock.getElapsedTime();
+
+      // 粒子缓旋
+      if (particles) {
+        particles.rotation.y = t * 0.02;
+        particles.rotation.x = Math.sin(t * 0.1) * 0.05;
+      }
+
+      // 框架节点微浮
+      frameworkGroups.forEach((group, fw) => {
+        const i = fwKeys.indexOf(fw);
+        const offset = i * 0.7;
+        group.position.y += Math.sin(t * 0.5 + offset) * 0.001;
+      });
+
+      controls.update();
+      composer.render();
+    }
+
+    // ─── 启动 ───
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      composer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    // 隐藏加载动画
+    setTimeout(() => {
+      document.getElementById('loader').classList.add('hide');
+    }, 800);
+
+    animate();
+  </script>
+</body>
+</html>

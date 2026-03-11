@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/JinNing6/CyberHuaTuo/schema/case.schema.json",
+  "title": "CyberHuaTuo Case Schema",
+  "description": "Schema for validating CyberHuaTuo case file YAML front matter",
+  "type": "object",
+  "required": [
+    "id",
+    "title",
+    "title_en",
+    "framework",
+    "severity",
+    "complexity",
+    "created_at",
+    "contributors"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+-[a-z0-9-]+-[0-9]{3}$",
+      "description": "Unique case identifier, format: <framework>-<category>-<name>-<number>"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 5,
+      "description": "Chinese title"
+    },
+    "title_en": {
+      "type": "string",
+      "minLength": 5,
+      "description": "English title"
+    },
+    "framework": {
+      "type": "string",
+      "enum": [
+        "langchain",
+        "llamaindex",
+        "crewai",
+        "autogen",
+        "openai-sdk",
+        "mcp",
+        "dspy",
+        "haystack",
+        "semantic-kernel",
+        "pydantic-ai",
+        "langgraph",
+        "pytorch",
+        "transformers",
+        "tensorflow",
+        "custom-agent",
+        "platform-agent",
+        "ml-ops",
+        "general-ai",
+        "_nourishing",
+        "other"
+      ]
+    },
+    "framework_version": {
+      "type": "string",
+      "description": "Affected framework version range"
+    },
+    "language": {
+      "type": "string",
+      "description": "Programming language, e.g. python, typescript"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "description": "Descriptive tags for the case"
+    },
+    "severity": {
+      "type": "string",
+      "enum": ["low", "medium", "high", "critical"]
+    },
+    "complexity": {
+      "type": "string",
+      "enum": ["simple", "moderate", "complex", "extreme"]
+    },
+    "environment": {
+      "type": "object",
+      "properties": {
+        "python_version": { "type": "string" },
+        "os": { "type": "string" }
+      }
+    },
+    "created_at": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+      "description": "Creation date in YYYY-MM-DD format"
+    },
+    "updated_at": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "contributors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["github"],
+        "properties": {
+          "github": { "type": "string" }
+        }
+      },
+      "minItems": 1
+    },
+    "source_url": {
+      "type": "string"
+    },
+    "related_cases": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  },
+  "additionalProperties": true
+}

@@ -4,31 +4,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CyberHuaTuo 赛博华佗</title>
+    <title>CyberHuaTuo 赛博华佗 · AI 问题诊断</title>
+    <meta name="description" content="赛博华佗 — 开源 AI 问题诊断知识库。望闻问切，药到病除。不限框架，不限形态——只要是 AI，华佗都看。">
     <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+SC:wght@300;400;500;700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+SC:wght@300;400;500;700&family=Orbitron:wght@500;700&display=swap"
         rel="stylesheet">
+    <!-- Markdown 渲染 + 代码高亮 -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github-dark-dimmed.min.css">
+    <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+
     <style>
+        /* ===== 设计令牌 (Design Tokens) ===== */
         :root {
-            --bg: #0a0a0a;
-            --surface: #141414;
-            --surface-hover: #1a1a1a;
-            --border: #262626;
-            --border-active: #404040;
-            --text: #fafafa;
-            --text-2: #a1a1aa;
-            --text-3: #52525b;
-            --green: #22c55e;
-            --green-dim: rgba(34, 197, 94, 0.12);
-            --blue: #60a5fa;
-            --orange: #fb923c;
-            --red: #f87171;
-            --purple: #a78bfa;
-            --sans: 'Inter', 'Noto Sans SC', -apple-system, system-ui, sans-serif;
-            --mono: 'JetBrains Mono', 'Cascadia Code', monospace;
+            /* 品牌色彩体系 */
+            --bg-deep: #0A0E1A;
+            --bg-surface: #1A1F2E;
+            --bg-surface-hover: #222840;
+            --border: #2A3050;
+            --border-glow: #00D09C;
+
+            /* 文字 */
+            --text-1: #E8E8F0;
+            --text-2: #8892B0;
+            --text-3: #4A5070;
+
+            /* 品牌色 */
+            --emerald: #00D09C;
+            --emerald-dim: rgba(0, 208, 156, 0.10);
+            --emerald-glow: rgba(0, 208, 156, 0.25);
+            --cyan: #00FFFF;
+            --cyan-dim: rgba(0, 255, 255, 0.08);
+            --gold: #FFD700;
+            --gold-dim: rgba(255, 215, 0, 0.10);
+            --red: #FF4757;
+            --red-dim: rgba(255, 71, 87, 0.10);
+            --green-heal: #2ED573;
+            --blue: #60A5FA;
+            --blue-dim: rgba(96, 165, 250, 0.10);
+            --purple: #A78BFA;
+            --purple-dim: rgba(167, 139, 250, 0.10);
+            --orange: #FB923C;
+            --orange-dim: rgba(251, 146, 60, 0.10);
+
+            /* 字体 */
+            --font-display: 'Orbitron', sans-serif;
+            --font-sans: 'Inter', 'Noto Sans SC', -apple-system, system-ui, sans-serif;
+            --font-mono: 'JetBrains Mono', 'Cascadia Code', monospace;
+
+            /* 圆角 */
+            --radius-lg: 20px;
+            --radius-md: 14px;
+            --radius-sm: 8px;
         }
 
-        * {
+        /* ===== Reset ===== */
+        *,
+        *::before,
+        *::after {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
@@ -36,83 +70,164 @@
 
         html {
             height: 100%;
+            scroll-behavior: smooth;
         }
 
         body {
-            font-family: var(--sans);
-            background: var(--bg);
-            color: var(--text);
+            font-family: var(--font-sans);
+            background: var(--bg-deep);
+            color: var(--text-1);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
+            overflow-x: hidden;
+        }
+
+        /* ===== 背景 · 网格 + 光晕 ===== */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background:
+                linear-gradient(rgba(0, 208, 156, 0.015) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 208, 156, 0.015) 1px, transparent 1px);
+            background-size: 64px 64px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            top: -40%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 800px;
+            height: 800px;
+            background: radial-gradient(ellipse, rgba(0, 208, 156, 0.06) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ===== 主容器 ===== */
+        .main {
+            width: 100%;
+            max-width: 780px;
+            padding: 0 24px;
+            position: relative;
+            z-index: 1;
         }
 
         /* ===== Header ===== */
         .header {
-            width: 100%;
-            max-width: 720px;
-            padding: 48px 24px 0;
             text-align: center;
+            padding: 56px 0 12px;
+            animation: fadeInDown 0.6s ease;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-16px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .logo {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: var(--green);
-            letter-spacing: -0.01em;
-            margin-bottom: 6px;
+            font-family: var(--font-display);
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--emerald);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+            text-shadow: 0 0 24px rgba(0, 208, 156, 0.3);
+        }
+
+        .logo-icon {
+            font-family: var(--font-sans);
+            font-size: 1.3rem;
+            margin-right: 6px;
         }
 
         .tagline {
-            font-size: 0.8rem;
+            font-size: 0.82rem;
             color: var(--text-3);
             font-weight: 400;
+            letter-spacing: 0.02em;
         }
 
-        /* ===== Search Box ===== */
-        .search-wrap {
-            width: 100%;
-            max-width: 720px;
-            padding: 28px 24px 0;
+        .tagline-cn {
+            color: var(--text-2);
+        }
+
+        /* ===== 搜索区域 · Spotlight 风格 ===== */
+        .search-section {
+            padding: 24px 0 0;
             position: sticky;
             top: 0;
-            z-index: 10;
-            background: linear-gradient(var(--bg) 80%, transparent);
+            z-index: 20;
+            background: linear-gradient(var(--bg-deep) 85%, transparent);
+            animation: fadeInUp 0.5s ease 0.1s both;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .search-box {
             position: relative;
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            transition: border-color 0.2s, box-shadow 0.2s;
+            background: var(--bg-surface);
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-lg);
+            transition: border-color 0.3s, box-shadow 0.3s;
         }
 
         .search-box:focus-within {
-            border-color: var(--border-active);
-            box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.08);
+            border-color: var(--emerald);
+            box-shadow:
+                0 0 0 4px var(--emerald-dim),
+                0 0 32px rgba(0, 208, 156, 0.12),
+                0 8px 32px rgba(0, 0, 0, 0.3);
         }
 
         .search-icon {
             position: absolute;
-            left: 18px;
+            left: 20px;
             top: 50%;
             transform: translateY(-50%);
-            font-size: 1.1rem;
-            opacity: 0.4;
+            font-size: 1.15rem;
+            opacity: 0.5;
             pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .search-box:focus-within .search-icon {
+            opacity: 0.8;
         }
 
         .search-input {
             width: 100%;
-            padding: 16px 120px 16px 48px;
+            padding: 18px 140px 18px 52px;
             background: transparent;
             border: none;
             outline: none;
-            color: var(--text);
-            font-family: var(--sans);
-            font-size: 0.95rem;
+            color: var(--text-1);
+            font-family: var(--font-sans);
+            font-size: 1rem;
             line-height: 1.5;
         }
 
@@ -122,7 +237,7 @@
 
         .search-meta {
             position: absolute;
-            right: 14px;
+            right: 16px;
             top: 50%;
             transform: translateY(-50%);
             display: flex;
@@ -131,138 +246,330 @@
         }
 
         .search-badge {
-            font-size: 0.65rem;
+            font-size: 0.68rem;
             color: var(--text-3);
-            background: var(--bg);
-            padding: 3px 8px;
-            border-radius: 6px;
-            font-family: var(--mono);
+            background: rgba(42, 48, 80, 0.6);
+            padding: 4px 10px;
+            border-radius: var(--radius-sm);
+            font-family: var(--font-mono);
+            backdrop-filter: blur(4px);
         }
 
         .search-badge em {
             font-style: normal;
-            color: var(--green);
+            color: var(--emerald);
+            font-weight: 600;
         }
 
-        .loading-line {
+        /* 加载光条 */
+        .loading-bar {
             position: absolute;
             bottom: -1px;
-            left: 16px;
-            right: 16px;
+            left: 20px;
+            right: 20px;
             height: 2px;
             border-radius: 1px;
             overflow: hidden;
             opacity: 0;
-            transition: opacity 0.2s;
+            transition: opacity 0.25s;
         }
 
-        .loading-line.active {
+        .loading-bar.active {
             opacity: 1;
         }
 
-        .loading-line::after {
+        .loading-bar::after {
             content: '';
             display: block;
-            width: 40%;
+            width: 35%;
             height: 100%;
-            background: var(--green);
+            background: linear-gradient(90deg, var(--emerald), var(--cyan));
             border-radius: 1px;
-            animation: slide 0.8s ease-in-out infinite;
+            animation: loadSlide 1s ease-in-out infinite;
         }
 
-        @keyframes slide {
+        @keyframes loadSlide {
             0% {
-                transform: translateX(-100%)
+                transform: translateX(-100%);
             }
 
             100% {
-                transform: translateX(300%)
+                transform: translateX(380%);
             }
         }
 
-        /* ===== Filters (subtle) ===== */
-        .filters {
-            width: 100%;
-            max-width: 720px;
-            padding: 10px 24px;
+        /* ===== 操作栏（过滤 + AI 诊断 + 贡献） ===== */
+        .toolbar {
             display: flex;
             align-items: center;
             gap: 8px;
+            padding: 12px 0 6px;
+            flex-wrap: wrap;
+            animation: fadeInUp 0.5s ease 0.2s both;
         }
 
         .chip {
-            padding: 4px 12px;
+            padding: 5px 14px;
             border-radius: 20px;
             border: 1px solid var(--border);
             background: transparent;
             color: var(--text-3);
-            font-family: var(--sans);
+            font-family: var(--font-sans);
             font-size: 0.72rem;
             cursor: pointer;
-            transition: all 0.15s;
+            transition: all 0.2s;
+            white-space: nowrap;
         }
 
         .chip:hover {
             color: var(--text-2);
-            border-color: var(--border-active);
+            border-color: rgba(0, 208, 156, 0.3);
         }
 
         .chip.active {
-            color: var(--green);
-            border-color: rgba(34, 197, 94, 0.3);
-            background: var(--green-dim);
+            color: var(--emerald);
+            border-color: rgba(0, 208, 156, 0.4);
+            background: var(--emerald-dim);
         }
 
-        .filter-sep {
+        .toolbar-spacer {
             flex: 1;
         }
 
-        .link-btn {
-            color: var(--text-3);
+        .btn-diagnose {
+            padding: 5px 14px;
+            border-radius: 20px;
+            border: 1px solid rgba(0, 208, 156, 0.3);
+            background: var(--emerald-dim);
+            color: var(--emerald);
+            font-family: var(--font-sans);
+            font-size: 0.72rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s;
+        }
+
+        .btn-diagnose:hover {
+            background: rgba(0, 208, 156, 0.18);
+            border-color: var(--emerald);
+            box-shadow: 0 0 12px rgba(0, 208, 156, 0.15);
+        }
+
+        .link-contribute {
+            color: var(--gold);
             font-size: 0.72rem;
             text-decoration: none;
             font-weight: 500;
-            transition: color 0.15s;
+            transition: color 0.2s;
+            opacity: 0.7;
         }
 
-        .link-btn:hover {
-            color: var(--green);
+        .link-contribute:hover {
+            opacity: 1;
+            text-shadow: 0 0 8px rgba(255, 215, 0, 0.3);
         }
 
-        /* ===== Results ===== */
-        .results {
+        /* ===== 开发者设置面板 · API Key ===== */
+        .dev-settings {
+            animation: fadeInUp 0.5s ease 0.25s both;
+        }
+
+        .dev-settings-toggle {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 0;
+            cursor: pointer;
+            user-select: none;
+            color: var(--text-3);
+            font-size: 0.75rem;
+            transition: color 0.2s;
+        }
+
+        .dev-settings-toggle:hover {
+            color: var(--text-2);
+        }
+
+        .dev-settings-toggle .arrow {
+            transition: transform 0.25s;
+            font-size: 0.6rem;
+        }
+
+        .dev-settings-toggle.open .arrow {
+            transform: rotate(90deg);
+        }
+
+        .dev-settings-status {
+            margin-left: auto;
+            font-size: 0.68rem;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-family: var(--font-mono);
+        }
+
+        .status-configured {
+            color: var(--green-heal);
+            background: rgba(46, 213, 115, 0.1);
+        }
+
+        .status-not-configured {
+            color: var(--text-3);
+            background: rgba(74, 80, 112, 0.2);
+        }
+
+        .dev-panel {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.35s ease, padding 0.35s ease;
+            background: var(--bg-surface);
+            border-radius: var(--radius-md);
+            border: 1px solid transparent;
+        }
+
+        .dev-panel.open {
+            max-height: 300px;
+            padding: 18px 20px;
+            border-color: var(--border);
+            margin-bottom: 8px;
+        }
+
+        .dev-panel-row {
+            display: grid;
+            grid-template-columns: 1fr 160px;
+            gap: 12px;
+            align-items: end;
+        }
+
+        .dev-label {
+            display: block;
+            font-size: 0.72rem;
+            color: var(--text-3);
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .dev-input {
             width: 100%;
-            max-width: 720px;
-            padding: 0 24px 60px;
+            padding: 9px 36px 9px 12px;
+            background: var(--bg-deep);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text-1);
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .dev-input:focus {
+            border-color: var(--emerald);
+        }
+
+        .dev-input::placeholder {
+            color: var(--text-3);
+        }
+
+        .dev-select {
+            width: 100%;
+            padding: 9px 12px;
+            background: var(--bg-deep);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text-1);
+            font-family: var(--font-sans);
+            font-size: 0.8rem;
+            outline: none;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+
+        .dev-select:focus {
+            border-color: var(--emerald);
+        }
+
+        .key-input-wrap {
+            position: relative;
+        }
+
+        .key-toggle-vis {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--text-3);
+            cursor: pointer;
+            font-size: 0.85rem;
+            padding: 2px;
+            transition: color 0.2s;
+        }
+
+        .key-toggle-vis:hover {
+            color: var(--text-2);
+        }
+
+        .dev-hint {
+            font-size: 0.68rem;
+            color: var(--text-3);
+            margin-top: 10px;
+            line-height: 1.5;
+        }
+
+        .dev-hint a {
+            color: var(--emerald);
+            text-decoration: none;
+        }
+
+        /* ===== 结果区域 ===== */
+        .results {
+            padding: 0 0 80px;
         }
 
         .results-status {
             font-size: 0.75rem;
             color: var(--text-3);
-            padding: 4px 0 12px;
-            font-family: var(--mono);
+            padding: 8px 0 14px;
+            font-family: var(--font-mono);
         }
 
         .results-status strong {
-            color: var(--green);
+            color: var(--emerald);
         }
 
-        /* Case Card */
+        /* ===== 病例卡片 · Glassmorphism ===== */
         .card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            margin-bottom: 8px;
-            transition: border-color 0.15s;
+            background: rgba(26, 31, 46, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(42, 48, 80, 0.6);
+            border-radius: var(--radius-md);
+            margin-bottom: 10px;
+            transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
             overflow: hidden;
+            animation: cardIn 0.4s ease both;
+        }
+
+        @keyframes cardIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .card:hover {
-            border-color: var(--border-active);
+            border-color: rgba(0, 208, 156, 0.3);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            transform: translateY(-1px);
         }
 
         .card-head {
-            padding: 14px 16px;
+            padding: 16px 18px;
             cursor: pointer;
             display: flex;
             align-items: flex-start;
@@ -275,10 +582,10 @@
         }
 
         .card-title {
-            font-size: 0.9rem;
+            font-size: 0.92rem;
             font-weight: 600;
-            line-height: 1.4;
-            margin-bottom: 2px;
+            line-height: 1.45;
+            margin-bottom: 3px;
         }
 
         .card-subtitle {
@@ -289,55 +596,55 @@
 
         .card-tags {
             display: flex;
-            gap: 4px;
+            gap: 5px;
             flex-wrap: wrap;
         }
 
-        .t {
-            padding: 2px 8px;
-            border-radius: 8px;
+        .tag {
+            padding: 2px 9px;
+            border-radius: var(--radius-sm);
             font-size: 0.65rem;
             font-weight: 500;
             border: 1px solid;
         }
 
-        .t-fw {
+        .tag-fw {
             color: var(--blue);
-            border-color: rgba(96, 165, 250, 0.2);
-            background: rgba(96, 165, 250, 0.06);
+            border-color: rgba(96, 165, 250, 0.25);
+            background: var(--blue-dim);
         }
 
-        .t-sv-low {
-            color: #4ade80;
-            border-color: rgba(74, 222, 128, 0.2);
-            background: rgba(74, 222, 128, 0.06);
+        .tag-sv-low {
+            color: var(--green-heal);
+            border-color: rgba(46, 213, 115, 0.25);
+            background: rgba(46, 213, 115, 0.06);
         }
 
-        .t-sv-medium {
+        .tag-sv-medium {
             color: var(--orange);
-            border-color: rgba(251, 146, 60, 0.2);
-            background: rgba(251, 146, 60, 0.06);
+            border-color: rgba(251, 146, 60, 0.25);
+            background: var(--orange-dim);
         }
 
-        .t-sv-high {
+        .tag-sv-high {
             color: var(--red);
-            border-color: rgba(248, 113, 113, 0.2);
-            background: rgba(248, 113, 113, 0.06);
+            border-color: rgba(255, 71, 87, 0.25);
+            background: var(--red-dim);
         }
 
-        .t-sv-critical {
+        .tag-sv-critical {
             color: #fca5a5;
-            border-color: rgba(252, 165, 165, 0.25);
+            border-color: rgba(252, 165, 165, 0.3);
             background: rgba(252, 165, 165, 0.08);
         }
 
-        .t-cx {
+        .tag-cx {
             color: var(--purple);
-            border-color: rgba(167, 139, 250, 0.2);
-            background: rgba(167, 139, 250, 0.06);
+            border-color: rgba(167, 139, 250, 0.25);
+            background: var(--purple-dim);
         }
 
-        .t-k {
+        .tag-k {
             color: var(--text-3);
             border-color: var(--border);
             background: transparent;
@@ -345,117 +652,304 @@
 
         .card-score {
             flex-shrink: 0;
-            padding: 3px 9px;
-            border-radius: 8px;
-            font-size: 0.7rem;
-            font-weight: 600;
-            font-family: var(--mono);
+            padding: 4px 10px;
+            border-radius: var(--radius-sm);
+            font-size: 0.72rem;
+            font-weight: 700;
+            font-family: var(--font-mono);
         }
 
-        .s-hi {
-            color: var(--green);
-            background: var(--green-dim);
+        .score-hi {
+            color: var(--emerald);
+            background: var(--emerald-dim);
         }
 
-        .s-md {
+        .score-md {
             color: var(--blue);
-            background: rgba(96, 165, 250, 0.1);
+            background: var(--blue-dim);
         }
 
-        .s-lo {
+        .score-lo {
             color: var(--text-3);
-            background: rgba(82, 82, 91, 0.2);
+            background: rgba(74, 80, 112, 0.2);
         }
 
+        /* 卡片展开详情 */
         .card-detail {
             display: none;
-            border-top: 1px solid var(--border);
+            border-top: 1px solid rgba(42, 48, 80, 0.5);
         }
 
         .card-detail.open {
             display: block;
         }
 
-        .card-detail pre {
-            padding: 14px 16px;
-            font-family: var(--mono);
-            font-size: 0.78rem;
-            line-height: 1.7;
-            color: var(--text-2);
-            white-space: pre-wrap;
-            word-break: break-word;
-        }
-
-        /* AI Diagnosis */
-        .ai-card {
-            background: var(--surface);
-            border: 1px solid rgba(34, 197, 94, 0.25);
-            border-radius: 12px;
-            margin-bottom: 12px;
-            overflow: hidden;
-        }
-
-        .ai-header {
-            padding: 10px 16px;
-            background: var(--green-dim);
-            font-size: 0.78rem;
-            font-weight: 600;
-            color: var(--green);
-            border-bottom: 1px solid rgba(34, 197, 94, 0.12);
-        }
-
-        .ai-body {
-            padding: 16px;
-            font-size: 0.85rem;
+        .card-detail-content {
+            padding: 16px 18px;
+            font-size: 0.84rem;
             line-height: 1.8;
-            white-space: pre-wrap;
+            color: var(--text-2);
         }
 
-        .ai-body code {
-            background: rgba(96, 165, 250, 0.1);
-            padding: 1px 5px;
-            border-radius: 4px;
-            font-family: var(--mono);
+        .card-detail-content pre {
+            background: var(--bg-deep);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 14px;
+            overflow-x: auto;
+            margin: 8px 0;
+        }
+
+        .card-detail-content code {
+            font-family: var(--font-mono);
             font-size: 0.8rem;
+        }
+
+        .card-detail-content p code {
+            background: rgba(96, 165, 250, 0.12);
+            padding: 1px 6px;
+            border-radius: 4px;
             color: var(--blue);
         }
 
-        /* Empty */
+        /* ===== AI 诊断卡片 ===== */
+        .ai-card {
+            background: rgba(26, 31, 46, 0.8);
+            backdrop-filter: blur(16px);
+            border: 1.5px solid rgba(0, 208, 156, 0.3);
+            border-radius: var(--radius-md);
+            margin-bottom: 14px;
+            overflow: hidden;
+            animation: aiCardIn 0.5s ease both;
+            box-shadow: 0 0 24px rgba(0, 208, 156, 0.06);
+        }
+
+        @keyframes aiCardIn {
+            from {
+                opacity: 0;
+                transform: translateY(12px) scale(0.98);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .ai-header {
+            padding: 12px 18px;
+            background: linear-gradient(135deg, var(--emerald-dim), rgba(0, 255, 255, 0.05));
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--emerald);
+            border-bottom: 1px solid rgba(0, 208, 156, 0.15);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .ai-header .pulse {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--emerald);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 0.4;
+                box-shadow: 0 0 0 0 rgba(0, 208, 156, 0.4);
+            }
+
+            50% {
+                opacity: 1;
+                box-shadow: 0 0 0 6px rgba(0, 208, 156, 0);
+            }
+        }
+
+        .ai-body {
+            padding: 18px 20px;
+            font-size: 0.87rem;
+            line-height: 1.85;
+            color: var(--text-1);
+        }
+
+        /* Markdown 渲染样式 */
+        .ai-body h1,
+        .ai-body h2,
+        .ai-body h3 {
+            color: var(--emerald);
+            margin: 16px 0 8px;
+            font-weight: 600;
+        }
+
+        .ai-body h1 {
+            font-size: 1.1rem;
+        }
+
+        .ai-body h2 {
+            font-size: 1rem;
+        }
+
+        .ai-body h3 {
+            font-size: 0.92rem;
+        }
+
+        .ai-body p {
+            margin: 8px 0;
+        }
+
+        .ai-body ul,
+        .ai-body ol {
+            margin: 8px 0;
+            padding-left: 20px;
+        }
+
+        .ai-body li {
+            margin: 4px 0;
+        }
+
+        .ai-body pre {
+            background: var(--bg-deep);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 14px 16px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+
+        .ai-body code {
+            font-family: var(--font-mono);
+            font-size: 0.82rem;
+        }
+
+        .ai-body p code,
+        .ai-body li code {
+            background: rgba(96, 165, 250, 0.12);
+            padding: 1px 6px;
+            border-radius: 4px;
+            color: var(--blue);
+        }
+
+        .ai-body blockquote {
+            border-left: 3px solid var(--gold);
+            padding: 8px 16px;
+            margin: 10px 0;
+            background: var(--gold-dim);
+            border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+            color: var(--text-2);
+        }
+
+        .ai-body a {
+            color: var(--cyan);
+            text-decoration: none;
+        }
+
+        .ai-body a:hover {
+            text-decoration: underline;
+        }
+
+        .ai-body hr {
+            border: none;
+            border-top: 1px solid var(--border);
+            margin: 16px 0;
+        }
+
+        .ai-body table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+            font-size: 0.84rem;
+        }
+
+        .ai-body th,
+        .ai-body td {
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            text-align: left;
+        }
+
+        .ai-body th {
+            background: rgba(42, 48, 80, 0.5);
+            font-weight: 600;
+        }
+
+        /* ===== 空状态 ===== */
         .empty {
             text-align: center;
-            padding: 80px 24px;
+            padding: 100px 24px 80px;
             color: var(--text-3);
+            animation: fadeInUp 0.5s ease 0.3s both;
         }
 
         .empty-icon {
-            font-size: 2.2rem;
-            margin-bottom: 12px;
-            opacity: 0.4;
+            font-size: 3rem;
+            margin-bottom: 16px;
+            opacity: 0.35;
+            animation: breathe 3s ease-in-out infinite;
+        }
+
+        @keyframes breathe {
+
+            0%,
+            100% {
+                opacity: 0.3;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.5;
+                transform: scale(1.05);
+            }
         }
 
         .empty-text {
-            font-size: 0.85rem;
+            font-size: 0.88rem;
             line-height: 1.7;
+            color: var(--text-2);
         }
 
         .empty-hint {
             font-size: 0.72rem;
-            margin-top: 8px;
-            font-family: var(--mono);
+            margin-top: 10px;
+            font-family: var(--font-mono);
+            color: var(--text-3);
         }
 
         .kbd {
             display: inline-block;
-            padding: 1px 6px;
+            padding: 2px 7px;
             border: 1px solid var(--border);
             border-radius: 4px;
-            font-family: var(--mono);
+            font-family: var(--font-mono);
             font-size: 0.65rem;
             color: var(--text-3);
-            background: var(--surface);
+            background: var(--bg-surface);
             vertical-align: 1px;
         }
 
+        /* ===== Footer ===== */
+        .footer {
+            text-align: center;
+            padding: 24px 0 40px;
+            font-size: 0.72rem;
+            color: var(--text-3);
+        }
+
+        .footer a {
+            color: var(--emerald);
+            text-decoration: none;
+            transition: opacity 0.2s;
+        }
+
+        .footer a:hover {
+            opacity: 0.8;
+        }
+
+        /* ===== 滚动条 ===== */
         ::-webkit-scrollbar {
             width: 5px;
         }
@@ -468,126 +962,269 @@
             background: var(--border);
             border-radius: 3px;
         }
+
+        /* ===== 响应式 ===== */
+        @media (max-width: 640px) {
+            .header {
+                padding: 36px 0 8px;
+            }
+
+            .logo {
+                font-size: 1.15rem;
+            }
+
+            .search-input {
+                padding: 15px 100px 15px 44px;
+                font-size: 0.92rem;
+            }
+
+            .dev-panel-row {
+                grid-template-columns: 1fr;
+            }
+
+            .toolbar {
+                gap: 6px;
+            }
+        }
     </style>
 </head>
 
 <body>
+    <div class="main">
 
-    <div class="header">
-        <div class="logo">🩺 CyberHuaTuo</div>
-        <div class="tagline">望闻问切，药到病除 · Diagnose. Prescribe. Cure.</div>
-    </div>
-
-    <div class="search-wrap">
-        <div class="search-box">
-            <span class="search-icon">🔍</span>
-            <input id="q" class="search-input" type="text" placeholder="描述你遇到的问题，或粘贴报错信息 ..." autocomplete="off"
-                autofocus />
-            <div class="search-meta">
-                <span class="search-badge">知识库 <em>{{ case_count }}</em></span>
+        <!-- Header -->
+        <header class="header" id="header">
+            <div class="logo">
+                <span class="logo-icon">🩺</span>CyberHuaTuo
             </div>
-            <div class="loading-line" id="loader"></div>
-        </div>
-    </div>
-
-    <div class="filters" id="filtersBar">
-        <button class="chip active" data-fw="all" onclick="setFilter(this)">全部</button>
-        {% for fw in frameworks %}
-        <button class="chip" data-fw="{{ fw }}" onclick="setFilter(this)">{{ fw }}</button>
-        {% endfor %}
-        <div class="filter-sep"></div>
-        {% if has_llm %}
-        <button class="chip" id="aiChip" onclick="doDiagnose()">🩺 AI 诊断</button>
-        {% endif %}
-        <a href="/contribute" class="link-btn">+ 开药方</a>
-    </div>
-
-    <div class="results" id="results">
-        <div class="empty" id="empty">
-            <div class="empty-icon">🩺</div>
-            <div class="empty-text">
-                输入问题描述后自动检索匹配病例
+            <div class="tagline">
+                <span class="tagline-cn">望闻问切，药到病除</span> · Diagnose. Prescribe. Cure.
             </div>
-            <div class="empty-hint">
-                <span class="kbd">Enter</span> 搜索 · 支持中英文语义匹配
+        </header>
+
+        <!-- 搜索区域 -->
+        <section class="search-section">
+            <div class="search-box" id="searchBox">
+                <span class="search-icon">🔍</span>
+                <input id="searchInput" class="search-input" type="text" placeholder="描述你遇到的问题，或粘贴报错信息 ..."
+                    autocomplete="off" autofocus />
+                <div class="search-meta">
+                    <span class="search-badge">知识库 <em>{{ case_count }}</em></span>
+                </div>
+                <div class="loading-bar" id="loadingBar"></div>
             </div>
-        </div>
+        </section>
+
+        <!-- 操作栏 -->
+        <nav class="toolbar" id="toolbar">
+            <button class="chip active" data-fw="all" onclick="setFilter(this)">全部</button>
+            {% for fw in frameworks %}
+            <button class="chip" data-fw="{{ fw }}" onclick="setFilter(this)">{{ fw }}</button>
+            {% endfor %}
+            <div class="toolbar-spacer"></div>
+            <button class="btn-diagnose" id="btnDiagnose" onclick="doDiagnose()">🩺 AI 诊断</button>
+            <a href="/nourish" class="link-contribute" style="margin-right: 4px;">🧬 滋补</a>
+            <a href="/epidemic" class="link-contribute" style="margin-right: 4px;">🦠 疫情</a>
+            <a href="/mine" class="link-contribute" style="margin-right: 4px;">⛏️ 淘金</a>
+            <a href="/contribute" class="link-contribute">+ 开药方</a>
+        </nav>
+
+        <!-- 开发者设置 · API Key -->
+        <section class="dev-settings" id="devSettings">
+            <div class="dev-settings-toggle" id="devToggle" onclick="toggleDevPanel()">
+                <span class="arrow">▸</span>
+                <span>🔑 开发者设置</span>
+                <span>Developer Settings</span>
+                <span class="dev-settings-status" id="devStatus"></span>
+            </div>
+            <div class="dev-panel" id="devPanel">
+                <div class="dev-panel-row">
+                    <div style="flex: 2;">
+                        <label class="dev-label">API Key</label>
+                        <div class="key-input-wrap">
+                            <input id="apiKeyInput" class="dev-input" type="password" placeholder="sk-xxxxx..."
+                                autocomplete="off" oninput="saveApiKey()" />
+                            <button class="key-toggle-vis" onclick="toggleKeyVis()" title="显示/隐藏 Key">👁</button>
+                        </div>
+                    </div>
+                    <div style="flex: 1;">
+                        <label class="dev-label">提供商 Provider</label>
+                        <select id="providerSelect" class="dev-select" onchange="saveApiKey()">
+                            <option value="openai">OpenAI</option>
+                            <option value="anthropic">Anthropic</option>
+                            <option value="deepseek">DeepSeek</option>
+                            <option value="kimi">Kimi (Moonshot)</option>
+                            <option value="doubao">豆包 (Doubao)</option>
+                            <option value="minimax">MiniMax</option>
+                            <option value="groq">Groq</option>
+                            <option value="google">Google / Gemini</option>
+                            <option value="cohere">Cohere</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="dev-panel-row" id="modelRow" style="display: none; margin-top: 12px;">
+                    <div style="flex: 1;">
+                        <label class="dev-label">模型 / 接入点 (Model / Endpoint)</label>
+                        <input id="modelInput" class="dev-input" type="text"
+                            placeholder="留空使用默认模型，豆包须填入 endpoint (如 ep-2024...)" autocomplete="off"
+                            oninput="saveApiKey()" />
+                    </div>
+                </div>
+                <div class="dev-hint">
+                    🔒 API Key 仅保存在你的浏览器本地，不会上传到服务器存储。
+                    <br>填入你的 Key 后，可使用 <strong style="color: var(--emerald)">AI 诊断</strong> 功能获取智能诊断结果。
+                </div>
+            </div>
+        </section>
+
+        <!-- 结果区域 -->
+        <section class="results" id="results">
+            <div class="empty" id="emptyState">
+                <div class="empty-icon">🩺</div>
+                <div class="empty-text">
+                    输入问题描述后自动检索匹配病例
+                </div>
+                <div class="empty-hint">
+                    <span class="kbd">Enter</span> 搜索 · 支持中英文语义匹配
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <a href="https://github.com/ZhangJinqian/CyberHuaTuo" target="_blank">GitHub</a>
+            &nbsp;·&nbsp;
+            <a href="/contribute">贡献药方</a>
+            &nbsp;·&nbsp;
+            CyberHuaTuo 赛博华佗
+        </footer>
     </div>
 
     <script>
-        const SV_CLS = { low: 't-sv-low', medium: 't-sv-medium', high: 't-sv-high', critical: 't-sv-critical' };
+        // ===== 配置 marked.js =====
+        marked.setOptions({
+            highlight: function (code, lang) {
+                if (lang && hljs.getLanguage(lang)) {
+                    return hljs.highlight(code, { language: lang }).value;
+                }
+                return hljs.highlightAuto(code).value;
+            },
+            breaks: true,
+            gfm: true,
+        });
+
+        // ===== 常量 =====
+        const SV_CLS = {
+            low: 'tag-sv-low',
+            medium: 'tag-sv-medium',
+            high: 'tag-sv-high',
+            critical: 'tag-sv-critical'
+        };
         const cxEmoji = {{ complexity_emoji | tojson }};
         let currentFw = 'all';
         let debounceTimer = null;
 
-        function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
-        function sClass(v) { return v >= 65 ? 's-hi' : v >= 35 ? 's-md' : 's-lo'; }
+        // ===== 工具函数 =====
+        function esc(s) {
+            const d = document.createElement('div');
+            d.textContent = s;
+            return d.innerHTML;
+        }
 
+        function scoreClass(v) {
+            return v >= 65 ? 'score-hi' : v >= 35 ? 'score-md' : 'score-lo';
+        }
+
+        function renderMarkdown(text) {
+            try {
+                return marked.parse(text);
+            } catch (e) {
+                return '<pre>' + esc(text) + '</pre>';
+            }
+        }
+
+        // ===== 搜索过滤 =====
         function setFilter(el) {
             document.querySelectorAll('.chip[data-fw]').forEach(c => c.classList.remove('active'));
             el.classList.add('active');
             currentFw = el.dataset.fw;
-            const q = document.getElementById('q').value.trim();
+            const q = document.getElementById('searchInput').value.trim();
             if (q) doSearch();
         }
 
-        function showLoader() { document.getElementById('loader').classList.add('active'); }
-        function hideLoader() { document.getElementById('loader').classList.remove('active'); }
+        // ===== 加载状态 =====
+        function showLoader() { document.getElementById('loadingBar').classList.add('active'); }
+        function hideLoader() { document.getElementById('loadingBar').classList.remove('active'); }
 
+        // ===== 渲染搜索结果 =====
         function renderResults(data, diagnosisHtml) {
             const box = document.getElementById('results');
             let html = '';
 
+            // AI 诊断结果
             if (diagnosisHtml) {
+                const rendered = renderMarkdown(diagnosisHtml);
                 html += `<div class="ai-card">
-            <div class="ai-header">🩺 AI 望闻问切</div>
-            <div class="ai-body">${esc(diagnosisHtml)}</div>
-        </div>`;
+                    <div class="ai-header">
+                        <span class="pulse"></span>
+                        🩺 AI 望闻问切
+                        <span style="font-weight:400;font-size:0.72rem;color:var(--text-3);margin-left:auto;">powered by LLM</span>
+                    </div>
+                    <div class="ai-body">${rendered}</div>
+                </div>`;
             }
 
+            // 无结果
             if (!data.results || data.results.length === 0) {
                 if (!diagnosisHtml) {
-                    box.innerHTML = `<div class="empty"><div class="empty-icon">💊</div>
-                <div class="empty-text">未找到匹配病例</div>
-                <div class="empty-hint">试试其他关键词，或 <a href="/contribute" style="color:var(--green)">贡献新药方</a></div>
-            </div>`;
+                    box.innerHTML = `<div class="empty">
+                        <div class="empty-icon">💊</div>
+                        <div class="empty-text">未找到匹配病例</div>
+                        <div class="empty-hint">试试其他关键词，或 <a href="/contribute" style="color:var(--emerald)">贡献新药方</a></div>
+                    </div>`;
                     return;
                 }
                 box.innerHTML = html;
                 return;
             }
 
+            // 结果统计
             html += `<div class="results-status">匹配 <strong>${data.results.length}</strong> 个病例</div>`;
 
+            // 结果卡片
             html += data.results.map((r, i) => {
                 const tags = r.tags ? r.tags.split(',').filter(Boolean) : [];
-                return `<div class="card">
-            <div class="card-head" onclick="toggle(${i})">
-                <div class="card-body">
-                    <div class="card-title">${esc(r.title || r.case_id)}</div>
-                    ${r.title_en ? `<div class="card-subtitle">${esc(r.title_en)}</div>` : ''}
-                    <div class="card-tags">
-                        <span class="t t-fw">${r.framework}</span>
-                        <span class="t ${SV_CLS[r.severity] || 't-sv-medium'}">${r.severity}</span>
-                        <span class="t t-cx">${cxEmoji[r.complexity] || ''} ${r.complexity}</span>
-                        ${tags.map(t => `<span class="t t-k">${t.trim()}</span>`).join('')}
+                const delay = i * 0.06;
+                return `<div class="card" style="animation-delay:${delay}s">
+                    <div class="card-head" onclick="toggleCard(${i})">
+                        <div class="card-body">
+                            <div class="card-title">${esc(r.title || r.case_id)}</div>
+                            ${r.title_en ? `<div class="card-subtitle">${esc(r.title_en)}</div>` : ''}
+                            <div class="card-tags">
+                                <span class="tag tag-fw">${r.framework}</span>
+                                <span class="tag ${SV_CLS[r.severity] || 'tag-sv-medium'}">${r.severity}</span>
+                                <span class="tag tag-cx">${cxEmoji[r.complexity] || ''} ${r.complexity}</span>
+                                ${tags.map(t => `<span class="tag tag-k">${t.trim()}</span>`).join('')}
+                            </div>
+                        </div>
+                        <span class="card-score ${scoreClass(r.relevance)}">${r.relevance}%</span>
                     </div>
-                </div>
-                <span class="card-score ${sClass(r.relevance)}">${r.relevance}%</span>
-            </div>
-            <div class="card-detail" id="d${i}">
-                <pre>${esc(r.content || '')}</pre>
-            </div>
-        </div>`;
+                    <div class="card-detail" id="detail${i}">
+                        <div class="card-detail-content">${r.content ? renderMarkdown(r.content) : '<em style="color:var(--text-3)">无详细内容</em>'}</div>
+                    </div>
+                </div>`;
             }).join('');
 
             box.innerHTML = html;
         }
 
-        function toggle(i) { document.getElementById('d' + i).classList.toggle('open'); }
+        function toggleCard(i) {
+            document.getElementById('detail' + i).classList.toggle('open');
+        }
 
+        // ===== 搜索 API =====
         async function doSearch() {
-            const q = document.getElementById('q').value.trim();
+            const q = document.getElementById('searchInput').value.trim();
             if (!q) return;
             showLoader();
             try {
@@ -597,41 +1234,151 @@
                 const d = await r.json();
                 hideLoader();
                 renderResults(d);
-            } catch (e) { hideLoader(); }
+            } catch (e) {
+                hideLoader();
+                console.error('搜索失败:', e);
+            }
         }
 
+        // ===== AI 诊断 API =====
         async function doDiagnose() {
-            const q = document.getElementById('q').value.trim();
-            if (!q) { alert('请先输入问题描述'); return; }
+            const q = document.getElementById('searchInput').value.trim();
+            if (!q) {
+                // 搜索框轻微抖动提示
+                const box = document.getElementById('searchBox');
+                box.style.animation = 'shake 0.4s ease';
+                setTimeout(() => box.style.animation = '', 400);
+                return;
+            }
             showLoader();
             try {
                 const fd = new FormData();
                 fd.append('q', q);
                 if (currentFw !== 'all') fd.append('framework', currentFw);
+
+                // 添加用户自定义 API Key 以及模型
+                const apiKey = localStorage.getItem('cht_api_key') || '';
+                const provider = localStorage.getItem('cht_provider') || 'openai';
+                const model = localStorage.getItem('cht_model') || '';
+                if (apiKey) {
+                    fd.append('api_key', apiKey);
+                    fd.append('provider', provider);
+                    if (model) {
+                        fd.append('model', model);
+                    }
+                }
+
                 const r = await fetch('/api/diagnose', { method: 'POST', body: fd });
                 const d = await r.json();
                 hideLoader();
-                const results = (d.matched_cases || []).map(c => ({ ...c, content: null, tags: '', severity: 'medium', complexity: 'moderate', title_en: '' }));
+
+                const results = (d.matched_cases || []).map(c => ({
+                    ...c,
+                    content: null,
+                    tags: '',
+                    severity: 'medium',
+                    complexity: 'moderate',
+                    title_en: ''
+                }));
                 renderResults({ results }, d.diagnosis);
-            } catch (e) { hideLoader(); }
+            } catch (e) {
+                hideLoader();
+                console.error('诊断失败:', e);
+            }
         }
 
-        // 输入时自动搜索（防抖 600ms）
-        document.getElementById('q').addEventListener('input', () => {
+        // ===== 开发者设置面板 =====
+        function toggleDevPanel() {
+            const toggle = document.getElementById('devToggle');
+            const panel = document.getElementById('devPanel');
+            toggle.classList.toggle('open');
+            panel.classList.toggle('open');
+        }
+
+        function toggleKeyVis() {
+            const input = document.getElementById('apiKeyInput');
+            input.type = input.type === 'password' ? 'text' : 'password';
+        }
+
+        function saveApiKey() {
+            const key = document.getElementById('apiKeyInput').value.trim();
+            const provider = document.getElementById('providerSelect').value;
+            const model = document.getElementById('modelInput').value.trim();
+            localStorage.setItem('cht_api_key', key);
+            localStorage.setItem('cht_provider', provider);
+            localStorage.setItem('cht_model', model);
+
+            const modelRow = document.getElementById('modelRow');
+            modelRow.style.display = (key || provider === 'doubao') ? 'flex' : 'none';
+
+            updateDevStatus();
+        }
+
+        function loadApiKey() {
+            const key = localStorage.getItem('cht_api_key') || '';
+            const provider = localStorage.getItem('cht_provider') || 'openai';
+            const model = localStorage.getItem('cht_model') || '';
+            document.getElementById('apiKeyInput').value = key;
+            document.getElementById('providerSelect').value = provider;
+            document.getElementById('modelInput').value = model;
+
+            const modelRow = document.getElementById('modelRow');
+            modelRow.style.display = (key || provider === 'doubao') ? 'flex' : 'none';
+
+            updateDevStatus();
+        }
+
+        function updateDevStatus() {
+            const key = localStorage.getItem('cht_api_key') || '';
+            const el = document.getElementById('devStatus');
+            if (key) {
+                el.textContent = '✅ 已配置';
+                el.className = 'dev-settings-status status-configured';
+            } else {
+                el.textContent = '未配置';
+                el.className = 'dev-settings-status status-not-configured';
+            }
+        }
+
+        // ===== 输入自动搜索（防抖 600ms） =====
+        document.getElementById('searchInput').addEventListener('input', () => {
             clearTimeout(debounceTimer);
-            const q = document.getElementById('q').value.trim();
+            const q = document.getElementById('searchInput').value.trim();
             if (!q) {
-                document.getElementById('results').innerHTML = `<div class="empty"><div class="empty-icon">🩺</div>
-            <div class="empty-text">输入问题描述后自动检索匹配病例</div>
-            <div class="empty-hint"><span class="kbd">Enter</span> 搜索 · 支持中英文语义匹配</div></div>`;
+                document.getElementById('results').innerHTML = `
+                    <div class="empty" id="emptyState">
+                        <div class="empty-icon">🩺</div>
+                        <div class="empty-text">输入问题描述后自动检索匹配病例</div>
+                        <div class="empty-hint"><span class="kbd">Enter</span> 搜索 · 支持中英文语义匹配</div>
+                    </div>`;
                 return;
             }
             debounceTimer = setTimeout(doSearch, 600);
         });
 
-        document.getElementById('q').addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') { e.preventDefault(); clearTimeout(debounceTimer); doSearch(); }
+        document.getElementById('searchInput').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                clearTimeout(debounceTimer);
+                doSearch();
+            }
         });
+
+        // ===== 抖动动画 =====
+        const shakeStyle = document.createElement('style');
+        shakeStyle.textContent = `
+            @keyframes shake {
+                0%, 100% { transform: translateX(0); }
+                20% { transform: translateX(-6px); }
+                40% { transform: translateX(6px); }
+                60% { transform: translateX(-4px); }
+                80% { transform: translateX(4px); }
+            }
+        `;
+        document.head.appendChild(shakeStyle);
+
+        // ===== 初始化 =====
+        loadApiKey();
     </script>
 </body>
 

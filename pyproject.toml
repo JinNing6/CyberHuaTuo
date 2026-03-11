@@ -1,0 +1,57 @@
+# ============================================================
+# 🩺 CyberHuaTuo — 项目配置
+# ============================================================
+
+[project]
+name = "cyberhuatuo"
+version = "0.1.0"
+description = "开源的 AI Agent 问题诊断知识库 / Open-source diagnostic intelligence for AI agents"
+readme = "README.md"
+license = {text = "Apache-2.0"}
+requires-python = ">=3.9"
+
+[project.scripts]
+cyberhuatuo-mcp = "cyberhuatuo.mcp_server:main"
+
+[tool.ruff]
+line-length = 120
+target-version = "py39"
+
+[tool.ruff.lint]
+# 启用的规则集
+select = [
+    "E",     # pycodestyle errors
+    "W",     # pycodestyle warnings
+    "F",     # pyflakes
+    "I",     # isort
+    "N",     # pep8-naming
+    "UP",    # pyupgrade
+    "B",     # flake8-bugbear
+    "SIM",   # flake8-simplify
+]
+
+# 忽略的规则
+ignore = [
+    "E501",  # line too long (由 formatter 处理)
+    "B008",  # do not perform function calls in argument defaults (FastAPI 需要)
+    "B905",  # zip without strict (Python 3.9 兼容)
+    "UP007", # Use X | Y for union types (Python 3.9 兼容)
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101"]  # 允许测试中使用 assert
+
+[tool.ruff.lint.isort]
+known-first-party = ["cyberhuatuo"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests requiring external APIs",
+]
+
+[tool.bandit]
+exclude_dirs = ["tests", ".github"]
+skips = ["B101"]  # 跳过 assert 检查

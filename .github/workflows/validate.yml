@@ -1,0 +1,28 @@
+name: 🩺 Validate Cases
+
+on:
+  pull_request:
+    paths:
+      - 'cases/**'
+      - 'schema/**'
+      - 'tools/validate.py'
+
+jobs:
+  validate:
+    name: 校验病例格式
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install pyyaml jsonschema
+
+      - name: Validate cases
+        run: python tools/validate.py --verbose

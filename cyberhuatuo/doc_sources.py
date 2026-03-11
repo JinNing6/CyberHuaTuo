@@ -18,7 +18,7 @@ class FrameworkDoc:
     tags: tuple[str, ...] = ()   # 关键词标签
 
 
-# ===== 第一层：Agent 框架（项目核心聚焦）=====
+# ===== 第一层：AI Agent 与 LLM 框架 =====
 AGENT_FRAMEWORKS: list[FrameworkDoc] = [
     FrameworkDoc(
         name="LangChain",
@@ -174,7 +174,7 @@ AGENT_FRAMEWORKS: list[FrameworkDoc] = [
     ),
 ]
 
-# ===== 第二层：基础框架（Python/JS/Go 通用框架）=====
+# ===== 第二层：AI 基础框架与工具（Python/JS/Go 通用框架）=====
 FOUNDATION_FRAMEWORKS: list[FrameworkDoc] = [
     FrameworkDoc(
         name="FastAPI",
@@ -286,7 +286,7 @@ FOUNDATION_FRAMEWORKS: list[FrameworkDoc] = [
     ),
 ]
 
-# ===== 第三层：基础设施框架（数据库/部署/消息等）=====
+# ===== 第三层：基础设施与 MLOps（数据库/部署/消息等）=====
 INFRASTRUCTURE_FRAMEWORKS: list[FrameworkDoc] = [
     FrameworkDoc(
         name="Docker",

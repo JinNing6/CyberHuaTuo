@@ -9,7 +9,17 @@ from .searcher import SearchResult
 from .doc_fetcher import smart_fetch, DocSnippet
 
 
-SYSTEM_PROMPT = """你是赛博华佗（CyberHuaTuo），一个专精于 AI Agent 框架问题诊断的智能医师。
+SYSTEM_PROMPT = """你是赛博华佗（CyberHuaTuo），一个专精于 AI 技术问题诊断的智能医师。
+
+你的诊疗范围涵盖所有 AI 相关领域：
+- AI Agent 框架（LangChain、CrewAI、AutoGen、LlamaIndex 等）
+- 自研/自建 Agent 系统
+- 平台型 Agent（GPTs、Coze、Dify 等）
+- LLM SDK 与 API（OpenAI、Anthropic、Google GenAI 等）
+- 深度学习框架（PyTorch、TensorFlow、Transformers 等）
+- 数据处理与 ML 工具（NumPy、Pandas、scikit-learn 等）
+- MLOps 与基础设施（Docker、向量数据库、模型部署等）
+- 以及任何具备"感知-决策-行动"能力的 AI 系统
 
 你的职责：
 1. 分析用户提交的报错信息或问题描述
@@ -17,7 +27,7 @@ SYSTEM_PROMPT = """你是赛博华佗（CyberHuaTuo），一个专精于 AI Agen
 3. 使用「望闻问切」的医疗隐喻来组织回答
 
 回答规范：
-- 🔍 望（Look）：先识别出框架名称、版本、错误类型
+- 🔍 望（Look）：先识别出框架/工具名称、版本、错误类型
 - 🩺 闻（Listen）：分析错误的可能原因类别
 - 💊 切（Diagnose）：基于知识库匹配结果，给出具体的解决方案
 - 语言要清晰、简洁，代码示例要可直接复制使用
@@ -133,7 +143,13 @@ async def _fetch_official_docs_for_diagnosis(
     return all_snippets[:5]  # 最多 5 个片段，避免上下文过长
 
 
-async def diagnose(query: str, results: list[SearchResult]) -> str:
+async def diagnose(
+    query: str,
+    results: list[SearchResult],
+    user_api_key: str | None = None,
+    user_provider: str | None = None,
+    user_model: str | None = None,
+) -> str:
     """
     使用 LLM 进行望闻问切诊断
     同时注入病例库和最新官方技术文档上下文
@@ -141,18 +157,24 @@ async def diagnose(query: str, results: list[SearchResult]) -> str:
     Args:
         query: 用户的问题/报错
         results: 检索到的相关病例
+        user_api_key: 用户前端传入的 API Key（可选）
+        user_provider: 用户选择的 LLM 提供商（可选）
+        user_model: 用户传入的模型名称或接入点（可选）
 
     Returns:
         诊断结果文本
     """
-    if not config.has_llm_key():
+    # 判断是否有可用的 LLM Key（服务端配置或用户传入）
+    has_key = config.has_llm_key() or bool(user_api_key)
+
+    if not has_key:
         return (
             "⚠️ 未配置 LLM API Key，无法使用 AI 诊断功能。\n\n"
-            "请在 `.env` 文件中配置以下任一 Key：\n"
-            "- `OPENAI_API_KEY`\n"
-            "- `ANTHROPIC_API_KEY`\n"
-            "- `OLLAMA_BASE_URL`（本地模型，无需 Key）\n\n"
-            "配置后重启服务即可使用 AI 望闻问切诊断。\n\n"
+            "你可以：\n"
+            "1. 在搜索框下方的「开发者设置」中填入你的 API Key\n"
+            "2. 或在 `.env` 文件中配置相应的 Key（如 OPENAI_API_KEY, DEEPSEEK_API_KEY 等）\n"
+            "   - 支持本地模型，通过 OLLAMA_BASE_URL 接入无需 Key\n\n"
+            "配置后即可使用 AI 望闻问切诊断。\n\n"
             "当前可以使用「向量搜索」模式直接搜索知识库中的病例。"
         )
 
@@ -163,12 +185,76 @@ async def diagnose(query: str, results: list[SearchResult]) -> str:
 
     try:
         import litellm
+        import os
 
-        # 配置 Ollama base URL
+        # 确定模型和 API Key
         api_base = None
+        api_key = None
         model = config.DIAGNOSIS_MODEL
-        if config.OLLAMA_BASE_URL and model.startswith("ollama/"):
-            api_base = config.OLLAMA_BASE_URL
+
+        if user_api_key:
+            # 使用用户自定义的 API Key
+            api_key = user_api_key
+            provider = (user_provider or "openai").lower()
+            if provider == "anthropic":
+                model = user_model or "claude-3-5-sonnet-latest"
+            elif provider == "openai":
+                model = user_model or "gpt-4o-mini"
+            elif provider == "deepseek":
+                model = "deepseek/" + (user_model or "deepseek-chat")
+            elif provider == "kimi":
+                model = "openai/" + (user_model or "moonshot-v1-8k")
+                api_base = "https://api.moonshot.cn/v1"
+            elif provider == "doubao":
+                model = "openai/" + (user_model or "ep-xxxx")  # 豆包需接入点
+                api_base = "https://ark.cn-beijing.volces.com/api/v3"
+            elif provider == "minimax":
+                model = "openai/" + (user_model or "abab6.5s-chat")
+                api_base = "https://api.minimax.chat/v1"
+            elif provider == "groq":
+                model = "groq/" + (user_model or "llama3-8b-8192")
+            elif provider == "google" or provider == "gemini":
+                model = "gemini/" + (user_model or "gemini-1.5-pro")
+            elif provider == "cohere":
+                model = "cohere/" + (user_model or "command-r-plus")
+            else:
+                # 自定义 provider
+                model = user_model or config.DIAGNOSIS_MODEL
+        else:
+            # 使用服务端配置
+            if os.getenv("DEEPSEEK_API_KEY") and "deepseek" in model.lower():
+                api_key = os.getenv("DEEPSEEK_API_KEY")
+                if not model.startswith("deepseek/"):
+                    model = f"deepseek/{model}"
+            elif os.getenv("KIMI_API_KEY") and ("kimi" in model.lower() or "moonshot" in model.lower()):
+                api_key = os.getenv("KIMI_API_KEY")
+                api_base = "https://api.moonshot.cn/v1"
+                if not model.startswith("openai/"):
+                    model = f"openai/{model}"
+            elif os.getenv("DOUBAO_API_KEY") and ("doubao" in model.lower() or "ep-" in model.lower()):
+                api_key = os.getenv("DOUBAO_API_KEY")
+                api_base = "https://ark.cn-beijing.volces.com/api/v3"
+                if not model.startswith("openai/"):
+                    model = f"openai/{model}"
+            elif os.getenv("MINIMAX_API_KEY") and "minimax" in model.lower():
+                api_key = os.getenv("MINIMAX_API_KEY")
+                api_base = "https://api.minimax.chat/v1"
+                if not model.startswith("openai/"):
+                    model = f"openai/{model}"
+            elif os.getenv("GROQ_API_KEY") and "groq" in model.lower():
+                api_key = os.getenv("GROQ_API_KEY")
+                if not model.startswith("groq/"):
+                    model = f"groq/{model}"
+            elif os.getenv("GEMINI_API_KEY") and ("gemini" in model.lower() or "google" in model.lower()):
+                api_key = os.getenv("GEMINI_API_KEY")
+                if not model.startswith("gemini/"):
+                    model = f"gemini/{model}"
+            elif os.getenv("COHERE_API_KEY") and "cohere" in model.lower():
+                api_key = os.getenv("COHERE_API_KEY")
+                if not model.startswith("cohere/"):
+                    model = f"cohere/{model}"
+            elif config.OLLAMA_BASE_URL and model.startswith("ollama/"):
+                api_base = config.OLLAMA_BASE_URL
 
         response = await litellm.acompletion(
             model=model,
@@ -176,6 +262,7 @@ async def diagnose(query: str, results: list[SearchResult]) -> str:
             temperature=0.3,      # 低温度，诊断要精确
             max_tokens=2000,
             api_base=api_base,
+            api_key=api_key,
         )
 
         return response.choices[0].message.content

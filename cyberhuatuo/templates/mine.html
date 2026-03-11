@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⛏️ Issues 淘金 — CyberHuaTuo 赛博华佗</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+SC:wght@300;400;500;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0a0a;
+            --surface: #141414;
+            --surface-hover: #1a1a1a;
+            --border: #262626;
+            --border-active: #404040;
+            --text: #fafafa;
+            --text-2: #a1a1aa;
+            --text-3: #52525b;
+            --green: #22c55e;
+            --green-dim: rgba(34, 197, 94, 0.12);
+            --blue: #60a5fa;
+            --orange: #fb923c;
+            --red: #f87171;
+            --purple: #a78bfa;
+            --gold: #fbbf24;
+            --gold-dim: rgba(251, 191, 36, 0.12);
+            --sans: 'Inter', 'Noto Sans SC', -apple-system, system-ui, sans-serif;
+            --mono: 'JetBrains Mono', 'Cascadia Code', monospace;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            height: 100%;
+        }
+
+        body {
+            font-family: var(--sans);
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* ===== Header ===== */
+        .header {
+            width: 100%;
+            max-width: 800px;
+            padding: 36px 24px 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .back-link {
+            color: var(--text-3);
+            text-decoration: none;
+            font-size: 0.8rem;
+            transition: color 0.15s;
+        }
+
+        .back-link:hover {
+            color: var(--green);
+        }
+
+        .logo {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--gold);
+            letter-spacing: -0.01em;
+        }
+
+        .tagline {
+            font-size: 0.75rem;
+            color: var(--text-3);
+            font-weight: 400;
+        }
+
+        .status-badges {
+            display: flex;
+            gap: 8px;
+        }
+
+        .badge {
+            font-size: 0.6rem;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-family: var(--mono);
+        }
+
+        .badge-ok {
+            color: var(--green);
+            background: var(--green-dim);
+        }
+
+        .badge-warn {
+            color: var(--orange);
+            background: rgba(251, 146, 60, 0.12);
+        }
+
+        /* ===== Controls ===== */
+        .controls {
+            width: 100%;
+            max-width: 800px;
+            padding: 24px 24px 0;
+        }
+
+        .ctrl-row {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+            flex-wrap: wrap;
+        }
+
+        .ctrl-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .ctrl-group.grow {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .ctrl-label {
+            font-size: 0.65rem;
+            color: var(--text-3);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        select,
+        input[type="number"] {
+            appearance: none;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text);
+            font-family: var(--sans);
+            font-size: 0.82rem;
+            padding: 10px 14px;
+            outline: none;
+            transition: border-color 0.15s;
+        }
+
+        select:focus,
+        input[type="number"]:focus {
+            border-color: var(--border-active);
+        }
+
+        select {
+            padding-right: 32px;
+            cursor: pointer;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: 1px solid;
+            font-family: var(--sans);
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s;
+            white-space: nowrap;
+        }
+
+        .btn-mine {
+            color: var(--gold);
+            border-color: rgba(251, 191, 36, 0.3);
+            background: var(--gold-dim);
+        }
+
+        .btn-mine:hover {
+            background: rgba(251, 191, 36, 0.2);
+            border-color: rgba(251, 191, 36, 0.5);
+        }
+
+        .btn-mine:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .btn-save {
+            color: var(--green);
+            border-color: rgba(34, 197, 94, 0.3);
+            background: var(--green-dim);
+        }
+
+        .btn-save:hover {
+            background: rgba(34, 197, 94, 0.2);
+            border-color: rgba(34, 197, 94, 0.5);
+        }
+
+        .btn-small {
+            padding: 6px 14px;
+            font-size: 0.72rem;
+            border-radius: 8px;
+        }
+
+        /* ===== Loading ===== */
+        .loading-bar {
+            width: 100%;
+            max-width: 800px;
+            padding: 8px 24px 0;
+        }
+
+        .progress-track {
+            height: 2px;
+            background: var(--border);
+            border-radius: 1px;
+            overflow: hidden;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .progress-track.active {
+            opacity: 1;
+        }
+
+        .progress-track::after {
+            content: '';
+            display: block;
+            width: 40%;
+            height: 100%;
+            background: var(--gold);
+            border-radius: 1px;
+            animation: slide 0.8s ease-in-out infinite;
+        }
+
+        @keyframes slide {
+            0% {
+                transform: translateX(-100%);
+            }
+
+            100% {
+                transform: translateX(300%);
+            }
+        }
+
+        /* ===== Results ===== */
+        .results {
+            width: 100%;
+            max-width: 800px;
+            padding: 16px 24px 60px;
+        }
+
+        .results-status {
+            font-size: 0.75rem;
+            color: var(--text-3);
+            padding: 4px 0 12px;
+            font-family: var(--mono);
+        }
+
+        .results-status strong {
+            color: var(--gold);
+        }
+
+        /* Issue Card */
+        .issue-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            margin-bottom: 8px;
+            transition: border-color 0.15s;
+            overflow: hidden;
+        }
+
+        .issue-card:hover {
+            border-color: var(--border-active);
+        }
+
+        .issue-card.selected {
+            border-color: rgba(251, 191, 36, 0.4);
+        }
+
+        .issue-head {
+            padding: 14px 16px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            cursor: pointer;
+        }
+
+        .issue-body {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .issue-title {
+            font-size: 0.88rem;
+            font-weight: 600;
+            line-height: 1.4;
+            margin-bottom: 2px;
+        }
+
+        .issue-meta {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            margin-top: 6px;
+            flex-wrap: wrap;
+        }
+
+        .meta-item {
+            font-size: 0.68rem;
+            color: var(--text-3);
+            font-family: var(--mono);
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+
+        .meta-item.hot {
+            color: var(--gold);
+        }
+
+        .issue-labels {
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+            margin-top: 6px;
+        }
+
+        .label-tag {
+            padding: 2px 8px;
+            border-radius: 8px;
+            font-size: 0.6rem;
+            font-weight: 500;
+            color: var(--text-3);
+            border: 1px solid var(--border);
+        }
+
+        .issue-number {
+            color: var(--text-3);
+            font-size: 0.72rem;
+            font-family: var(--mono);
+            flex-shrink: 0;
+        }
+
+        .issue-actions {
+            display: flex;
+            gap: 6px;
+            flex-shrink: 0;
+            align-items: center;
+        }
+
+        /* Detail panel */
+        .issue-detail {
+            display: none;
+            border-top: 1px solid var(--border);
+        }
+
+        .issue-detail.open {
+            display: block;
+        }
+
+        .detail-content {
+            padding: 14px 16px;
+        }
+
+        .detail-section {
+            margin-bottom: 14px;
+        }
+
+        .detail-section-title {
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: var(--text-2);
+            margin-bottom: 6px;
+        }
+
+        .detail-text {
+            font-size: 0.78rem;
+            line-height: 1.7;
+            color: var(--text-2);
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .detail-text code {
+            background: rgba(96, 165, 250, 0.1);
+            padding: 1px 5px;
+            border-radius: 4px;
+            font-family: var(--mono);
+            font-size: 0.75rem;
+            color: var(--blue);
+        }
+
+        /* Refined preview */
+        .refined-card {
+            background: var(--surface);
+            border: 1px solid rgba(34, 197, 94, 0.25);
+            border-radius: 12px;
+            margin-bottom: 12px;
+            overflow: hidden;
+        }
+
+        .refined-header {
+            padding: 10px 16px;
+            background: var(--green-dim);
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--green);
+            border-bottom: 1px solid rgba(34, 197, 94, 0.12);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .refined-body {
+            padding: 16px;
+            font-size: 0.82rem;
+            line-height: 1.8;
+            white-space: pre-wrap;
+            color: var(--text-2);
+            font-family: var(--mono);
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        /* Empty state */
+        .empty {
+            text-align: center;
+            padding: 60px 24px;
+            color: var(--text-3);
+        }
+
+        .empty-icon {
+            font-size: 2.2rem;
+            margin-bottom: 12px;
+            opacity: 0.4;
+        }
+
+        .empty-text {
+            font-size: 0.85rem;
+            line-height: 1.7;
+        }
+
+        .empty-hint {
+            font-size: 0.72rem;
+            margin-top: 8px;
+            font-family: var(--mono);
+        }
+
+        /* Toast notification */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            padding: 10px 24px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            transition: transform 0.3s ease;
+            z-index: 100;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .toast-success {
+            background: var(--green-dim);
+            color: var(--green);
+            border: 1px solid rgba(34, 197, 94, 0.25);
+        }
+
+        .toast-error {
+            background: rgba(248, 113, 113, 0.12);
+            color: var(--red);
+            border: 1px solid rgba(248, 113, 113, 0.25);
+        }
+
+        ::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="header">
+        <div class="header-left">
+            <a href="/" class="back-link">← 返回首页</a>
+            <div>
+                <div class="logo">⛏️ Issues 淘金</div>
+                <div class="tagline">从 GitHub Issues 中提炼高价值病例药方</div>
+            </div>
+        </div>
+        <div class="status-badges">
+            {% if has_github_token %}
+            <span class="badge badge-ok">🔑 Token ✓</span>
+            {% else %}
+            <span class="badge badge-warn">⚠️ 无 Token</span>
+            {% endif %}
+            {% if has_llm %}
+            <span class="badge badge-ok">🧠 LLM ✓</span>
+            {% else %}
+            <span class="badge badge-warn">⚠️ 无 LLM</span>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="controls">
+        <div class="ctrl-row">
+            <div class="ctrl-group grow">
+                <span class="ctrl-label">目标仓库</span>
+                <select id="repoSelect">
+                    {% for r in target_repos %}
+                    <option value="{{ r.owner }}|{{ r.repo }}|{{ r.framework }}">
+                        {{ r.owner }}/{{ r.repo }} ({{ r.framework }})
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="ctrl-group">
+                <span class="ctrl-label">排序</span>
+                <select id="sortSelect">
+                    <option value="reactions-+1">👍 最多点赞</option>
+                    <option value="comments">💬 最多评论</option>
+                    <option value="created">🕐 最新创建</option>
+                </select>
+            </div>
+            <div class="ctrl-group">
+                <span class="ctrl-label">数量</span>
+                <input type="number" id="limitInput" value="10" min="1" max="30" style="width:70px">
+            </div>
+            <button class="btn btn-mine" id="searchBtn" onclick="doSearch()">⛏️ 搜索</button>
+        </div>
+    </div>
+
+    <div class="loading-bar">
+        <div class="progress-track" id="loader"></div>
+    </div>
+
+    <div class="results" id="results">
+        <div class="empty">
+            <div class="empty-icon">⛏️</div>
+            <div class="empty-text">
+                选择目标仓库，搜索高频 Issues
+                <br>找到有价值的问题后，一键提炼为标准病例
+            </div>
+            <div class="empty-hint">
+                支持 10 个 AI Agent 热门项目 · 按点赞/评论数排序
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        let currentIssues = [];
+
+        function esc(s) {
+            const d = document.createElement('div');
+            d.textContent = s;
+            return d.innerHTML;
+        }
+
+        function showLoader() { document.getElementById('loader').classList.add('active'); }
+        function hideLoader() { document.getElementById('loader').classList.remove('active'); }
+
+        function showToast(msg, type = 'success') {
+            const t = document.getElementById('toast');
+            t.className = `toast toast-${type} show`;
+            t.textContent = msg;
+            setTimeout(() => t.classList.remove('show'), 3000);
+        }
+
+        function getRepoInfo() {
+            const val = document.getElementById('repoSelect').value;
+            const [owner, repo, framework] = val.split('|');
+            return { owner, repo, framework };
+        }
+
+        async function doSearch() {
+            const { owner, repo, framework } = getRepoInfo();
+            const sort = document.getElementById('sortSelect').value;
+            const limit = document.getElementById('limitInput').value;
+
+            showLoader();
+            document.getElementById('searchBtn').disabled = true;
+
+            try {
+                const p = new URLSearchParams({ owner, repo, framework, sort, limit });
+                const r = await fetch('/api/mine/search?' + p);
+                const d = await r.json();
+                hideLoader();
+                document.getElementById('searchBtn').disabled = false;
+
+                currentIssues = d.issues || [];
+                renderIssues(d);
+            } catch (e) {
+                hideLoader();
+                document.getElementById('searchBtn').disabled = false;
+                showToast('搜索失败: ' + e.message, 'error');
+            }
+        }
+
+        function renderIssues(data) {
+            const box = document.getElementById('results');
+
+            if (!data.issues || data.issues.length === 0) {
+                box.innerHTML = `<div class="empty">
+                    <div class="empty-icon">💤</div>
+                    <div class="empty-text">未找到高频 Issues</div>
+                    <div class="empty-hint">尝试降低筛选条件或换个仓库</div>
+                </div>`;
+                return;
+            }
+
+            const rateInfo = data.rate_info || {};
+            let html = `<div class="results-status">
+                ${data.owner}/${data.repo} · 找到 <strong>${data.total}</strong> 个高频 Issues
+                · API 剩余 ${rateInfo.search_remaining || '?'} 次
+            </div>`;
+
+            html += data.issues.map((iss, i) => {
+                const labels = (iss.labels || []).slice(0, 5);
+                return `<div class="issue-card" id="ic${i}">
+                    <div class="issue-head" onclick="toggleDetail(${i})">
+                        <div class="issue-body">
+                            <div class="issue-title">${esc(iss.title)}</div>
+                            <div class="issue-meta">
+                                <span class="meta-item hot">👍 ${iss.reactions_thumbs_up}</span>
+                                <span class="meta-item">💬 ${iss.comments_count}</span>
+                                <span class="meta-item">🔥 ${iss.reactions_total} reactions</span>
+                                <span class="meta-item">${iss.created_at ? iss.created_at.split('T')[0] : ''}</span>
+                            </div>
+                            ${labels.length > 0 ? `<div class="issue-labels">
+                                ${labels.map(l => `<span class="label-tag">${esc(l)}</span>`).join('')}
+                            </div>` : ''}
+                        </div>
+                        <div class="issue-actions">
+                            <button class="btn btn-mine btn-small" onclick="event.stopPropagation();doRefine(${i})">🔬 提炼</button>
+                            <span class="issue-number">#${iss.number}</span>
+                        </div>
+                    </div>
+                    <div class="issue-detail" id="id${i}">
+                        <div class="detail-content">
+                            <div class="detail-section">
+                                <div class="detail-section-title">Issue 预览</div>
+                                <div class="detail-text">${esc(iss.body_preview || '（无内容）')}</div>
+                            </div>
+                            <div style="display:flex;gap:8px">
+                                <a href="${iss.url}" target="_blank" class="btn btn-small" style="color:var(--blue);border-color:rgba(96,165,250,0.3);background:rgba(96,165,250,0.08);text-decoration:none">↗ 查看原帖</a>
+                                <button class="btn btn-mine btn-small" onclick="doRefine(${i})">🔬 提炼为病例</button>
+                                <button class="btn btn-save btn-small" onclick="doRefineAndSave(${i})">💾 提炼并保存</button>
+                            </div>
+                        </div>
+                        <div id="refined${i}"></div>
+                    </div>
+                </div>`;
+            }).join('');
+
+            box.innerHTML = html;
+        }
+
+        function toggleDetail(i) {
+            document.getElementById('id' + i).classList.toggle('open');
+        }
+
+        async function doRefine(idx, autoSave = false) {
+            const iss = currentIssues[idx];
+            if (!iss) return;
+
+            const { framework } = getRepoInfo();
+            showLoader();
+
+            try {
+                const fd = new FormData();
+                fd.append('owner', iss.owner);
+                fd.append('repo', iss.repo);
+                fd.append('issue_number', iss.number);
+                fd.append('framework', framework);
+                fd.append('auto_save', autoSave ? 'true' : 'false');
+
+                const r = await fetch('/api/mine/refine', { method: 'POST', body: fd });
+                const d = await r.json();
+                hideLoader();
+
+                if (d.error) {
+                    showToast('提炼失败: ' + d.error, 'error');
+                    return;
+                }
+
+                // 展开详情区域
+                document.getElementById('id' + idx).classList.add('open');
+
+                // 渲染提炼结果
+                const container = document.getElementById('refined' + idx);
+                const refined = d.refined;
+                const preview = d.preview || '';
+
+                let savedInfo = '';
+                if (d.saved) {
+                    savedInfo = `<div style="padding:8px 16px;font-size:0.72rem;color:var(--green);font-family:var(--mono)">
+                        💾 已保存到: ${esc(d.saved.filepath)}
+                    </div>`;
+                    showToast('✅ 病例已提炼并保存!');
+                } else {
+                    showToast('✅ 提炼完成! 点击「保存」入库');
+                }
+
+                container.innerHTML = `<div class="refined-card" style="margin:0;border-radius:0;border:none;border-top:1px solid rgba(34,197,94,0.12)">
+                    <div class="refined-header">
+                        <span>🔬 提炼结果: ${esc(refined.title)}</span>
+                        ${!d.saved ? `<button class="btn btn-save btn-small" onclick="doRefineAndSave(${idx})">💾 保存入库</button>` : ''}
+                    </div>
+                    <div class="refined-body">${esc(preview)}</div>
+                    ${savedInfo}
+                </div>`;
+
+            } catch (e) {
+                hideLoader();
+                showToast('提炼请求失败: ' + e.message, 'error');
+            }
+        }
+
+        function doRefineAndSave(idx) {
+            doRefine(idx, true);
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,165 @@
+name: "💊 贡献药方 New Prescription"
+description: "提交一个新的 AI Agent 问题解决方案"
+title: "[药方] "
+labels: ["prescription", "community"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢你贡献药方！🩺 请填写以下信息，我们会将其转化为标准病例文件收入知识库。
+
+  - type: dropdown
+    id: framework
+    attributes:
+      label: 🔧 框架 Framework
+      description: 问题涉及哪个 AI Agent 框架？
+      options:
+        - langchain
+        - llamaindex
+        - crewai
+        - autogen
+        - openai-sdk
+        - openai-agents
+        - mcp
+        - dspy
+        - haystack
+        - semantic-kernel
+        - pydantic-ai
+        - langflow
+        - langgraph
+        - agno
+        - strands-agents
+        - anthropic-sdk
+        - google-genai
+        - other
+    validations:
+      required: true
+
+  - type: input
+    id: title_zh
+    attributes:
+      label: 📋 问题标题（中文）
+      description: 一句话描述症状
+      placeholder: "例：CrewAI Agent 陷入无限循环，不断重复相同工具调用"
+    validations:
+      required: true
+
+  - type: input
+    id: title_en
+    attributes:
+      label: 📋 Problem Title (English)
+      description: One-line symptom description
+      placeholder: "e.g., CrewAI Agent stuck in infinite loop repeating the same tool call"
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptom
+    attributes:
+      label: 🏥 症状 Symptom
+      description: 详细描述遇到的问题现象
+      placeholder: "描述你看到了什么 — 报错信息、异常行为等"
+    validations:
+      required: true
+
+  - type: textarea
+    id: error_message
+    attributes:
+      label: 🔍 错误信息 Error Message
+      description: 粘贴完整的报错 Traceback 或错误日志
+      render: shell
+      placeholder: |
+        Traceback (most recent call last):
+          File "app.py", line 3, in <module>
+            ...
+        ImportError: cannot import name '...'
+    validations:
+      required: false
+
+  - type: textarea
+    id: root_cause
+    attributes:
+      label: 🔬 病因分析 Root Cause
+      description: 为什么会出现这个问题？（可选，如果你知道的话）
+      placeholder: "例：LangChain 0.3 重组了包结构，ChatOpenAI 被迁移到 langchain-openai"
+    validations:
+      required: false
+
+  - type: textarea
+    id: prescription
+    attributes:
+      label: 💊 药方 Prescription (Solution)
+      description: 你的解决方案 — 代码、步骤、配置修改等
+      render: markdown
+      placeholder: |
+        ### 解决方案
+        
+        1. 安装 xxx
+        ```bash
+        pip install xxx
+        ```
+        
+        2. 修改代码
+        ```python
+        # 修改前
+        from xxx import yyy
+        # 修改后
+        from aaa import yyy
+        ```
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: ⚠️ 严重程度 Severity
+      options:
+        - low — 影响较小，有 workaround
+        - medium — 影响正常使用
+        - high — 严重影响开发流程
+        - critical — 完全无法使用
+    validations:
+      required: true
+
+  - type: dropdown
+    id: complexity
+    attributes:
+      label: 🧩 复杂度 Complexity
+      description: 解决这个问题的难度
+      options:
+        - simple — 几行代码就能解决
+        - moderate — 需要理解原理
+        - complex — 涉及多个组件或架构调整
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: 🖥️ 环境信息 Environment
+      description: Python 版本、框架版本、操作系统等
+      placeholder: |
+        Python 3.11
+        langchain 0.3.1
+        Windows 11
+    validations:
+      required: false
+
+  - type: textarea
+    id: references
+    attributes:
+      label: 🔗 参考资料 References
+      description: 相关链接（官方文档、GitHub Issue、Stack Overflow 等）
+      placeholder: "https://..."
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: ✅ 确认
+      options:
+        - label: 我确认此药方是基于真实问题的解决方案
+          required: true
+        - label: 我同意以本项目的开源协议贡献此内容
+          required: true

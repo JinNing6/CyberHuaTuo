@@ -1,0 +1,43 @@
+name: "🐛 报告 Bug"
+description: "报告 CyberHuaTuo 工具本身的 Bug"
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: 问题描述
+      description: 清楚地描述遇到的 Bug
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: 复现步骤
+      description: 怎么触发这个 Bug？
+      placeholder: |
+        1. 运行 python -m cyberhuatuo serve
+        2. 搜索 '...'
+        3. 看到 '...'
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: 期望行为
+      description: 你期望看到什么？
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: 环境信息
+      placeholder: |
+        OS: Windows 11
+        Python: 3.11
+        CyberHuaTuo: latest
+    validations:
+      required: false

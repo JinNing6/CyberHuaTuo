@@ -328,109 +328,84 @@
         <form id="contributeForm" onsubmit="return false;">
             <!-- 基本信息 -->
             <div class="form-card">
-                <div class="form-card__title">📋 基本信息</div>
+                <div class="form-card__title">📋 诊断信息</div>
                 <div class="form-row">
                     <div class="form-group">
-                        <label class="form-label">框架 <span class="required">*</span></label>
-                        <select id="framework" class="form-select" required>
+                        <label class="form-label">前端 / 后端框架</label>
+                        <select id="framework" class="form-select">
+                            <option value="auto">✨ 自动推断 (Auto)</option>
                             {% for fw in frameworks %}
                             <option value="{{ fw }}">{{ fw }}</option>
                             {% endfor %}
                         </select>
+                        <span class="form-hint">AI 能够根据您的报错自动识别框架，您也可以手动指定</span>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">框架版本</label>
-                        <input id="frameworkVersion" class="form-input" placeholder="例如：>=0.3.0">
+                        <label class="form-label">参考链接</label>
+                        <input id="sourceUrl" class="form-input" placeholder="https://github.com/... (选填)">
                     </div>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">问题标题（中文） <span class="required">*</span></label>
-                    <input id="title" class="form-input" placeholder="简洁描述核心问题" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">问题标题（英文）</label>
-                    <input id="titleEn" class="form-input" placeholder="English title for the case">
-                </div>
-                <div class="form-row-3">
-                    <div class="form-group">
-                        <label class="form-label">严重性</label>
-                        <select id="severity" class="form-select">
-                            {% for sv in severities %}
-                            <option value="{{ sv }}" {% if sv=='medium' %}selected{% endif %}>{{ sv }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">复杂度</label>
-                        <select id="complexity" class="form-select">
-                            {% for cx in complexities %}
-                            <option value="{{ cx }}" {% if cx=='moderate' %}selected{% endif %}>{{ complexity_emoji[cx]
-                                }} {{ cx }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">标签</label>
-                        <input id="tags" class="form-input" placeholder="逗号分隔，如: import-error, breaking-change">
-                    </div>
-                </div>
-            </div>
-
-            <!-- 症状与错误 -->
-            <div class="form-card">
-                <div class="form-card__title">🏥 症状与错误</div>
-                <div class="form-group">
-                    <label class="form-label">症状描述 <span class="required">*</span></label>
-                    <textarea id="symptom" class="form-textarea" placeholder="描述你遇到的问题现象..." required></textarea>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">错误信息</label>
-                    <textarea id="errorMessage" class="form-textarea" placeholder="粘贴完整的报错信息 / Traceback..."
-                        style="min-height: 80px;"></textarea>
-                    <span class="form-hint">粘贴完整的 Traceback 或错误日志</span>
+                    <label class="form-label">遇到的问题 / 报错信息 <span class="required">*</span></label>
+                    <textarea id="issueText" class="form-textarea" placeholder="描述你遇到的问题现象，或直接粘贴报错信息 / Traceback..."
+                        style="min-height: 120px;" required></textarea>
                 </div>
             </div>
 
             <!-- 诊断与药方 -->
             <div class="form-card">
-                <div class="form-card__title">💊 诊断与药方</div>
+                <div class="form-card__title">💊 解决方案 (药方)</div>
                 <div class="form-group">
-                    <label class="form-label">根因分析</label>
-                    <textarea id="rootCause" class="form-textarea" placeholder="分析问题的根本原因..."></textarea>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">解决方案（药方） <span class="required">*</span></label>
-                    <textarea id="prescription" class="form-textarea" placeholder="详细的解决步骤和代码示例..."
-                        style="min-height: 140px;" required></textarea>
-                    <span class="form-hint">支持 Markdown 格式，建议包含代码示例</span>
+                    <label class="form-label">如何修复的？ <span class="required">*</span></label>
+                    <textarea id="prescription" class="form-textarea" placeholder="贴上修复代码或解决步骤..."
+                        style="min-height: 160px;" required></textarea>
                 </div>
             </div>
 
-            <!-- 贡献者信息 -->
-            <div class="form-card">
-                <div class="form-card__title">👤 贡献者信息</div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label class="form-label">GitHub 用户名</label>
-                        <input id="contributorGithub" class="form-input" placeholder="your-github-username">
+            <!-- 开发者设置 (复用首页 API Key，可选填，若未填则使用后端配置) -->
+            <div class="form-card" style="padding: 18px 28px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; cursor: pointer;"
+                    onclick="toggleDevPanel()">
+                    <div style="font-size: 0.9rem; font-weight: 500; color: var(--text-secondary);">🔑 开发者设置 (自定义 API
+                        Key) <span
+                            style="font-size:0.75rem; font-weight:400; color:var(--text-muted); margin-left:8px;">可不填，默认使用服务端配置</span>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">参考链接</label>
-                        <input id="sourceUrl" class="form-input" placeholder="https://github.com/...">
+                    <span id="devToggleArrow" style="color:var(--text-muted);">▼</span>
+                </div>
+                <div id="devPanel" style="display: none; margin-top: 16px;">
+                    <div class="form-row">
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label class="form-label">API Key</label>
+                            <input id="apiKeyInput" class="form-input" type="password" placeholder="sk-xxxxx..."
+                                autocomplete="off" oninput="saveApiKey()" />
+                        </div>
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label class="form-label">提供商 Provider</label>
+                            <select id="providerSelect" class="form-select" onchange="saveApiKey()">
+                                <option value="openai">OpenAI</option>
+                                <option value="anthropic">Anthropic</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <!-- Actions -->
-            <div class="form-actions">
-                <button type="button" class="btn btn-preview" onclick="doPreview()">📋 预览生成的文件</button>
-                <button type="button" class="btn btn-save" onclick="doSave()">🚀 保存到本地仓库</button>
+            <div class="form-actions" style="margin-top: 20px;">
+                <button type="button" class="btn btn-preview" onclick="doSmartGenerate()" id="btnGenerate">🌟 AI
+                    智能生成规范药方</button>
+                <button type="button" class="btn btn-save" onclick="doSave()" id="btnSave" style="display: none;">🚀
+                    确认并保存到本地仓库</button>
             </div>
         </form>
 
         <!-- Preview -->
-        <div id="previewPanel" class="preview-panel">
-            <div class="preview-panel__title">📋 预览生成的病例文件</div>
+        <div id="previewPanel" class="preview-panel" style="margin-top: 20px;">
+            <div class="preview-panel__title"
+                style="display: flex; justify-content: space-between; align-items: center;">
+                <span>📋 AI 生成结果预览</span>
+                <span id="previewBadges"></span>
+            </div>
             <pre id="previewContent"></pre>
         </div>
 
@@ -449,57 +424,117 @@
     </div>
 
     <script>
-        function getFormData() {
-            return {
-                framework: document.getElementById('framework').value,
-                title: document.getElementById('title').value,
-                title_en: document.getElementById('titleEn').value,
-                error_message: document.getElementById('errorMessage').value,
-                symptom: document.getElementById('symptom').value,
-                root_cause: document.getElementById('rootCause').value,
-                prescription: document.getElementById('prescription').value,
-                severity: document.getElementById('severity').value,
-                complexity: document.getElementById('complexity').value,
-                tags: document.getElementById('tags').value,
-                framework_version: document.getElementById('frameworkVersion').value,
-                contributor_github: document.getElementById('contributorGithub').value || 'anonymous',
-                source_url: document.getElementById('sourceUrl').value,
-            };
+        let currentSmartData = null;
+
+        // Init API keys
+        function loadApiKey() {
+            const key = localStorage.getItem('cht_api_key') || '';
+            const provider = localStorage.getItem('cht_provider') || 'openai';
+            document.getElementById('apiKeyInput').value = key;
+            document.getElementById('providerSelect').value = provider;
         }
 
-        async function doPreview() {
-            const data = getFormData();
-            if (!data.title || !data.symptom || !data.prescription) {
-                alert('请至少填写：标题、症状描述、解决方案');
+        function saveApiKey() {
+            const key = document.getElementById('apiKeyInput').value.trim();
+            const provider = document.getElementById('providerSelect').value;
+            localStorage.setItem('cht_api_key', key);
+            localStorage.setItem('cht_provider', provider);
+        }
+
+        loadApiKey();
+
+        function toggleDevPanel() {
+            const panel = document.getElementById('devPanel');
+            const arrow = document.getElementById('devToggleArrow');
+            if (panel.style.display === 'none') {
+                panel.style.display = 'block';
+                arrow.textContent = '▲';
+            } else {
+                panel.style.display = 'none';
+                arrow.textContent = '▼';
+            }
+        }
+
+        async function doSmartGenerate() {
+            const issueText = document.getElementById('issueText').value.trim();
+            const prescription = document.getElementById('prescription').value.trim();
+            if (!issueText || !prescription) {
+                alert('请填写遇到的问题和解决方案！');
                 return;
             }
 
+            const btn = document.getElementById('btnGenerate');
+            const orgText = btn.innerHTML;
+            btn.innerHTML = '⏳ AI 正在深度望闻问切，请稍候...';
+            btn.disabled = true;
+
             const formData = new FormData();
-            Object.entries(data).forEach(([k, v]) => formData.append(k, v));
-            formData.append('action', 'preview');
+            formData.append('issue_text', issueText);
+            formData.append('prescription', prescription);
+            formData.append('framework', document.getElementById('framework').value);
+            formData.append('source_url', document.getElementById('sourceUrl').value);
+
+            const apiKey = localStorage.getItem('cht_api_key') || '';
+            const provider = localStorage.getItem('cht_provider') || 'openai';
+            if (apiKey) {
+                formData.append('api_key', apiKey);
+                formData.append('provider', provider);
+            }
 
             try {
-                const resp = await fetch('/api/contribute', { method: 'POST', body: formData });
+                const resp = await fetch('/api/contribute/smart', { method: 'POST', body: formData });
                 const result = await resp.json();
+
+                if (result.error) {
+                    alert('生成失败: ' + result.error);
+                    return;
+                }
+
+                currentSmartData = result.parsed_data;
+
+                // Render badges
+                const bBox = document.getElementById('previewBadges');
+                bBox.innerHTML = `
+                    <span style="background:var(--bg-primary); padding:2px 8px; border-radius:4px; font-size:0.75rem; border:1px solid var(--border); margin-left:8px;">${result.parsed_data.framework}</span>
+                    <span style="background:var(--bg-primary); padding:2px 8px; border-radius:4px; font-size:0.75rem; border:1px solid var(--border); margin-left:4px;">${result.parsed_data.severity}</span>
+                `;
+
                 document.getElementById('previewContent').textContent = result.content;
                 document.getElementById('previewPanel').classList.add('active');
                 document.getElementById('successPanel').classList.remove('active');
+
+                // Show Save button
+                document.getElementById('btnSave').style.display = 'inline-flex';
+
             } catch (err) {
-                alert('预览失败: ' + err.message);
+                alert('AI 生成失败: ' + err.message);
+            } finally {
+                btn.innerHTML = orgText;
+                btn.disabled = false;
             }
         }
 
         async function doSave() {
-            const data = getFormData();
-            if (!data.title || !data.symptom || !data.prescription) {
-                alert('请至少填写：标题、症状描述、解决方案');
+            if (!currentSmartData) {
+                alert('请先使用 AI 生成预览！');
                 return;
             }
 
             if (!confirm('确认保存到本地仓库？')) return;
 
+            const btn = document.getElementById('btnSave');
+            btn.disabled = true;
+            btn.innerHTML = '⏳ 正在写入...';
+
             const formData = new FormData();
-            Object.entries(data).forEach(([k, v]) => formData.append(k, v));
+            // Append data
+            Object.entries(currentSmartData).forEach(([k, v]) => {
+                if (Array.isArray(v)) {
+                    formData.append(k, v.join(','));
+                } else {
+                    formData.append(k, v);
+                }
+            });
             formData.append('action', 'save');
 
             try {
@@ -511,8 +546,12 @@
                 stepsEl.innerHTML = result.next_steps.map(s => `<code>${s}</code>`).join('');
                 document.getElementById('successPanel').classList.add('active');
                 document.getElementById('previewPanel').classList.remove('active');
+                btn.style.display = 'none';
             } catch (err) {
                 alert('保存失败: ' + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '🚀 确认并保存到本地仓库';
             }
         }
     </script>
