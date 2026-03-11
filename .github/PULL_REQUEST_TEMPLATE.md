@@ -38,6 +38,7 @@ Closes #
 - [ ] 本地校验已通过：`python tools/validate.py`
 - [ ] 测试通过（如适用）：`pytest tests/ -v`
 - [ ] 我同意以本项目的开源协议 (Apache 2.0) 贡献此内容
+- [ ] 我已签署[贡献者许可协议 (CLA)](CLA.md)（首次贡献时 Bot 会自动提示）
 
 ---
 

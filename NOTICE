@@ -1,0 +1,19 @@
+CyberHuaTuo (赛博华佗)
+Copyright 2026 JinNing6 and CyberHuaTuo Contributors
+
+This product is licensed under the Apache License, Version 2.0.
+See the LICENSE file for details.
+
+This product includes software developed by:
+  - JinNing6 (https://github.com/JinNing6) — Project Creator & Lead Maintainer
+
+The "CyberHuaTuo" and "赛博华佗" names, logos, and branding are trademarks of
+the project creator and are NOT covered by the Apache 2.0 license.
+Unauthorized use of these trademarks is prohibited.
+
+---
+
+Third-party components:
+  - FastAPI (MIT License) — https://github.com/tiangolo/fastapi
+  - Jinja2 (BSD License) — https://github.com/pallets/jinja
+  - PyYAML (MIT License) — https://github.com/yaml/pyyaml
