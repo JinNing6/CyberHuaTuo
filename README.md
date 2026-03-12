@@ -489,21 +489,92 @@ curl -o .github/workflows/bot-prescribe.yml \
 
 ## 🔌 MCP Server — AI Editor Integration
 
-CyberHuaTuo provides a native **Model Context Protocol (MCP)** server, seamlessly integrating the ancient wisdom of **望闻问切 (Look, Listen, Ask, Diagnose)** directly into your AI editors (e.g., Cursor, VS Code Copilot, Claude Desktop).
+> *Install once. Every AI editor becomes a CyberHuaTuo clinic.*
+>
+> *一次安装，所有 AI 编辑器都变成赛博华佗诊所。*
 
-Simply configure the MCP Server, and your AI assistant gains access to these powerful tools:
-*   **Diagnose (`diagnose`)**: Send error messages to the AI, and it will automatically generate targeted prescriptions using our knowledge base.
-*   **Security Checkup (`security_checkup`)**: Perform comprehensive six-meridian security and performance audits on your Agent code.
-*   **Search Prescriptions (`search_knowledge_base`)**: Instantly query CyberHuaTuo's vast library of historical cases during your AI chats.
-*   **Save Prescriptions (`save_prescription`)**: Did the LLM solve an unrecorded issue? Let it directly submit the new prescription to the local knowledge base with one click.
+### ⚡ Install — One Command
 
-> 👉 **For detailed installation and configuration instructions, please refer to [README_MCP.md](README_MCP.md)**
+```bash
+pip install cyberhuatuo
+```
+
+> Or use any [Brand Matrix](#-brand-matrix) alias: `pip install cyber-asclepius`, `pip install openhuatuo`, etc.
+
+### 🔗 Connect to Your AI Editor
+
+Add this to your AI tool's MCP config (Claude Desktop / Cursor / VS Code / Gemini CLI):
+
+```json
+{
+  "mcpServers": {
+    "cyberhuatuo": {
+      "command": "uvx",
+      "args": ["cyberhuatuo"]
+    }
+  }
+}
+```
+
+> `uvx` auto-installs from PyPI and starts the MCP Server — zero manual setup.
+> For GitHub latest dev version, use: `"args": ["--from", "git+https://github.com/JinNing6/CyberHuaTuo", "cyberhuatuo-mcp"]`
+
+### 🩺 Available MCP Tools
+
+| Tool | Description |
+|------|-------------|
+| `diagnose` | 🩺 望闻问切 AI diagnosis — send error messages, get prescriptions |
+| `search_knowledge_base` | 🔍 Vector semantic search — no API Key required |
+| `security_checkup` | 🛡️ Six-meridian security audit on your Agent code |
+| `fetch_official_docs` | 📚 Real-time official docs via Context7 (50+ frameworks) |
+| `mine_github_issue` | ⛏️ Extract & refine GitHub Issues into standard cases |
+| `save_prescription` | 📥 **Upload your own prescriptions** to the knowledge base |
+| `list_frameworks` | 📋 List all supported frameworks & tech stacks |
+
+> 👉 **Full configuration guide: [README_MCP.md](README_MCP.md)**
 
 ### 🎒 Agent Skills Protocol (Self-Rescue)
 
 We support the open **Agent Skills** standard (`SKILL.md`). You can empower your own AI assistants (Cursor, Copilot, Claude Code) to automatically seek help from CyberHuaTuo when they get stuck.
 
 Simply copy the `skills/cyberhuatuo-rescue` directory into your project's `.cursor/rules` or `.agent/skills` folder. Your AI will learn to automatically diagnose errors and run security checkups using CyberHuaTuo's knowledge base.
+
+---
+
+## 🌐 Brand Matrix — Why So Many Package Names?
+
+## 品牌矩阵 — 为什么注册这么多包名？
+
+> *Hua Tuo traveled across provinces. Asclepius healed across islands. Healing knows no borders.*
+>
+> *华佗行走于山川之间，阿斯克勒庇俄斯穿梭于海岛之上。医道无疆。*
+
+CyberHuaTuo maintains a series of **official alias packages** on PyPI, spanning medical deities and pioneers from both Eastern and Western traditions:
+
+| Lineage | Packages |
+|---------|----------|
+| 🏮 **Eastern Divine Physicians** (Core) | `cyberhuatuo`, `openhuatuo` |
+| 🏛️ **Greco-Roman Mythology** | `cyber-asclepius`, `open-asclepius`, `cyber-panacea`, `open-panacea` |
+| 📜 **Pioneers of Medicine** | `cyber-hippocrates`, `open-hippocrates`, `cyber-galen`, `open-galen` |
+| 🏺 **Ancient Civilization Healers** | `cyber-imhotep`, `open-imhotep`, `cyber-avicenna`, `open-avicenna` |
+
+**Every single one of these packages is functional** — they all install and redirect to the core `cyberhuatuo` engine. No empty squats.
+
+### Why We Do This
+
+1. **🛡️ Namespace Protection** — Prevent typosquatting and impersonation in the AI-medical tooling space
+2. **🌍 Cultural Bridge** — No matter your context — whether you think "华佗", "Asclepius", or "Hippocrates" — you can find us
+3. **🔗 One Engine, Many Doors** — `uvx cyber-asclepius` works just as well as `uvx cyberhuatuo`
+
+### Our Open Stance
+
+We believe in the open-source spirit. These names are registered to **protect the ecosystem, not to hoard**.
+
+If you believe a name in our matrix would serve a better purpose for your project, **we're open to conversation**. [Open a Discussion →](https://github.com/JinNing6/CyberHuaTuo/discussions)
+
+> *The greatest physicians never hoarded — they shared freely.*
+>
+> *大医精诚，悬壶济世。*
 
 ---
 

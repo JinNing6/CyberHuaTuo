@@ -452,21 +452,90 @@ PORT=8000
 
 ## 🔌 MCP Server — 接入 AI 编辑器
 
-赛博华佗提供了原生的 **Model Context Protocol (MCP)** 服务，让你的 AI 编辑器（如 Cursor，VS Code Copilot，Claude Desktop 等）直接拥有中医的**望闻问切**能力。
+> *一次安装，所有 AI 编辑器都变成赛博华佗诊所。*
+>
+> *Install once. Every AI editor becomes a CyberHuaTuo clinic.*
 
-只需配置 MCP Server，你的 AI 助手就能直接调用这些能力：
-*   **诊断 (diagnose)**: 发送报错信息，AI 自动结合知识库为你开出针对性药方。
-*   **安全体检 (security_checkup)**: 针对 Agent 代码库进行六大维度的安全和性能审查。
-*   **药方搜索 (search_knowledge_base)**: 直接在 AI 对话中检索赛博华佗的历代病例。
-*   **保存新药方 (save_prescription)**: 大模型帮你解决了未收录的问题？你可以直接让它一键提交新药方到本地知识库。
+### ⚡ 安装 — 一行搞定
 
-> 👉 **详细的安装和配置指南，请查阅 [README_MCP.md](README_MCP.md)**
+```bash
+pip install cyberhuatuo
+```
+
+> 也可以使用品牌矩阵中的任意别名：`pip install cyber-asclepius`、`pip install openhuatuo` 等。
+
+### 🔗 连接你的 AI 编辑器
+
+在你的 AI 工具（Claude Desktop / Cursor / VS Code / Gemini CLI）的 MCP 配置中添加：
+
+```json
+{
+  "mcpServers": {
+    "cyberhuatuo": {
+      "command": "uvx",
+      "args": ["cyberhuatuo"]
+    }
+  }
+}
+```
+
+> `uvx` 会自动从 PyPI 安装并启动 MCP Server——零手动操作。
+> 使用 GitHub 最新开发版：`"args": ["--from", "git+https://github.com/JinNing6/CyberHuaTuo", "cyberhuatuo-mcp"]`
+
+### 🩺 MCP 工具一览
+
+| 工具 | 说明 |
+|------|------|
+| `diagnose` | 🩺 望闻问切 AI 诊断 — 粘贴报错，秒出药方 |
+| `search_knowledge_base` | 🔍 向量语义搜索 — 无需 API Key 即可使用 |
+| `security_checkup` | 🛡️ 六经脉安全体检 — 扫描你的 Agent 代码 |
+| `fetch_official_docs` | 📚 官方文档实时检索 — 支持 50+ 框架 |
+| `mine_github_issue` | ⛏️ GitHub Issue 淘金 — 提炼为标准病例 |
+| `save_prescription` | 📥 **上传你的药方** — 贡献到知识库 |
+| `list_frameworks` | 📋 查看支持的框架和技术栈 |
+
+> 👉 **完整配置指南：[README_MCP.md](README_MCP.md)**
 
 ### 🎒 Agent Skills 协议 (AI 自救指南)
 
 我们支持开源的 **Agent Skills** 标准 (`SKILL.md`)。你可以赋予你自己的 AI 助手（Cursor、Copilot、Claude Code）自动向赛博华佗求救的能力。
 
 只需将 `skills/cyberhuatuo-rescue` 目录复制到你项目的 `.cursor/rules` 或 `.agent/skills` 文件夹中。当你的 AI 写代码遇到报错时，它将学会自动调用赛博华佗的知识库进行诊断和安全体检。
+
+---
+
+## 🌐 品牌矩阵 — 为什么注册这么多包名？
+
+## Brand Matrix — Why So Many Package Names?
+
+> *华佗行走于山川之间，阿斯克勒庇俄斯穿梭于海岛之上。医道无疆。*
+>
+> *Hua Tuo traveled across provinces. Asclepius healed across islands. Healing knows no borders.*
+
+赛博华佗在 PyPI 上维护了一系列**官方别名包**，涵盖东西方传统中的医学神祗与先驱：
+
+| 传承 | 包名 |
+|------|------|
+| 🏮 **东方建安神医**（核心） | `cyberhuatuo`、`openhuatuo` |
+| 🏛️ **希腊罗马神话** | `cyber-asclepius`、`open-asclepius`、`cyber-panacea`、`open-panacea` |
+| 📜 **人类医学先驱** | `cyber-hippocrates`、`open-hippocrates`、`cyber-galen`、`open-galen` |
+| 🏺 **古老文明极客** | `cyber-imhotep`、`open-imhotep`、`cyber-avicenna`、`open-avicenna` |
+
+**以上每一个包都有实际功能** —— 它们都会安装并重定向至核心 `cyberhuatuo` 引擎。没有空壳占位。
+
+### 为什么这样做
+
+1. **🛡️ 命名空间保护** —— 防止 AI 医疗工具领域的仿冒和抢注
+2. **🌍 文化桥梁** —— 无论你想到的是「华佗」、「阿斯克勒庇俄斯」还是「希波克拉底」，都能找到我们
+3. **🔗 一个引擎，多扇大门** —— `uvx cyber-asclepius` 和 `uvx cyberhuatuo` 效果完全相同
+
+### 我们的开放立场
+
+我们信仰开源精神。这些名字的注册是为了**保护生态，而非囤积**。
+
+如果你认为我们矩阵中的某个名字对你的项目更有价值，**我们愿意真诚地沟通**。[发起讨论 →](https://github.com/JinNing6/CyberHuaTuo/discussions)
+
+> *大医精诚，悬壶济世。最伟大的医者从不将医术据为己有。*
 
 ---
 
