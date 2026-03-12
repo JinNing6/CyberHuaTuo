@@ -208,3 +208,17 @@ __marimo__/
 
 # CyberHuaTuo local search engine
 .chroma_db/
+
+# Private methodology notes (NEVER commit)
+方法论/
+
+# Sensitive files
+PyPI-Recovery-Codes*.txt
+claim_packages.py
+
+# Temporary output files
+out*.txt
+output*.txt
+pytest_output*.txt
+test_all_output*.txt
+test_output*.json
