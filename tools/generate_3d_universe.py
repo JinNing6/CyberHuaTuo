@@ -133,19 +133,33 @@ def scan_all_cases() -> dict:
 # ──────────────────────────────────────────────
 
 def generate_svg(data: dict) -> str:
-    """生成带 CSS 动画的 SVG 文件"""
+    """生成奇门遁甲八卦阵俯视图 SVG — 宏大的赛博中医法阵"""
+    import random
+    random.seed(42)
+
     frameworks = data["tree"]
     total = data["total"]
     fw_count = len(frameworks)
+    fw_list = list(frameworks.keys())
 
-    w, h = 900, 520
-    cx, cy = w / 2, h / 2 - 20
-    orbit_rx, orbit_ry = 280, 140  # 椭圆轨道半径
+    w, h = 1000, 600
+    cx, cy = w / 2, h / 2
+    # 正圆形俯视视角，所有环都是正八边形
+    max_r = min(w, h) / 2 - 50  # 最大半径 ≈250
+
+    # 八卦符号与名称（先天八卦序：乾兑离震巽坎艮坤）
+    BAGUA_TRIGRAMS = ["☰", "☱", "☲", "☳", "☴", "☵", "☶", "☷"]
+    BAGUA_NAMES = ["乾", "兑", "离", "震", "巽", "坎", "艮", "坤"]
+    BAGUA_COLORS = ["#FFD700", "#60A5FA", "#FF6B6B", "#2ED573", "#A78BFA", "#00BFFF", "#FF8C42", "#00D09C"]
+
+    # 框架配色列表
+    color_list = list(FRAMEWORK_COLORS.values())
 
     lines = []
     lines.append(f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {w} {h}" width="{w}" height="{h}">')
+
+    # ─── defs: 滤镜与渐变 ───
     lines.append('<defs>')
-    # 发光滤镜
     lines.append('''
     <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
       <feGaussianBlur stdDeviation="6" result="blur"/>
@@ -154,8 +168,8 @@ def generate_svg(data: dict) -> str:
         <feMergeNode in="SourceGraphic"/>
       </feMerge>
     </filter>
-    <filter id="glow-strong" x="-50%" y="-50%" width="200%" height="200%">
-      <feGaussianBlur stdDeviation="12" result="blur"/>
+    <filter id="glow-strong" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur stdDeviation="14" result="blur"/>
       <feMerge>
         <feMergeNode in="blur"/>
         <feMergeNode in="blur"/>
@@ -169,145 +183,288 @@ def generate_svg(data: dict) -> str:
         <feMergeNode in="SourceGraphic"/>
       </feMerge>
     </filter>
-    ''')
-
-    # 径向渐变 - 中心太极
-    lines.append('''
+    <filter id="glow-intense" x="-100%" y="-100%" width="300%" height="300%">
+      <feGaussianBlur stdDeviation="20" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
     <radialGradient id="taichi-cyan" cx="50%" cy="50%">
-      <stop offset="0%" stop-color="#00FFFF" stop-opacity="0.9"/>
-      <stop offset="100%" stop-color="#00FFFF" stop-opacity="0.2"/>
+      <stop offset="0%" stop-color="#00FFFF" stop-opacity="0.95"/>
+      <stop offset="60%" stop-color="#00FFFF" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#00FFFF" stop-opacity="0.05"/>
     </radialGradient>
     <radialGradient id="taichi-green" cx="50%" cy="50%">
-      <stop offset="0%" stop-color="#00D09C" stop-opacity="0.9"/>
-      <stop offset="100%" stop-color="#00D09C" stop-opacity="0.2"/>
+      <stop offset="0%" stop-color="#00D09C" stop-opacity="0.95"/>
+      <stop offset="60%" stop-color="#00D09C" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#00D09C" stop-opacity="0.05"/>
+    </radialGradient>
+    <radialGradient id="core-aura" cx="50%" cy="50%">
+      <stop offset="0%" stop-color="#00FFFF" stop-opacity="0.15"/>
+      <stop offset="50%" stop-color="#00D09C" stop-opacity="0.06"/>
+      <stop offset="100%" stop-color="#00D09C" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="bg-vignette" cx="50%" cy="50%">
+      <stop offset="0%" stop-color="#0F1428" stop-opacity="0"/>
+      <stop offset="70%" stop-color="#0A0E1A" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#050710" stop-opacity="0.8"/>
     </radialGradient>
     ''')
     lines.append('</defs>')
 
-    # CSS 动画
+    # ─── CSS 动画 ───
     lines.append('<style>')
     lines.append('''
       @keyframes pulse-core {
-        0%, 100% { opacity: 0.6; transform: scale(1); }
-        50% { opacity: 1; transform: scale(1.08); }
+        0%, 100% { opacity: 0.5; transform: scale(1); }
+        50% { opacity: 1; transform: scale(1.06); }
       }
-      @keyframes spin {
+      @keyframes pulse-ring {
+        0%, 100% { opacity: 0.3; }
+        50% { opacity: 0.7; }
+      }
+      @keyframes spin-slow {
         from { transform: rotate(0deg); }
         to { transform: rotate(360deg); }
       }
+      @keyframes spin-reverse {
+        from { transform: rotate(360deg); }
+        to { transform: rotate(0deg); }
+      }
       @keyframes float-y {
         0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(-6px); }
+        50% { transform: translateY(-4px); }
       }
       @keyframes twinkle {
-        0%, 100% { opacity: 0.2; }
-        50% { opacity: 0.8; }
+        0%, 100% { opacity: 0.15; }
+        50% { opacity: 0.7; }
       }
       @keyframes dash-flow {
-        to { stroke-dashoffset: -20; }
+        to { stroke-dashoffset: -24; }
       }
-      .core-glow { animation: pulse-core 3s ease-in-out infinite; transform-origin: center; }
-      .orbit-line { fill: none; stroke-dasharray: 4 6; animation: dash-flow 2s linear infinite; }
+      @keyframes dash-flow-reverse {
+        to { stroke-dashoffset: 24; }
+      }
+      @keyframes breath {
+        0%, 100% { opacity: 0.4; }
+        50% { opacity: 0.8; }
+      }
+      .core-glow { animation: pulse-core 4s ease-in-out infinite; }
+      .ring-pulse { animation: pulse-ring 5s ease-in-out infinite; }
+      .orbit-line { fill: none; stroke-dasharray: 4 6; animation: dash-flow 3s linear infinite; }
+      .orbit-line-reverse { fill: none; stroke-dasharray: 6 4; animation: dash-flow-reverse 4s linear infinite; }
       .star { animation: twinkle var(--dur) ease-in-out infinite; animation-delay: var(--delay); }
+      .breath { animation: breath var(--dur, 3s) ease-in-out infinite; animation-delay: var(--delay, 0s); }
     ''')
 
-    # 为每个框架生成轨道动画
-    fw_list = list(frameworks.keys())
-    for i, _fw in enumerate(fw_list):
-        duration = 20 + i * 5  # 不同速度
-        # 行星沿椭圆轨道运动的关键帧
+    # 为框架节点生成浮动动画
+    for i in range(fw_count):
         lines.append(f'''
-      @keyframes orbit-{i} {{
-        from {{ transform: rotate({i * (360 // max(fw_count, 1))}deg); }}
-        to {{ transform: rotate({i * (360 // max(fw_count, 1)) + 360}deg); }}
-      }}
-      .planet-{i} {{
-        animation: orbit-{i} {duration}s linear infinite;
-        transform-origin: {cx}px {cy}px;
-      }}
-      .planet-label-{i} {{
-        animation: float-y {2 + i * 0.5}s ease-in-out infinite;
+      .node-float-{i} {{
+        animation: float-y {2.5 + i * 0.4}s ease-in-out infinite;
+        animation-delay: {i * 0.3}s;
       }}
     ''')
 
     lines.append('</style>')
 
-    # ─── 背景 ───
+    # ═══════════════════════════════════════════
+    # 背景层
+    # ═══════════════════════════════════════════
     lines.append(f'<rect width="{w}" height="{h}" fill="#0A0E1A" rx="12"/>')
 
-    # 背景网格
-    lines.append('<g opacity="0.04">')
-    for x in range(0, w, 40):
+    # 背景暗纹网格
+    lines.append('<g opacity="0.03">')
+    for x in range(0, w + 1, 40):
         lines.append(f'<line x1="{x}" y1="0" x2="{x}" y2="{h}" stroke="#00D09C" stroke-width="0.5"/>')
-    for y in range(0, h, 40):
+    for y in range(0, h + 1, 40):
         lines.append(f'<line x1="0" y1="{y}" x2="{w}" y2="{y}" stroke="#00D09C" stroke-width="0.5"/>')
     lines.append('</g>')
 
-    # 随机星星
-    import random
-    random.seed(42)  # 固定种子保证一致性
+    # 暗角 vignette
+    lines.append(f'<rect width="{w}" height="{h}" fill="url(#bg-vignette)" rx="12"/>')
+
+    # 星尘背景 (80颗)
     lines.append('<g>')
-    for _ in range(60):
-        sx = random.randint(10, w - 10)
-        sy = random.randint(10, h - 60)
-        sr = random.uniform(0.3, 1.2)
+    for _ in range(80):
+        sx = random.randint(5, w - 5)
+        sy = random.randint(5, h - 5)
+        sr = random.uniform(0.2, 1.0)
         dur = random.uniform(2, 6)
-        delay = random.uniform(0, 4)
+        delay = random.uniform(0, 5)
         lines.append(
             f'<circle cx="{sx}" cy="{sy}" r="{sr}" fill="white" '
             f'class="star" style="--dur:{dur:.1f}s;--delay:{delay:.1f}s"/>'
         )
     lines.append('</g>')
 
-    # ─── 八卦奇门轨道阵 ───
-    for i in range(fw_count):
-        scale = 0.6 + (i * 0.15)
-        rx = orbit_rx * scale
-        ry = orbit_ry * scale
-        color = list(FRAMEWORK_COLORS.values())[i % len(FRAMEWORK_COLORS)]
-        
-        # 计算 8 个顶点构成带透视的八边形
+    # ═══════════════════════════════════════════
+    # 中心巨大光晕 (法阵能量场)
+    # ═══════════════════════════════════════════
+    lines.append(f'<circle cx="{cx}" cy="{cy}" r="{max_r + 20}" fill="url(#core-aura)"/>')
+
+    # ═══════════════════════════════════════════
+    # 八层同心八卦阵环 (从内到外)
+    # ═══════════════════════════════════════════
+    ring_radii = [60, 85, 115, 145, 175, 205, 230, 255]
+    ring_colors = ["#00FFFF", "#00D09C", "#2ED573", "#60A5FA", "#A78BFA", "#FF6B6B", "#FFD700", "#FF8C42"]
+
+    for ring_idx, r in enumerate(ring_radii):
+        opacity = 0.35 - ring_idx * 0.03
+        stroke_w = 1.2 if ring_idx < 3 else 0.8
+        offset_angle = (math.pi / 8) * (ring_idx % 2)  # 交替旋转22.5°
+        color = ring_colors[ring_idx % len(ring_colors)]
+
+        # 正八边形顶点
         points = []
-        offset_angle = math.pi / 8 if i % 2 == 1 else 0
         for j in range(8):
-            a = (2 * math.pi / 8) * j + offset_angle
-            px = cx + rx * math.cos(a)
-            py = cy + ry * math.sin(a)
-            points.append(f"{px},{py}")
-            
+            a = (2 * math.pi / 8) * j - math.pi / 2 + offset_angle
+            px = cx + r * math.cos(a)
+            py = cy + r * math.sin(a)
+            points.append(f"{px:.1f},{py:.1f}")
         pts_str = " ".join(points)
+
+        css_class = "orbit-line" if ring_idx % 2 == 0 else "orbit-line-reverse"
         lines.append(
             f'<polygon points="{pts_str}" '
-            f'class="orbit-line" stroke="{color["primary"]}" stroke-opacity="0.3" fill="none" stroke-width="1"/>'
+            f'class="{css_class}" stroke="{color}" stroke-opacity="{opacity:.2f}" '
+            f'fill="none" stroke-width="{stroke_w}"/>'
         )
 
-    # ─── 辐射状地支切割线 ───
-    max_scale = 0.6 + ((fw_count - 1) * 0.15) if fw_count > 0 else 0.6
-    max_rx = orbit_rx * max_scale + 20
-    max_ry = orbit_ry * max_scale + 10
+    # ─── 内层装饰圆环 ───
+    for r_circle in [48, 55, 270]:
+        lines.append(
+            f'<circle cx="{cx}" cy="{cy}" r="{r_circle}" fill="none" '
+            f'stroke="#00D09C" stroke-width="0.5" stroke-opacity="0.12" '
+            f'stroke-dasharray="2 6" class="orbit-line"/>'
+        )
+
+    # ═══════════════════════════════════════════
+    # 16条能量辐射线 (8主线 + 8副线)
+    # ═══════════════════════════════════════════
+    for j in range(16):
+        a = (2 * math.pi / 16) * j - math.pi / 2
+        is_main = (j % 2 == 0)
+        inner_r = 50 if is_main else 65
+        outer_r = max_r + 10 if is_main else max_r - 20
+        opacity = 0.18 if is_main else 0.08
+        stroke_w = 0.8 if is_main else 0.4
+
+        x1 = cx + inner_r * math.cos(a)
+        y1 = cy + inner_r * math.sin(a)
+        x2 = cx + outer_r * math.cos(a)
+        y2 = cy + outer_r * math.sin(a)
+        lines.append(
+            f'<line x1="{x1:.1f}" y1="{y1:.1f}" x2="{x2:.1f}" y2="{y2:.1f}" '
+            f'stroke="#00D09C" stroke-opacity="{opacity}" stroke-width="{stroke_w}" '
+            f'stroke-dasharray="3 5"/>'
+        )
+
+    # ═══════════════════════════════════════════
+    # 八卦卦象符号环 (r≈80)
+    # ═══════════════════════════════════════════
+    trigram_r = 78
     for j in range(8):
-        a = (2 * math.pi / 8) * j
-        x1 = cx + (max_rx * 0.1) * math.cos(a)
-        y1 = cy + (max_ry * 0.1) * math.sin(a)
-        x2 = cx + max_rx * math.cos(a)
-        y2 = cy + max_ry * math.sin(a)
-        lines.append(f'<line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}" stroke="#00D09C" stroke-opacity="0.15" stroke-width="0.5" stroke-dasharray="2 4"/>')
+        a = (2 * math.pi / 8) * j - math.pi / 2
+        tx = cx + trigram_r * math.cos(a)
+        ty = cy + trigram_r * math.sin(a)
+        bg_color = BAGUA_COLORS[j]
 
-    # ─── 中心太极光核 ───
-    # 外围发光
-    lines.append(f'<circle cx="{cx}" cy="{cy}" r="45" fill="none" stroke="#00D09C" stroke-width="1" stroke-opacity="0.5" class="core-glow" filter="url(#glow-strong)"/>')
-    # 青蓝色半球 (上)
-    lines.append(f'<path d="M {cx-22} {cy} A 22 22 0 0 1 {cx+22} {cy} Z" fill="url(#taichi-cyan)" filter="url(#glow)"/>')
-    # 翠绿色半球 (下)
-    lines.append(f'<path d="M {cx-22} {cy} A 22 22 0 0 0 {cx+22} {cy} Z" fill="url(#taichi-green)" filter="url(#glow)"/>')
-    # 分界线
-    lines.append(f'<line x1="{cx-24}" y1="{cy}" x2="{cx+24}" y2="{cy}" stroke="#0A0E1A" stroke-width="2"/>')
-    
-    # 中心文字
-    lines.append(f'<text x="{cx}" y="{cy - 4}" text-anchor="middle" fill="#0A0E1A" font-family="sans-serif" font-size="7" font-weight="800" letter-spacing="0.5">CYBER</text>')
-    lines.append(f'<text x="{cx}" y="{cy + 6}" text-anchor="middle" fill="#0A0E1A" font-family="sans-serif" font-size="6" font-weight="600">HUATUO</text>')
+        # 卦象背景小圆
+        lines.append(
+            f'<circle cx="{tx:.1f}" cy="{ty:.1f}" r="13" '
+            f'fill="{bg_color}" opacity="0.06" filter="url(#glow-soft)"/>'
+        )
+        lines.append(
+            f'<circle cx="{tx:.1f}" cy="{ty:.1f}" r="10" '
+            f'fill="#0A0E1A" stroke="{bg_color}" stroke-width="0.8" stroke-opacity="0.5"/>'
+        )
+        # 卦象符号
+        lines.append(
+            f'<text x="{tx:.1f}" y="{ty + 1:.1f}" text-anchor="middle" '
+            f'dominant-baseline="central" fill="{bg_color}" '
+            f'font-size="9" opacity="0.9">{BAGUA_TRIGRAMS[j]}</text>'
+        )
+        # 方位名 (放在卦象外侧)
+        name_r = trigram_r + 16
+        nx = cx + name_r * math.cos(a)
+        ny = cy + name_r * math.sin(a)
+        lines.append(
+            f'<text x="{nx:.1f}" y="{ny + 1:.1f}" text-anchor="middle" '
+            f'dominant-baseline="central" fill="{bg_color}" '
+            f'font-family="sans-serif" font-size="7" font-weight="600" opacity="0.45">'
+            f'{BAGUA_NAMES[j]}</text>'
+        )
 
-    # ─── 行星节点与经络连线 ───
+    # ═══════════════════════════════════════════
+    # 中心太极光核 (更大更震撼)
+    # ═══════════════════════════════════════════
+    taichi_r = 32
+
+    # 最外层脉冲光环
+    lines.append(
+        f'<circle cx="{cx}" cy="{cy}" r="{taichi_r + 14}" fill="none" '
+        f'stroke="#00FFFF" stroke-width="0.6" stroke-opacity="0.25" '
+        f'class="core-glow" filter="url(#glow-strong)" '
+        f'style="transform-origin:{cx}px {cy}px"/>'
+    )
+    # 中间光环
+    lines.append(
+        f'<circle cx="{cx}" cy="{cy}" r="{taichi_r + 8}" fill="none" '
+        f'stroke="#00D09C" stroke-width="1" stroke-opacity="0.35" '
+        f'class="ring-pulse" filter="url(#glow)"/>'
+    )
+
+    # 太极本体
+    # 青色半 (上)
+    lines.append(
+        f'<path d="M {cx - taichi_r} {cy} '
+        f'A {taichi_r} {taichi_r} 0 0 1 {cx + taichi_r} {cy} Z" '
+        f'fill="url(#taichi-cyan)" filter="url(#glow)"/>'
+    )
+    # 绿色半 (下)
+    lines.append(
+        f'<path d="M {cx - taichi_r} {cy} '
+        f'A {taichi_r} {taichi_r} 0 0 0 {cx + taichi_r} {cy} Z" '
+        f'fill="url(#taichi-green)" filter="url(#glow)"/>'
+    )
+
+    # S 形分界线
+    half_r = taichi_r / 2
+    lines.append(
+        f'<path d="M {cx - taichi_r} {cy} '
+        f'A {half_r} {half_r} 0 0 1 {cx} {cy} '
+        f'A {half_r} {half_r} 0 0 0 {cx + taichi_r} {cy}" '
+        f'fill="none" stroke="#0A0E1A" stroke-width="2"/>'
+    )
+
+    # 鱼眼
+    lines.append(f'<circle cx="{cx}" cy="{cy - half_r}" r="4" fill="#00D09C" opacity="0.85"/>')
+    lines.append(f'<circle cx="{cx}" cy="{cy - half_r}" r="1.5" fill="#0A0E1A"/>')
+    lines.append(f'<circle cx="{cx}" cy="{cy + half_r}" r="4" fill="#00FFFF" opacity="0.85"/>')
+    lines.append(f'<circle cx="{cx}" cy="{cy + half_r}" r="1.5" fill="#0A0E1A"/>')
+
+    # 中心品牌文字
+    lines.append(
+        f'<text x="{cx}" y="{cy - 3}" text-anchor="middle" fill="#0A0E1A" '
+        f'font-family="sans-serif" font-size="8" font-weight="900" letter-spacing="1">'
+        f'CYBER</text>'
+    )
+    lines.append(
+        f'<text x="{cx}" y="{cy + 7}" text-anchor="middle" fill="#0A0E1A" '
+        f'font-family="sans-serif" font-size="7" font-weight="700">'
+        f'HUATUO</text>'
+    )
+
+    # ═══════════════════════════════════════════
+    # 框架药方节点 — 分布在外层八卦环上
+    # ═══════════════════════════════════════════
+    # 将框架均匀分布在八卦方位上
+    node_base_r = 195  # 节点分布的基础半径
+
     for i, fw in enumerate(fw_list):
         case_count = sum(len(cases) for cases in frameworks[fw].values())
         color_info = FRAMEWORK_COLORS.get(fw, {"primary": "#888", "glow": "rgba(136,136,136,0.5)"})
@@ -315,72 +472,119 @@ def generate_svg(data: dict) -> str:
         icon = FRAMEWORK_ICONS.get(fw, "📦")
         display_name = FRAMEWORK_DISPLAY_NAMES.get(fw, fw)
 
-        # 计算椭圆轨道上的初始位置
-        angle = (2 * math.pi / fw_count) * i - math.pi / 2
-        scale = 0.6 + (i * 0.15)
-        px = cx + orbit_rx * scale * math.cos(angle)
-        py = cy + orbit_ry * scale * math.sin(angle)
+        # 均匀分布在圆上的角度
+        angle = (2 * math.pi / max(fw_count, 1)) * i - math.pi / 2
+        # 交错半径让布局更动感
+        r_offset = 0 if i % 2 == 0 else 20
+        px = cx + (node_base_r + r_offset) * math.cos(angle)
+        py = cy + (node_base_r + r_offset) * math.sin(angle)
 
-        node_r = 10 + case_count * 1.5  # 节点大小与案例数正比
-        node_r = min(node_r, 30)
+        node_r = 12 + case_count * 1.2
+        node_r = min(node_r, 28)
 
-        # 折线经络连线 (中转点)
-        mid_x = cx + (px - cx) * 0.5
+        # 能量连线 (从太极核心到节点)
         lines.append(
-            f'<polyline points="{cx},{cy} {mid_x},{cy} {px},{py}" '
-            f'stroke="{color}" stroke-opacity="0.25" fill="none" stroke-width="1" stroke-dasharray="2 3"'
-            f' class="orbit-line"/>'
+            f'<line x1="{cx}" y1="{cy}" x2="{px:.1f}" y2="{py:.1f}" '
+            f'stroke="{color}" stroke-opacity="0.12" fill="none" stroke-width="0.8" '
+            f'stroke-dasharray="4 6" class="orbit-line"/>'
         )
 
-        # 行星组
-        lines.append(f'<g class="planet-label-{i}">')
+        # 节点组
+        lines.append(f'<g class="node-float-{i}">')
 
-        # 发光圈
+        # 外光晕
         lines.append(
-            f'<circle cx="{px}" cy="{py}" r="{node_r + 8}" fill="{color}" opacity="0.08" '
-            f'filter="url(#glow-soft)"/>'
+            f'<circle cx="{px:.1f}" cy="{py:.1f}" r="{node_r + 10}" '
+            f'fill="{color}" opacity="0.05" filter="url(#glow-soft)"/>'
         )
-        # 行星体
+        # 中间光环
         lines.append(
-            f'<circle cx="{px}" cy="{py}" r="{node_r}" fill="#0A0E1A" stroke="{color}" '
-            f'stroke-width="1.5" filter="url(#glow)"/>'
+            f'<circle cx="{px:.1f}" cy="{py:.1f}" r="{node_r + 4}" '
+            f'fill="none" stroke="{color}" stroke-width="0.5" stroke-opacity="0.2" '
+            f'class="breath" style="--dur:{3 + i * 0.5}s;--delay:{i * 0.2}s"/>'
         )
-        # 行星图标
+        # 节点实体
         lines.append(
-            f'<text x="{px}" y="{py + 1}" text-anchor="middle" dominant-baseline="central" '
-            f'font-size="12">{icon}</text>'
+            f'<circle cx="{px:.1f}" cy="{py:.1f}" r="{node_r}" '
+            f'fill="#0A0E1A" stroke="{color}" stroke-width="1.5" filter="url(#glow)"/>'
         )
+        # 框架图标
+        lines.append(
+            f'<text x="{px:.1f}" y="{py + 1:.1f}" text-anchor="middle" '
+            f'dominant-baseline="central" font-size="13">{icon}</text>'
+        )
+
+        # 标签文字位置：根据角度决定放上方还是下方
+        label_dir = 1
+        if -math.pi * 0.75 < angle < -math.pi * 0.25:
+            label_dir = -1  # 节点在上方时，标签放上面
+
+        label_y_base = py + (node_r + 14) * label_dir
+
         # 框架名称
         lines.append(
-            f'<text x="{px}" y="{py + node_r + 14}" text-anchor="middle" fill="{color}" '
-            f'font-family="sans-serif" font-size="8" font-weight="600">{display_name}</text>'
+            f'<text x="{px:.1f}" y="{label_y_base:.1f}" text-anchor="middle" fill="{color}" '
+            f'font-family="sans-serif" font-size="9" font-weight="700">{display_name}</text>'
         )
         # 案例数
         lines.append(
-            f'<text x="{px}" y="{py + node_r + 24}" text-anchor="middle" fill="{color}" '
-            f'font-family="monospace" font-size="7" opacity="0.7">{case_count} cases</text>'
+            f'<text x="{px:.1f}" y="{label_y_base + 11 * label_dir:.1f}" text-anchor="middle" fill="{color}" '
+            f'font-family="monospace" font-size="7" opacity="0.6">{case_count} cases</text>'
         )
         lines.append('</g>')
 
-    # ─── 底部统计条 ───
+    # ═══════════════════════════════════════════
+    # 四角装饰符文
+    # ═══════════════════════════════════════════
+    corner_texts = [
+        (35, 30, "天"),
+        (w - 35, 30, "地"),
+        (35, h - 25, "人"),
+        (w - 35, h - 25, "和"),
+    ]
+    for (tx, ty, char) in corner_texts:
+        lines.append(
+            f'<text x="{tx}" y="{ty}" text-anchor="middle" fill="#00D09C" '
+            f'font-family="sans-serif" font-size="12" font-weight="600" opacity="0.12">'
+            f'{char}</text>'
+        )
+
+    # ═══════════════════════════════════════════
+    # 底部统计信息栏
+    # ═══════════════════════════════════════════
     bar_y = h - 38
-    lines.append(f'<rect x="0" y="{bar_y - 5}" width="{w}" height="43" fill="#0A0E1A" fill-opacity="0.8"/>')
-    lines.append(f'<line x1="60" y1="{bar_y}" x2="{w - 60}" y2="{bar_y}" stroke="#00D09C" stroke-opacity="0.15" stroke-width="1"/>')
+    lines.append(f'<rect x="0" y="{bar_y - 8}" width="{w}" height="52" fill="#0A0E1A" fill-opacity="0.85"/>')
+    lines.append(f'<line x1="80" y1="{bar_y}" x2="{w - 80}" y2="{bar_y}" stroke="#00D09C" stroke-opacity="0.15" stroke-width="1"/>')
 
     stats_text = f'{total} Prescriptions · {fw_count} Frameworks · 100% Open Source'
     lines.append(
-        f'<text x="{cx}" y="{bar_y + 20}" text-anchor="middle" fill="#00D09C" '
-        f'font-family="monospace" font-size="10" opacity="0.6" letter-spacing="1">'
+        f'<text x="{cx}" y="{bar_y + 22}" text-anchor="middle" fill="#00D09C" '
+        f'font-family="monospace" font-size="10" opacity="0.55" letter-spacing="1.5">'
         f'{stats_text}</text>'
     )
 
     # 左右装饰
-    lines.append(f'<text x="30" y="{bar_y + 20}" fill="#00D09C" font-family="sans-serif" font-size="10" opacity="0.4">🩺</text>')
-    lines.append(f'<text x="{w - 40}" y="{bar_y + 20}" fill="#00D09C" font-family="sans-serif" font-size="10" opacity="0.4">💊</text>')
+    lines.append(f'<text x="40" y="{bar_y + 22}" fill="#00D09C" font-family="sans-serif" font-size="11" opacity="0.3">☰</text>')
+    lines.append(f'<text x="{w - 40}" y="{bar_y + 22}" fill="#00D09C" font-family="sans-serif" font-size="11" opacity="0.3">☷</text>')
 
+    # ═══════════════════════════════════════════
     # 顶部标题
-    lines.append(f'<text x="{cx}" y="25" text-anchor="middle" fill="#00D09C" font-family="monospace" font-size="9" font-weight="700" letter-spacing="2" opacity="0.5">PRESCRIPTION UNIVERSE</text>')
-    lines.append(f'<text x="{cx}" y="37" text-anchor="middle" fill="#8892B0" font-family="sans-serif" font-size="8" opacity="0.5">药方宇宙 · 点击进入可交互 3D 版本</text>')
+    # ═══════════════════════════════════════════
+    lines.append(
+        f'<text x="{cx}" y="24" text-anchor="middle" fill="#00FFFF" '
+        f'font-family="monospace" font-size="11" font-weight="700" letter-spacing="3" opacity="0.6">'
+        f'QIMEN DUNJIA · PRESCRIPTION FORMATION</text>'
+    )
+    lines.append(
+        f'<text x="{cx}" y="39" text-anchor="middle" fill="#8892B0" '
+        f'font-family="sans-serif" font-size="9" opacity="0.45">'
+        f'奇门遁甲 · 药方天阵 · 点击进入可交互 3D 版本</text>'
+    )
+
+    # 顶部两侧小装饰线
+    title_line_w = 120
+    lines.append(f'<line x1="{cx - 220}" y1="15" x2="{cx - 220 + title_line_w}" y2="15" stroke="#00FFFF" stroke-opacity="0.15" stroke-width="0.5"/>')
+    lines.append(f'<line x1="{cx + 220 - title_line_w}" y1="15" x2="{cx + 220}" y2="15" stroke="#00FFFF" stroke-opacity="0.15" stroke-width="0.5"/>')
 
     lines.append('</svg>')
     return '\n'.join(lines)

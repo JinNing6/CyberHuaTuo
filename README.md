@@ -50,15 +50,15 @@
   <sub>🎨 <em>All artwork AI-generated · 所有画作均由 AI 文生图创作</em></sub>
 </p>
 
-<!-- 🌐 3D Prescription Universe · 3D 药方宇宙 -->
+<!-- 🔮 奇门遁甲 · 药方天阵 -->
 <p align="center">
   <a href="https://jinning6.github.io/CyberHuaTuo/3d-universe/">
-    <img src="assets/prescription_universe.svg" alt="3D Prescription Universe · 药方宇宙" width="100%"/>
+    <img src="assets/prescription_universe.svg" alt="Qimen Dunjia · Prescription Formation · 奇门遁甲 · 药方天阵" width="100%"/>
   </a>
 </p>
 
 <p align="center">
-  <a href="https://jinning6.github.io/CyberHuaTuo/3d-universe/"><strong>🌐 Explore the Interactive 3D Prescription Universe → 探索可交互的 3D 药方宇宙</strong></a>
+  <a href="https://jinning6.github.io/CyberHuaTuo/3d-universe/"><strong>🔮 Enter the Qimen Dunjia Formation → 进入奇门遁甲 · 药方天阵</strong></a>
 </p>
 
 <p align="center">
