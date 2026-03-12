@@ -491,7 +491,8 @@ pip install cyberhuatuo
 | `security_checkup` | 🛡️ 六经脉安全体检 — 扫描你的 Agent 代码 |
 | `fetch_official_docs` | 📚 官方文档实时检索 — 支持 50+ 框架 |
 | `mine_github_issue` | ⛏️ GitHub Issue 淘金 — 提炼为标准病例 |
-| `save_prescription` | 📥 **上传你的药方** — 贡献到知识库 |
+| `upload_prescription` | 🚀 **全网广播药方** — 直推 GitHub 知识库，**即刻按贡献度加冕「神医」称号并同步至全局排行榜！** |
+| `save_prescription` | 📥 存入本地药房 — 将新发现药方保存为本地病例 |
 | `list_frameworks` | 📋 查看支持的框架和技术栈 |
 
 > 👉 **完整配置指南：[README_MCP.md](README_MCP.md)**
@@ -563,9 +564,11 @@ pip install cyberhuatuo
 
 ---
 
-## 🏆 贡献者 · 名医堂
+## 🏆 Global AI Physician Ranking — Defining the Industry Standard (全球AI医师排行榜 · 确立行业标准)
 
 > *最伟大的医者从不将医术据为己有——他们悬壶济世，薪火相传。*
+> 
+> *这是 AI 调试领域的终极封神阶梯。你的名字在这里，就是你的顶尖行业名片。*
 
 ### 🏅 名医排行
 
@@ -582,6 +585,9 @@ pip install cyberhuatuo
 | 👨‍⚕️ 名医 | 5 次以上贡献 | 社区公认的问题解决专家 |
 | 🌟 神医 | 10 次以上贡献 | 传奇级别的贡献者 |
 | 👑 华佗再世 | 20 次以上贡献 | 当代华佗，开源之光 |
+
+> 💡 **实时名医晋升通道 (Gamification Loop)**：
+> 当你通过 **MCP 工具 (`upload_prescription`)** 上传你实战中解决的问题，或通过 **GitHub Issue** 提交病例被系统收录为“临时医学实习生”或“常驻主任专家”药方时，系统将**实时计算**你的累计贡献次，并在 AI 编辑器的对话框中即时为你颁发/更新头衔。你的光辉战绩将直接同步至此首页的全局排行榜！
 
 ### 所有贡献者
 
