@@ -218,3 +218,215 @@ class TestGetContributorSummary:
             assert summary["github"] == "nonexistent_user"
             assert summary["contribution_count"] == 0
             assert summary["title_emoji"] == "🌱"
+
+
+# ============================================================
+# 📋 Issue 创建测试（瞬时药方层）
+# ============================================================
+
+
+class TestCreatePrescriptionIssue:
+    """测试 GitHubSyncer.create_prescription_issue 方法"""
+
+    def test_issue_body_contains_structured_json(self):
+        """Issue body 应包含结构化 JSON 数据块"""
+        syncer = GitHubSyncer(token="test-token")
+
+        import asyncio
+        import json
+
+        # Mock httpx 响应
+        with patch("httpx.AsyncClient") as mock_client_cls:
+            mock_resp = MagicMock()
+            mock_resp.status_code = 201
+            mock_resp.json.return_value = {
+                "number": 42,
+                "html_url": "https://github.com/test/repo/issues/42",
+            }
+
+            mock_client = AsyncMock()
+            mock_client.post = AsyncMock(return_value=mock_resp)
+            mock_client.__aenter__ = AsyncMock(return_value=mock_client)
+            mock_client.__aexit__ = AsyncMock(return_value=None)
+            mock_client_cls.return_value = mock_client
+
+            result = asyncio.get_event_loop().run_until_complete(
+                syncer.create_prescription_issue(
+                    title="测试药方",
+                    framework="langchain",
+                    prescription="安装最新版本",
+                    symptom="导入报错",
+                    severity="high",
+                    contributor_github="testuser",
+                )
+            )
+
+            assert result["success"] is True
+            assert result["method"] == "issue"
+            assert result["issue_number"] == 42
+
+            # 检查发送的请求 payload
+            call_args = mock_client.post.call_args
+            payload = call_args.kwargs.get("json") or call_args[1].get("json")
+            assert "🩺 [langchain] 测试药方" == payload["title"]
+            assert "prescription" in payload["labels"]
+            assert "framework:langchain" in payload["labels"]
+            assert "severity:high" in payload["labels"]
+
+    def test_issue_title_format(self):
+        """Issue 标题应遵循 🩺 [framework] 标题 格式"""
+        syncer = GitHubSyncer(token="test-token")
+
+        import asyncio
+
+        with patch("httpx.AsyncClient") as mock_client_cls:
+            mock_resp = MagicMock()
+            mock_resp.status_code = 201
+            mock_resp.json.return_value = {
+                "number": 1,
+                "html_url": "https://github.com/test/issues/1",
+            }
+
+            mock_client = AsyncMock()
+            mock_client.post = AsyncMock(return_value=mock_resp)
+            mock_client.__aenter__ = AsyncMock(return_value=mock_client)
+            mock_client.__aexit__ = AsyncMock(return_value=None)
+            mock_client_cls.return_value = mock_client
+
+            result = asyncio.get_event_loop().run_until_complete(
+                syncer.create_prescription_issue(
+                    title="RAG内存泄漏修复",
+                    framework="pytorch",
+                    prescription="修复方案详情",
+                )
+            )
+
+            assert result["success"] is True
+            assert result["title"] == "🩺 [pytorch] RAG内存泄漏修复"
+
+    def test_issue_creation_failure(self):
+        """API 返回非 2xx 时应报告失败"""
+        syncer = GitHubSyncer(token="test-token")
+
+        import asyncio
+
+        with patch("httpx.AsyncClient") as mock_client_cls:
+            mock_resp = MagicMock()
+            mock_resp.status_code = 422
+            mock_resp.text = "Validation Failed"
+
+            mock_client = AsyncMock()
+            mock_client.post = AsyncMock(return_value=mock_resp)
+            mock_client.__aenter__ = AsyncMock(return_value=mock_client)
+            mock_client.__aexit__ = AsyncMock(return_value=None)
+            mock_client_cls.return_value = mock_client
+
+            result = asyncio.get_event_loop().run_until_complete(
+                syncer.create_prescription_issue(
+                    title="测试",
+                    framework="test",
+                    prescription="药方",
+                )
+            )
+
+            assert result["success"] is False
+            assert result["method"] == "issue"
+            assert "Validation Failed" in result["error"]
+
+
+# ============================================================
+# 🔄 降级策略测试（双层架构）
+# ============================================================
+
+
+class TestSyncPrescriptionStrategies:
+    """测试 sync_prescription 的降级路径：直推 → Issue → Fork+PR"""
+
+    def test_direct_push_success_skips_issue(self):
+        """直推成功时不应创建 Issue"""
+        syncer = GitHubSyncer(token="test-token")
+        syncer.push_file = AsyncMock(return_value={
+            "success": True,
+            "method": "direct_push",
+            "commit_sha": "abc123",
+        })
+        syncer.create_prescription_issue = AsyncMock()
+
+        import asyncio
+
+        result = asyncio.get_event_loop().run_until_complete(
+            syncer.sync_prescription(
+                relative_path="cases/test/case.md",
+                content="test content",
+                contributor_github="testuser",
+                prescription_meta={"title": "test", "framework": "test", "prescription": "fix"},
+            )
+        )
+
+        assert result["success"] is True
+        assert result["method"] == "direct_push"
+        syncer.create_prescription_issue.assert_not_called()
+
+    def test_push_403_with_meta_creates_issue(self):
+        """直推 403 且有 prescription_meta 时应创建 Issue"""
+        syncer = GitHubSyncer(token="test-token")
+        syncer.push_file = AsyncMock(return_value={
+            "success": False,
+            "status_code": 403,
+            "method": "direct_push",
+        })
+        syncer.create_prescription_issue = AsyncMock(return_value={
+            "success": True,
+            "method": "issue",
+            "issue_number": 99,
+            "issue_url": "https://github.com/test/issues/99",
+        })
+        syncer.fork_and_pr = AsyncMock()
+
+        import asyncio
+
+        result = asyncio.get_event_loop().run_until_complete(
+            syncer.sync_prescription(
+                relative_path="cases/test/case.md",
+                content="test content",
+                contributor_github="testuser",
+                prescription_meta={"title": "测试", "framework": "langchain", "prescription": "修复方案"},
+            )
+        )
+
+        assert result["success"] is True
+        assert result["method"] == "issue"
+        syncer.create_prescription_issue.assert_called_once()
+        syncer.fork_and_pr.assert_not_called()
+
+    def test_push_403_without_meta_falls_back_to_fork_pr(self):
+        """直推 403 且无 prescription_meta 时应回退到 Fork+PR"""
+        syncer = GitHubSyncer(token="test-token")
+        syncer.push_file = AsyncMock(return_value={
+            "success": False,
+            "status_code": 404,
+            "method": "direct_push",
+        })
+        syncer.create_prescription_issue = AsyncMock()
+        syncer.fork_and_pr = AsyncMock(return_value={
+            "success": True,
+            "method": "fork_pr",
+            "pr_url": "https://github.com/test/pr/1",
+        })
+
+        import asyncio
+
+        result = asyncio.get_event_loop().run_until_complete(
+            syncer.sync_prescription(
+                relative_path="cases/test/case.md",
+                content="test content",
+                contributor_github="testuser",
+                prescription_meta=None,
+            )
+        )
+
+        assert result["success"] is True
+        assert result["method"] == "fork_pr"
+        syncer.create_prescription_issue.assert_not_called()
+        syncer.fork_and_pr.assert_called_once()
+

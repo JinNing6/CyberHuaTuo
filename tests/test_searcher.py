@@ -91,3 +91,149 @@ class TestConfigModule:
         """config 应该有 HOST 属性"""
         from cyberhuatuo.config import config
         assert hasattr(config, "HOST")
+
+    def test_config_has_ephemeral_search(self):
+        """config 应该有 EPHEMERAL_SEARCH_ENABLED 属性"""
+        from cyberhuatuo.config import config
+        assert hasattr(config, "EPHEMERAL_SEARCH_ENABLED")
+        assert isinstance(config.EPHEMERAL_SEARCH_ENABLED, bool)
+
+
+# ============================================================
+# 🔍 搜索结果 source 字段测试
+# ============================================================
+
+
+class TestSearchResultSource:
+    """测试 SearchResult 的 source 字段"""
+
+    def test_search_result_has_source_field(self):
+        """SearchResult 应该有 source 字段"""
+        from cyberhuatuo.searcher import SearchResult
+        result = SearchResult(
+            case_id="test-001",
+            title="测试",
+            title_en="test",
+            framework="langchain",
+            severity="medium",
+            complexity="moderate",
+            tags="test",
+            filepath="cases/test.md",
+            distance=0.0,
+            relevance=95.0,
+            content=None,
+        )
+        # 默认值应该是 "常驻"
+        assert result.source == "常驻"
+
+    def test_search_result_ephemeral_source(self):
+        """可以创建 source='瞬时' 的搜索结果"""
+        from cyberhuatuo.searcher import SearchResult
+        result = SearchResult(
+            case_id="issue-42",
+            title="瞬时药方",
+            title_en="ephemeral",
+            framework="pytorch",
+            severity="high",
+            complexity="simple",
+            tags="",
+            filepath="https://github.com/test/issues/42",
+            distance=0.0,
+            relevance=75.0,
+            content="药方内容",
+            source="瞬时",
+        )
+        assert result.source == "瞬时"
+
+
+# ============================================================
+# 📋 Issue 解析测试
+# ============================================================
+
+
+class TestIssueParser:
+    """测试 GitHub Issue 解析为 SearchResult 的逻辑"""
+
+    def test_extract_structured_data(self):
+        """应正确提取 <details> 中的 JSON 数据"""
+        from cyberhuatuo.searcher import _extract_structured_data
+
+        body = '''## 药方摘要
+
+<details><summary>Data</summary>
+
+```json
+{"framework": "langchain", "title": "测试标题", "severity": "high"}
+```
+
+</details>'''
+        data = _extract_structured_data(body)
+        assert data is not None
+        assert data["framework"] == "langchain"
+        assert data["title"] == "测试标题"
+
+    def test_extract_structured_data_invalid_json(self):
+        """无效 JSON 应返回 None"""
+        from cyberhuatuo.searcher import _extract_structured_data
+
+        body = '```json\n{invalid json}\n```'
+        data = _extract_structured_data(body)
+        assert data is None
+
+    def test_extract_structured_data_no_json(self):
+        """无 JSON 块应返回 None"""
+        from cyberhuatuo.searcher import _extract_structured_data
+
+        body = "这只是普通文本"
+        data = _extract_structured_data(body)
+        assert data is None
+
+    def test_clean_issue_body(self):
+        """应移除 <details> 块和自动签名"""
+        from cyberhuatuo.searcher import _clean_issue_body
+
+        body = '''## 药方摘要
+
+<details><summary>Data</summary>
+
+```json
+{"test": "data"}
+```
+
+</details>
+
+*此 Issue 由 CyberHuaTuo MCP Server 自动创建 / Auto-created*'''
+
+        cleaned = _clean_issue_body(body)
+        assert "<details>" not in cleaned
+        assert "此 Issue 由" not in cleaned
+        assert "药方摘要" in cleaned
+
+    def test_parse_issue_to_result(self):
+        """应正确解析完整的 Issue 为 SearchResult"""
+        from cyberhuatuo.searcher import _parse_issue_to_result
+
+        issue = {
+            "number": 42,
+            "title": "🩺 [langchain] RAG内存泄漏修复",
+            "html_url": "https://github.com/test/issues/42",
+            "labels": [
+                {"name": "prescription"},
+                {"name": "framework:langchain"},
+                {"name": "severity:high"},
+            ],
+            "body": '''## 药方
+
+```json
+{"framework": "langchain", "title": "RAG内存泄漏修复", "title_en": "RAG memory leak fix", "prescription": "修复方案", "severity": "high", "complexity": "moderate", "tags": ["rag", "memory"]}
+```''',
+        }
+
+        result = _parse_issue_to_result(issue)
+        assert result is not None
+        assert result.case_id == "issue-42"
+        assert result.framework == "langchain"
+        assert result.severity == "high"
+        assert result.source == "瞬时"
+        assert result.title == "RAG内存泄漏修复"
+

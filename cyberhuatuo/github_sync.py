@@ -326,25 +326,134 @@ class GitHubSyncer:
                 "error": f"Cannot create PR: {pr_resp.status_code} {pr_resp.text[:300]}",
             }
 
+    async def create_prescription_issue(
+        self,
+        title: str,
+        framework: str,
+        prescription: str,
+        symptom: str = "",
+        error_message: str = "",
+        root_cause: str = "",
+        severity: str = "medium",
+        complexity: str = "moderate",
+        tags: list[str] | None = None,
+        title_en: str = "",
+        contributor_github: str = "anonymous",
+    ) -> dict:
+        """
+        创建药方 Issue（瞬时药方层）
+        Create a prescription Issue on GitHub (ephemeral prescription layer).
+
+        任何拥有 GitHub 账号的用户都能在公开仓库上创建 Issue，
+        无需仓库写权限。创建后即可被 MCP 搜索到。
+
+        Any GitHub user can create an Issue on a public repo without
+        write access. Once created, it is immediately searchable via MCP.
+        """
+        import json as _json
+
+        # 构建结构化 Issue body（JSON + 人类可读摘要）
+        structured_data = {
+            "framework": framework,
+            "title": title,
+            "title_en": title_en,
+            "symptom": symptom,
+            "error_message": error_message,
+            "root_cause": root_cause,
+            "prescription": prescription,
+            "severity": severity,
+            "complexity": complexity,
+            "tags": tags or [],
+            "contributor_github": contributor_github,
+        }
+
+        # Issue body = 人类可读摘要 + 隐藏 JSON 块（供 CI 解析）
+        body_parts = [
+            f"## 💊 瞬时药方 Ephemeral Prescription\n",
+            f"- **贡献者 Contributor**: @{contributor_github}",
+            f"- **框架 Framework**: `{framework}`",
+            f"- **严重性 Severity**: `{severity}`",
+            f"- **复杂度 Complexity**: `{complexity}`\n",
+        ]
+
+        if symptom:
+            body_parts.append(f"### 🏥 症状 Symptom\n\n{symptom}\n")
+        if error_message:
+            body_parts.append(f"### 🔍 错误信息 Error Message\n\n```\n{error_message}\n```\n")
+        if root_cause:
+            body_parts.append(f"### 🔬 根因分析 Root Cause\n\n{root_cause}\n")
+        if prescription:
+            body_parts.append(f"### 💊 药方 Prescription\n\n{prescription}\n")
+
+        # 添加结构化 JSON（供 CI 自动晋升使用）
+        body_parts.append(
+            "---\n\n"
+            "<details><summary>📋 Structured Data (for CI automation)</summary>\n\n"
+            "```json\n"
+            f"{_json.dumps(structured_data, ensure_ascii=False, indent=2)}\n"
+            "```\n\n"
+            "</details>\n\n"
+            "*此 Issue 由 CyberHuaTuo MCP Server 自动创建 / "
+            "Auto-created by CyberHuaTuo MCP Server*"
+        )
+
+        issue_body = "\n".join(body_parts)
+
+        # 构建标签
+        labels = ["prescription", f"framework:{framework}", f"severity:{severity}"]
+
+        # Issue 标题
+        issue_title = f"🩺 [{framework}] {title}"
+
+        url = f"{self.API_BASE}/repos/{self.owner}/{self.repo}/issues"
+        payload = {
+            "title": issue_title,
+            "body": issue_body,
+            "labels": labels,
+        }
+
+        async with httpx.AsyncClient(timeout=30) as client:
+            resp = await client.post(url, json=payload, headers=self._headers)
+
+        if resp.status_code in (200, 201):
+            data = resp.json()
+            return {
+                "success": True,
+                "method": "issue",
+                "issue_number": data.get("number"),
+                "issue_url": data.get("html_url", ""),
+                "title": issue_title,
+            }
+
+        return {
+            "success": False,
+            "method": "issue",
+            "status_code": resp.status_code,
+            "error": resp.text[:500],
+        }
+
     async def sync_prescription(
         self,
         relative_path: str,
         content: str,
         contributor_github: str = "anonymous",
+        prescription_meta: dict | None = None,
     ) -> dict:
         """
-        统一入口：自动选择推送策略
+        统一入口：自动选择推送策略（双层架构）
+        Unified entry: auto-select sync strategy (dual-layer architecture).
 
-        1. 先尝试直接推送
-        2. 推送失败（403/404）则自动 Fork + PR
+        1. 先尝试直接推送（Owner/Collaborator）
+        2. 推送失败（403/404）→ 创建 GitHub Issue（瞬时药方）
 
         Args:
-            relative_path: cases/ 下的相对路径
-            content: 文件内容
-            contributor_github: 贡献者 GitHub 用户名
+            relative_path: cases/ 下的相对路径 / Relative path under cases/
+            content: 文件内容 / File content
+            contributor_github: 贡献者 GitHub 用户名 / Contributor GitHub username
+            prescription_meta: 药方元数据（用于 Issue 创建） / Prescription metadata for Issue creation
 
         Returns:
-            同步结果 dict
+            同步结果 dict / Sync result dict
         """
         if not self.token:
             return {
@@ -367,9 +476,26 @@ class GitHubSyncer:
             logger.info(f"✅ 直接推送成功: {result.get('commit_sha')}")
             return result
 
-        # 直推失败，尝试 Fork + PR
+        # 直推失败，创建 GitHub Issue（瞬时药方）
+        if result.get("status_code") in (403, 404) and prescription_meta:
+            logger.info("直推无权限，创建 GitHub Issue（瞬时药方模式）")
+            return await self.create_prescription_issue(
+                title=prescription_meta.get("title", ""),
+                framework=prescription_meta.get("framework", "unknown"),
+                prescription=prescription_meta.get("prescription", ""),
+                symptom=prescription_meta.get("symptom", ""),
+                error_message=prescription_meta.get("error_message", ""),
+                root_cause=prescription_meta.get("root_cause", ""),
+                severity=prescription_meta.get("severity", "medium"),
+                complexity=prescription_meta.get("complexity", "moderate"),
+                tags=prescription_meta.get("tags"),
+                title_en=prescription_meta.get("title_en", ""),
+                contributor_github=contributor_github,
+            )
+
+        # 无 prescription_meta 时回退到 Fork+PR（兼容老调用）
         if result.get("status_code") in (403, 404):
-            logger.info("直推无权限，尝试 Fork + PR 模式")
+            logger.info("直推无权限，回退到 Fork + PR 模式")
             return await self.fork_and_pr(
                 path=relative_path,
                 content=content,

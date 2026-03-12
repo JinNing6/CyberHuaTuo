@@ -1,0 +1,258 @@
+# ============================================================
+# 💊 瞬时药方自动晋升 — Ephemeral Prescription Promotion
+# Auto-promote valid prescription Issues to permanent case files
+# ============================================================
+#
+# 当 MCP 用户通过 GitHub Issues 提交瞬时药方后，
+# 此流水线自动校验 Issue 内容并将合规药方晋升为常驻药方。
+#
+# When an MCP user submits an ephemeral prescription via GitHub
+# Issues, this workflow auto-validates and promotes compliant
+# prescriptions to permanent case files.
+# ============================================================
+
+name: 💊 Promote Prescription
+
+on:
+  issues:
+    types: [opened, labeled]
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  promote:
+    name: 🩺 审核晋升 · Auto Promote
+    if: contains(github.event.issue.labels.*.name, 'prescription')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 检出代码
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🐍 安装 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 📦 安装依赖
+        run: pip install pyyaml
+
+      - name: 🩺 审核并晋升药方
+        id: promote
+        uses: actions/github-script@v7
+        env:
+          ISSUE_BODY: ${{ github.event.issue.body }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          ISSUE_AUTHOR: ${{ github.event.issue.user.login }}
+        with:
+          script: |
+            const issueBody = process.env.ISSUE_BODY || '';
+            const issueNumber = parseInt(process.env.ISSUE_NUMBER);
+            const issueAuthor = process.env.ISSUE_AUTHOR || 'anonymous';
+
+            // 1. 提取结构化 JSON 数据
+            const jsonMatch = issueBody.match(/```json\s*\n([\s\S]*?)\n```/);
+            if (!jsonMatch) {
+              core.setOutput('status', 'filtered');
+              core.setOutput('reason', '未找到结构化 JSON 数据块');
+              return;
+            }
+
+            let data;
+            try {
+              data = JSON.parse(jsonMatch[1]);
+            } catch (e) {
+              core.setOutput('status', 'filtered');
+              core.setOutput('reason', `JSON 解析失败: ${e.message}`);
+              return;
+            }
+
+            // 2. 基础校验
+            const required = ['framework', 'title', 'prescription'];
+            const missing = required.filter(f => !data[f] || data[f].trim() === '');
+            if (missing.length > 0) {
+              core.setOutput('status', 'filtered');
+              core.setOutput('reason', `缺少必填字段: ${missing.join(', ')}`);
+              return;
+            }
+
+            // 3. 内容合规性检查
+            if (data.prescription.length < 20) {
+              core.setOutput('status', 'filtered');
+              core.setOutput('reason', '药方内容过短（少于 20 字符），请提供更详细的解决方案');
+              return;
+            }
+
+            if (data.title.length < 3) {
+              core.setOutput('status', 'filtered');
+              core.setOutput('reason', '标题过短（少于 3 字符）');
+              return;
+            }
+
+            // 4. 生成病例文件内容
+            const today = new Date().toISOString().split('T')[0];
+            const framework = data.framework || 'unknown';
+            const severity = data.severity || 'medium';
+            const complexity = data.complexity || 'moderate';
+            const tags = (data.tags || []).map(t => `  - "${t}"`).join('\n') || '  - "general"';
+            const titleSlug = data.title
+              .toLowerCase()
+              .replace(/[^\w\s-]/g, '')
+              .replace(/\s+/g, '-')
+              .split('-').slice(0, 4).join('-');
+
+            const caseId = `${framework}-${titleSlug}-issue-${issueNumber}`;
+            const filename = `${titleSlug}-issue-${issueNumber}.md`;
+            const filepath = `cases/${framework}/community/${filename}`;
+
+            const content = `---
+id: "${caseId}"
+title: "${data.title}"
+title_en: "${data.title_en || ''}"
+framework: "${framework}"
+framework_version: ""
+language: "${data.language || 'python'}"
+tags:
+${tags}
+severity: "${severity}"
+complexity: "${complexity}"
+environment:
+  python_version: ">=3.9"
+  os: "any"
+created_at: "${today}"
+updated_at: "${today}"
+contributors:
+  - github: "${data.contributor_github || issueAuthor}"
+source_url: "https://github.com/${context.repo.owner}/${context.repo.repo}/issues/${issueNumber}"
+related_cases: []
+---
+
+## 🏥 症状描述
+Symptom Description
+
+${data.symptom || '（从 Issue 自动提取）'}
+
+${data.error_message ? `## 🔍 错误信息\nError Message\n\n\`\`\`\n${data.error_message}\n\`\`\`` : ''}
+
+${data.root_cause ? `## 🔬 根因分析\nRoot Cause Analysis\n\n${data.root_cause}` : ''}
+
+## 💊 药方
+Prescriptions
+
+### 药方 1
+
+${data.prescription}
+
+## 🔗 参考资料
+References
+
+- [原始 Issue #${issueNumber}](https://github.com/${context.repo.owner}/${context.repo.repo}/issues/${issueNumber})
+`;
+
+            // 输出结果
+            core.setOutput('status', 'promoted');
+            core.setOutput('filepath', filepath);
+            core.setOutput('content', content);
+            core.setOutput('case_id', caseId);
+            core.setOutput('framework', framework);
+
+      - name: 📝 提交常驻药方
+        if: steps.promote.outputs.status == 'promoted'
+        run: |
+          mkdir -p "$(dirname "${{ steps.promote.outputs.filepath }}")"
+          cat > "${{ steps.promote.outputs.filepath }}" << 'CASE_EOF'
+          ${{ steps.promote.outputs.content }}
+          CASE_EOF
+
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "CyberHuaTuo Bot"
+          git add "${{ steps.promote.outputs.filepath }}"
+          git commit -m "💊 晋升瞬时药方: ${{ steps.promote.outputs.case_id }} (from #${{ github.event.issue.number }})"
+          git push
+
+      - name: ✨ 标记晋升成功
+        if: steps.promote.outputs.status == 'promoted'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issueNumber = context.issue.number;
+
+            // 添加 promoted 标签
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber,
+              labels: ['promoted']
+            });
+
+            // 评论晋升成功
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber,
+              body: [
+                '## ✨ 药方已晋升为常驻药方！',
+                '',
+                `- **病例 ID**: \`${{ steps.promote.outputs.case_id }}\``,
+                `- **文件路径**: \`${{ steps.promote.outputs.filepath }}\``,
+                `- **框架**: ${{ steps.promote.outputs.framework }}`,
+                '',
+                '感谢你的贡献！🩺 你的药方已被收入赛博华佗知识库。',
+                '',
+                '*此操作由 CyberHuaTuo CI 自动完成 / Auto-promoted by CyberHuaTuo CI*'
+              ].join('\n')
+            });
+
+            // 关闭 Issue
+            await github.rest.issues.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber,
+              state: 'closed',
+              state_reason: 'completed'
+            });
+
+      - name: 🚫 标记过滤
+        if: steps.promote.outputs.status == 'filtered'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issueNumber = context.issue.number;
+            const reason = '${{ steps.promote.outputs.reason }}';
+
+            // 添加 filtered 标签
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber,
+              labels: ['filtered']
+            });
+
+            // 评论过滤原因
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber,
+              body: [
+                '## 🚫 药方未通过自动审核',
+                '',
+                `**原因**: ${reason}`,
+                '',
+                '请修改后重新提交。如有疑问，请联系维护者。',
+                '',
+                '*此操作由 CyberHuaTuo CI 自动完成 / Auto-filtered by CyberHuaTuo CI*'
+              ].join('\n')
+            });
+
+            // 关闭 Issue
+            await github.rest.issues.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber,
+              state: 'closed',
+              state_reason: 'not_planned'
+            });

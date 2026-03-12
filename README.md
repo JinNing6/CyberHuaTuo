@@ -139,8 +139,9 @@ Browse the prescription library.
 Find proven cures & nourishing recipes.
 **All prescriptions, one counter.**
 
-*Community-verified remedies from*
-*the AI ecosystem's front lines.*
+*Dual-layer architecture:*
+*📜 Permanent + ⚡ Ephemeral*
+*Upload → instantly searchable.*
 
 </td>
 </tr>
@@ -424,10 +425,12 @@ A living dashboard tracking **what's breaking across the AI ecosystem right now*
 | **Backend** | Python · FastAPI · Uvicorn |
 | **Frontend** | Jinja2 Templates (server-rendered) |
 | **Vector DB** | ChromaDB (embedded, zero-config) |
+| **Ephemeral Layer** | GitHub Issues API (dual-layer prescription search) |
 | **LLM Gateway** | LiteLLM (OpenAI / Anthropic / DeepSeek / Gemini / Ollama) |
 | **Doc Retrieval** | Context7 API (real-time official framework docs) |
 | **Security Engine** | Six-Meridian Audit (AI-powered code analysis) |
 | **GitHub Bot** | GitHub Actions + lightweight text matching |
+| **CI/CD** | GitHub Actions (auto-promotion, validation, labeling) |
 
 ---
 
@@ -523,15 +526,53 @@ Add this to your AI tool's MCP config (Claude Desktop / Cursor / VS Code / Gemin
 
 | Tool | Description |
 |------|-------------|
-| `diagnose` | 🩺 望闻问切 AI diagnosis — send error messages, get prescriptions |
-| `search_knowledge_base` | 🔍 Vector semantic search — no API Key required |
+| `diagnose` | 🩺 望闻问切 AI diagnosis — searches **both** 📜 permanent + ⚡ ephemeral prescriptions |
+| `search_knowledge_base` | 🔍 Dual-layer semantic search (ChromaDB + GitHub Issues) |
 | `security_checkup` | 🛡️ Six-meridian security audit on your Agent code |
 | `fetch_official_docs` | 📚 Real-time official docs via Context7 (50+ frameworks) |
 | `mine_github_issue` | ⛏️ Extract & refine GitHub Issues into standard cases |
-| `save_prescription` | 📥 **Upload your own prescriptions** to the knowledge base |
+| `save_prescription` | 📥 Save prescriptions locally + auto-sync to GitHub |
+| `upload_prescription` | 🌐 **Upload prescriptions** — auto-creates GitHub Issue (⚡ ephemeral), CI promotes to 📜 permanent |
+| `my_contribution_stats` | 🏅 Check your Hall of Divine Doctors title & contribution count |
 | `list_frameworks` | 📋 List all supported frameworks & tech stacks |
 
 > 👉 **Full configuration guide: [README_MCP.md](README_MCP.md)**
+
+### 💊 Dual-Layer Prescription Architecture
+
+### 双层药方库架构
+
+> *Medicine first exists, then it is refined.*
+>
+> *药方先存在，再被整理。*
+
+```
+  📤 User uploads prescription via MCP
+           │
+           ├── Owner? ──→ Direct push to main (📜 Permanent)
+           │
+           └── External? ──→ Create GitHub Issue (⚡ Ephemeral)
+                                    │
+                              Instantly searchable!
+                                    │
+                              CI auto-validates
+                                    │
+                          ┌─────────┴─────────┐
+                          │                   │
+                     ✅ Passed            ❌ Failed
+                   Commit .md to         Close Issue
+                   main branch          (filtered 🚫)
+                  (📜 Promoted ✨)
+```
+
+| Layer | Carrier | Access | Features |
+|:-----:|:-------:|:------:|:--------:|
+| 📜 **Permanent** | `cases/*.md` (main branch) | CI-reviewed only | Shipped with PyPI, always available |
+| ⚡ **Ephemeral** | GitHub Issues (labeled) | Any GitHub user | Instant upload, zero permission needed |
+
+**When you search**, `diagnose` and `search_knowledge_base` query **both layers** simultaneously — results are tagged `📜` or `⚡` so you know their review status.
+
+**当你搜索时**，`diagnose` 和 `search_knowledge_base` **同时查询两层** — 结果会标注 `📜 常驻` 或 `⚡ 瞬时` 来源。
 
 ### 🎒 Agent Skills Protocol (Self-Rescue)
 

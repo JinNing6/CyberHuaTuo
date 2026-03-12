@@ -19,7 +19,7 @@ from .doc_sources import (
     search_frameworks,
 )
 from .indexer import build_index, scan_cases
-from .searcher import SearchResult, search_cases
+from .searcher import SearchResult, search_cases, search_ephemeral_issues
 from .contributor import CaseSubmission, save_case_file
 from .github_sync import (
     GitHubSyncer,
@@ -76,14 +76,18 @@ async def diagnose(
     输入你遇到的报错信息或问题描述，赛博华佗将根据知识库中的病例
     和最新官方文档，使用「望闻问切」方法给出精准诊断和药方。
 
+    Paste your error message or problem description. CyberHuaTuo will
+    diagnose it using its knowledge base of real-world cases and the
+    latest official docs, then prescribe a targeted fix.
+
     Args:
-        query: 报错信息或问题描述（Error message or problem description）
-        framework: 可选，按框架过滤（如 langchain, crewai, openai-sdk）
-        top_k: 返回的参考病例数量，默认 5
+        query: 报错信息或问题描述 / Error message or problem description
+        framework: 按框架过滤（如 langchain, crewai） / Filter by framework
+        top_k: 返回的参考病例数量，默认 5 / Number of reference cases, default 5
     """
     client = _get_chroma_client()
 
-    # 1. 向量搜索相关病例
+    # 1. 常驻药方：向量搜索
     results = search_cases(
         client=client,
         query=query,
@@ -92,7 +96,16 @@ async def diagnose(
         include_content=True,
     )
 
-    # 2. 尝试 LLM 诊断
+    # 2. 瞬时药方：GitHub Issues 搜索
+    try:
+        ephemeral = await search_ephemeral_issues(
+            query=query, framework=framework, top_k=3,
+        )
+        results.extend(ephemeral)
+    except Exception as e:
+        logger.debug(f"瞬时药方搜索跳过: {e}")
+
+    # 3. 尝试 LLM 诊断
     try:
         from .diagnosis import diagnose as llm_diagnose
 
@@ -105,7 +118,7 @@ async def diagnose(
 
 
 @mcp.tool()
-def search_knowledge_base(
+async def search_knowledge_base(
     query: str,
     framework: str | None = None,
     severity: str | None = None,
@@ -119,15 +132,19 @@ def search_knowledge_base(
     使用向量语义搜索匹配最相关的病例（药方），无需 LLM API Key 即可使用。
     返回病例标题、框架、严重性、相关度和完整内容。
 
+    Perform semantic vector search across the case library (no LLM API Key required).
+    Returns case title, framework, severity, relevance score, and full content.
+
     Args:
-        query: 搜索查询（错误信息/问题描述）
-        framework: 按框架过滤（如 langchain, crewai, openai-sdk, pytorch）
-        severity: 按严重性过滤（low / medium / high / critical）
-        complexity: 按复杂度过滤（simple / moderate / complex / extreme）
-        top_k: 返回结果数量，默认 5
+        query: 搜索查询（错误信息/问题描述） / Search query (error message / problem description)
+        framework: 按框架过滤 / Filter by framework (e.g. langchain, pytorch)
+        severity: 按严重性过滤 / Filter by severity (low / medium / high / critical)
+        complexity: 按复杂度过滤 / Filter by complexity (simple / moderate / complex / extreme)
+        top_k: 返回结果数量，默认 5 / Number of results, default 5
     """
     client = _get_chroma_client()
 
+    # 常驻药方：ChromaDB 向量搜索
     results = search_cases(
         client=client,
         query=query,
@@ -137,6 +154,15 @@ def search_knowledge_base(
         top_k=top_k,
         include_content=True,
     )
+
+    # 瞬时药方：GitHub Issues 搜索
+    try:
+        ephemeral = await search_ephemeral_issues(
+            query=query, framework=framework, severity=severity, top_k=3,
+        )
+        results.extend(ephemeral)
+    except Exception as e:
+        logger.debug(f"瞬时药方搜索跳过: {e}")
 
     return _format_search_results(query, results)
 
@@ -151,8 +177,13 @@ async def security_checkup(code: str) -> str:
     Prompt 安全、输出安全、韧性设计、可观测性等六大维度，
     输出健康评分和滋补建议。需要 LLM API Key。
 
+    Run a Six-Meridian security audit covering sandbox isolation,
+    secret management, prompt safety, output safety, resilience design,
+    and observability. Outputs a health score and remediation advice.
+    Requires an LLM API Key.
+
     Args:
-        code: 要进行安全体检的代码内容
+        code: 要进行安全体检的代码内容 / The code to audit
     """
     try:
         from .nourishing import security_checkup as do_checkup
@@ -225,10 +256,14 @@ async def fetch_official_docs(
     通过 Context7 API 获取指定框架的最新官方文档片段，
     支持 50+ 主流框架（LangChain、PyTorch、FastAPI、React 等）。
 
+    Retrieve the latest official documentation snippets for a framework
+    via the Context7 API. Supports 50+ mainstream frameworks including
+    LangChain, PyTorch, FastAPI, React, and more.
+
     Args:
-        framework: 框架标识（如 langchain, pytorch, fastapi, react, openai-sdk）
-        query: 要查询的具体问题（如 "如何配置 RAG pipeline"）
-        top_k: 返回文档片段数量，默认 5
+        framework: 框架标识 / Framework identifier (e.g. langchain, pytorch, fastapi)
+        query: 查询的具体问题 / Specific question (e.g. "How to configure RAG pipeline")
+        top_k: 返回文档片段数量，默认 5 / Number of doc snippets, default 5
     """
     try:
         from .doc_fetcher import smart_fetch
@@ -271,10 +306,15 @@ async def mine_github_issue(
     CyberHuaTuo 标准病例格式（含症状、根因、药方）。
     需要 LLM API Key，可选配置 GITHUB_TOKEN 提升限额。
 
+    Extract problems and solutions from a GitHub Issue and use an LLM
+    to refine them into the CyberHuaTuo standard case format (symptoms,
+    root cause, prescription). Requires an LLM API Key; optionally
+    configure GITHUB_TOKEN for higher rate limits.
+
     Args:
-        owner: 仓库所有者（如 langchain-ai）
-        repo: 仓库名称（如 langchain）
-        issue_number: Issue 编号
+        owner: 仓库所有者 / Repository owner (e.g. langchain-ai)
+        repo: 仓库名称 / Repository name (e.g. langchain)
+        issue_number: Issue 编号 / Issue number
     """
     try:
         from .issue_miner import IssueMiner
@@ -356,21 +396,25 @@ async def save_prescription(
     将新发现的问题和对应的解决方案保存为标准 Markdown 病例文件，
     保存后会自动分类并存入对应的知识库目录中。
 
+    Save a newly discovered problem and its solution as a standard
+    Markdown case file. The case is auto-categorized and stored in
+    the corresponding knowledge base directory.
+
     Args:
-        title: 问题标题 (中文为主，建议 20 字内)
-        prescription: 详细修复方案 (Markdown 格式)
-        framework: 框架标识 (如 langchain, pytorch)
-        symptom: 症状详细描述
-        error_message: 纯报错日志或 Traceback
-        root_cause: 根本原因分析
-        severity: 严重性 (low / medium / high / critical)
-        complexity: 复杂度 (simple / moderate / complex / extreme)
-        tags: 标签数组 (英文或中文标签)
-        title_en: 英文问题标题
-        framework_version: 框架版本
-        language: 编程语言 (如 python, typescript)
-        contributor_github: 贡献者的 Github 用户名
-        source_url: 参考链接
+        title: 问题标题，建议 20 字内 / Case title (keep under 20 chars)
+        prescription: 详细修复方案 (Markdown) / Detailed fix (Markdown)
+        framework: 框架标识 / Framework identifier (e.g. langchain, pytorch)
+        symptom: 症状详细描述 / Detailed symptom description
+        error_message: 纯报错日志或 Traceback / Raw error log or traceback
+        root_cause: 根本原因分析 / Root cause analysis
+        severity: 严重性 / Severity (low / medium / high / critical)
+        complexity: 复杂度 / Complexity (simple / moderate / complex / extreme)
+        tags: 标签数组 / Tag array
+        title_en: 英文标题 / English title
+        framework_version: 框架版本 / Framework version
+        language: 编程语言 / Programming language (e.g. python, typescript)
+        contributor_github: 贡献者 GitHub 用户名 / Contributor GitHub username
+        source_url: 参考链接 / Reference URL
     """
     try:
         if tags is None:
@@ -407,12 +451,12 @@ async def save_prescription(
             f"- **保存路径**: {result['filepath']}",
         ]
 
-        # GitHub 同步
+        # GitHub 同步（双层架构：直推成功→常驻 / 直推失败→创建 Issue 瞬时药方）
         sync_status = "⏭️ 未启用（GITHUB_SYNC_ENABLED=false 或未配置 GITHUB_TOKEN）"
         if config.GITHUB_SYNC_ENABLED and config.GITHUB_TOKEN:
             try:
                 syncer = GitHubSyncer()
-                content = result.get("content_preview", "")
+                content_preview = result.get("content_preview", "")
                 # 读取完整文件内容
                 abs_path = result.get("absolute_path", "")
                 if abs_path:
@@ -420,10 +464,25 @@ async def save_prescription(
 
                     full_content = Path(abs_path).read_text(encoding="utf-8")
                 else:
-                    full_content = content
+                    full_content = content_preview
+
+                # 构建药方元数据（用于 Issue 创建）
+                prescription_meta = {
+                    "title": title,
+                    "title_en": title_en,
+                    "framework": framework,
+                    "prescription": prescription,
+                    "symptom": symptom,
+                    "error_message": error_message,
+                    "root_cause": root_cause,
+                    "severity": severity,
+                    "complexity": complexity,
+                    "tags": tags,
+                }
 
                 sync_result = await _run_sync(
-                    syncer, result["filepath"], full_content, contributor_github
+                    syncer, result["filepath"], full_content, contributor_github,
+                    prescription_meta=prescription_meta,
                 )
 
                 if sync_result["success"]:
@@ -431,6 +490,9 @@ async def save_prescription(
                     if method == "direct_push":
                         commit_sha = sync_result.get("commit_sha", "")
                         sync_status = f"✅ 已推送到 {config.GITHUB_SYNC_OWNER}/{config.GITHUB_SYNC_REPO} (commit: {commit_sha})"
+                    elif method == "issue":
+                        issue_url = sync_result.get("issue_url", "")
+                        sync_status = f"✅ 已创建瞬时药方 Issue: {issue_url}（CI 审核通过后自动晋升为常驻药方）"
                     elif method == "fork_pr":
                         pr_url = sync_result.get("pr_url", "")
                         sync_status = f"✅ 已创建 PR: {pr_url}"
@@ -487,21 +549,27 @@ async def upload_prescription(
     自动创建 PR 并在返回中显示贡献者称号。
     需要在环境变量中配置 GITHUB_TOKEN。
 
+    Similar to save_prescription, but **mandates** GitHub sync.
+    Ideal for external contributors to submit prescriptions to the
+    community via MCP. Automatically creates a PR and shows the
+    contributor's Hall of Divine Doctors title.
+    Requires GITHUB_TOKEN in environment variables.
+
     Args:
-        title: 问题标题 (中文为主，建议 20 字内)
-        prescription: 详细修复方案 (Markdown 格式)
-        framework: 框架标识 (如 langchain, pytorch)
-        symptom: 症状详细描述
-        error_message: 纯报错日志或 Traceback
-        root_cause: 根本原因分析
-        severity: 严重性 (low / medium / high / critical)
-        complexity: 复杂度 (simple / moderate / complex / extreme)
-        tags: 标签数组
-        title_en: 英文问题标题
-        framework_version: 框架版本
-        language: 编程语言 (如 python, typescript)
-        contributor_github: 贡献者的 Github 用户名
-        source_url: 参考链接
+        title: 问题标题，建议 20 字内 / Case title (keep under 20 chars)
+        prescription: 详细修复方案 (Markdown) / Detailed fix (Markdown)
+        framework: 框架标识 / Framework identifier (e.g. langchain, pytorch)
+        symptom: 症状详细描述 / Detailed symptom description
+        error_message: 纯报错日志或 Traceback / Raw error log or traceback
+        root_cause: 根本原因分析 / Root cause analysis
+        severity: 严重性 / Severity (low / medium / high / critical)
+        complexity: 复杂度 / Complexity (simple / moderate / complex / extreme)
+        tags: 标签数组 / Tag array
+        title_en: 英文标题 / English title
+        framework_version: 框架版本 / Framework version
+        language: 编程语言 / Programming language (e.g. python, typescript)
+        contributor_github: 贡献者 GitHub 用户名 / Contributor GitHub username
+        source_url: 参考链接 / Reference URL
     """
     if not config.GITHUB_TOKEN:
         return (
@@ -540,15 +608,30 @@ async def upload_prescription(
         if _chroma_client is not None:
             _chroma_client = None
 
-        # 必须同步到 GitHub
+        # 必须同步到 GitHub（双层架构）
         from pathlib import Path
 
         abs_path = result.get("absolute_path", "")
         full_content = Path(abs_path).read_text(encoding="utf-8") if abs_path else ""
 
+        # 构建药方元数据
+        prescription_meta = {
+            "title": title,
+            "title_en": title_en,
+            "framework": framework,
+            "prescription": prescription,
+            "symptom": symptom,
+            "error_message": error_message,
+            "root_cause": root_cause,
+            "severity": severity,
+            "complexity": complexity,
+            "tags": tags,
+        }
+
         syncer = GitHubSyncer()
         sync_result = await _run_sync(
-            syncer, result["filepath"], full_content, contributor_github
+            syncer, result["filepath"], full_content, contributor_github,
+            prescription_meta=prescription_meta,
         )
 
         output_parts = [
@@ -562,7 +645,13 @@ async def upload_prescription(
             if method == "direct_push":
                 commit_sha = sync_result.get("commit_sha", "")
                 output_parts.append(
-                    f"- **GitHub**: ✅ 已推送 (commit: {commit_sha})"
+                    f"- **GitHub**: ✅ 已推送为常驻药方 (commit: {commit_sha})"
+                )
+            elif method == "issue":
+                issue_url = sync_result.get("issue_url", "")
+                output_parts.append(
+                    f"- **GitHub**: ✅ 已创建瞬时药方 Issue: {issue_url}\n"
+                    f"  CI 审核通过后将自动晋升为常驻药方"
                 )
             elif method == "fork_pr":
                 pr_url = sync_result.get("pr_url", "")
@@ -600,8 +689,12 @@ def my_contribution_stats(
     查询指定 GitHub 用户在赛博华佗知识库中的贡献次数和当前称号。
     称号体系：学徒 → 坐堂医师 → 主治医师 → 名医 → 神医 → 华佗再世。
 
+    Look up a GitHub user's contribution count and current title in the
+    CyberHuaTuo knowledge base. Title ladder: Apprentice → Resident Doctor
+    → Attending Physician → Renowned Doctor → Divine Doctor → Hua Tuo Reborn.
+
     Args:
-        github_username: GitHub 用户名
+        github_username: GitHub 用户名 / GitHub username
     """
     summary = get_contributor_summary(github_username)
     count = summary["contribution_count"]
@@ -658,9 +751,14 @@ def list_frameworks(
     查看赛博华佗覆盖的所有框架和技术栈，支持按分类过滤或关键词搜索。
     分类包括: agent（AI Agent 框架）、foundation（基础框架）、infrastructure（基础设施）。
 
+    Browse all frameworks and tech stacks covered by CyberHuaTuo.
+    Supports category filtering and keyword search.
+    Categories: agent (AI Agent frameworks), foundation (base frameworks),
+    infrastructure (infra & MLOps).
+
     Args:
-        category: 按分类过滤（agent / foundation / infrastructure），不填返回全部
-        search: 关键词搜索（如 "pytorch"、"rag"、"web"）
+        category: 按分类过滤，不填返回全部 / Filter by category (agent / foundation / infrastructure), omit for all
+        search: 关键词搜索 / Keyword search (e.g. "pytorch", "rag", "web")
     """
     if search:
         frameworks = search_frameworks(search)
@@ -710,8 +808,13 @@ def list_frameworks(
 @mcp.resource("cyberhuatuo://knowledge-base/stats")
 def knowledge_base_stats() -> str:
     """
-    知识库统计信息
-    Knowledge base statistics including case count and framework distribution.
+    📊 知识库统计信息
+    Knowledge base statistics.
+
+    返回病例总数、框架分布、严重性分布和病例类型分布。
+
+    Returns total case count, framework distribution, severity
+    distribution, and case type distribution.
     """
     cases = scan_cases()
 
@@ -744,8 +847,13 @@ def knowledge_base_stats() -> str:
 @mcp.resource("cyberhuatuo://knowledge-base/schema")
 def knowledge_base_schema() -> str:
     """
-    病例 Schema 定义
+    📐 病例 Schema 定义
     Case schema definition (JSON Schema format).
+
+    返回赛博华佗病例的标准 JSON Schema，用于校验和生成病例文件。
+
+    Returns the standard JSON Schema for CyberHuaTuo cases,
+    useful for validation and case file generation.
     """
     schema_path = config.SCHEMA_DIR / "case.schema.json"
     if schema_path.exists():
@@ -763,6 +871,11 @@ def diagnose_error(error_message: str) -> str:
     """
     🩺 望闻问切诊断模式
     Enter diagnostic mode — paste your error message for analysis.
+
+    粘贴报错信息，赛博华佗将自动搜索病例库并给出诊断药方。
+
+    Paste your error message and CyberHuaTuo will automatically search
+    its case library and deliver a diagnosis with prescription.
     """
     return (
         f"我遇到了以下 AI/Agent 相关的技术问题，请使用赛博华佗（CyberHuaTuo）进行望闻问切诊断：\n\n"
@@ -778,6 +891,11 @@ def security_audit(code: str) -> str:
     """
     🛡️ Agent 安全体检模式
     Enter security audit mode — submit your agent code for health check.
+
+    提交 Agent 代码，执行六经脉安全检测，获取健康评分和滋补建议。
+
+    Submit your agent code for a Six-Meridian security audit.
+    Receive a health score and remediation advice.
     """
     return (
         f"请对以下 AI Agent 代码进行赛博华佗安全体检，"
@@ -796,6 +914,11 @@ def contribute_case(
     """
     💊 贡献药方模式
     Enter contribution mode — submit a problem-solution pair as a new case.
+
+    提交你解决过的问题和方案，赛博华佗将整理为标准病例格式并入库。
+
+    Submit a problem you've solved along with the fix. CyberHuaTuo
+    will format it as a standard case and add it to the knowledge base.
     """
     return (
         f"我想向赛博华佗知识库贡献一个新的病例/药方：\n\n"
@@ -818,17 +941,19 @@ async def _run_sync(
     relative_path: str,
     content: str,
     contributor_github: str,
+    prescription_meta: dict | None = None,
 ) -> dict:
-    """执行 GitHub 同步的内部辅助函数"""
+    """执行 GitHub 同步的内部辅助函数（支持双层架构）"""
     return await syncer.sync_prescription(
         relative_path=relative_path,
         content=content,
         contributor_github=contributor_github,
+        prescription_meta=prescription_meta,
     )
 
 
 def _format_search_results(query: str, results: list[SearchResult]) -> str:
-    """格式化搜索结果为 Markdown 文本"""
+    """格式化搜索结果为 Markdown 文本（标注常驻/瞬时来源）"""
     if not results:
         return (
             f"在知识库中未找到与「{query}」相关的病例。\n\n"
@@ -838,14 +963,23 @@ def _format_search_results(query: str, results: list[SearchResult]) -> str:
             f"3. 使用 `fetch_official_docs` 查阅官方文档"
         )
 
+    # 统计来源分布
+    permanent_count = sum(1 for r in results if r.source == "常驻")
+    ephemeral_count = sum(1 for r in results if r.source == "瞬时")
+
     output_parts = [
         "# 🔍 赛博华佗知识库搜索结果\n",
         f"查询: 「{query}」\n",
-        f"找到 **{len(results)}** 个相关病例：\n",
+        f"找到 **{len(results)}** 个相关病例",
     ]
+    if ephemeral_count > 0:
+        output_parts[-1] += f"（📜 常驻 {permanent_count} + ⚡ 瞬时 {ephemeral_count}）"
+    output_parts.append("\n")
 
     for i, r in enumerate(results, 1):
-        output_parts.append(f"## 病例 {i}: {r.title}")
+        source_badge = "📜" if r.source == "常驻" else "⚡"
+        output_parts.append(f"## {source_badge} 病例 {i}: {r.title}")
+        output_parts.append(f"- **来源**: {r.source}")
         output_parts.append(f"- **相关度**: {r.relevance}%")
         output_parts.append(f"- **框架**: {r.framework}")
         output_parts.append(f"- **严重性**: {r.severity}")

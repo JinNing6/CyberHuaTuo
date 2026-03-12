@@ -145,6 +145,9 @@ class Config:
     GITHUB_SYNC_REPO: str = os.getenv("GITHUB_SYNC_REPO", "CyberHuaTuo")
     GITHUB_SYNC_BRANCH: str = os.getenv("GITHUB_SYNC_BRANCH", "main")
 
+    # 瞬时药方搜索配置（GitHub Issues 双层架构）
+    EPHEMERAL_SEARCH_ENABLED: bool = os.getenv("EPHEMERAL_SEARCH_ENABLED", "true").lower() == "true"
+
     # 滋补药方配置
     NOURISHING_ENABLED: bool = os.getenv("NOURISHING_ENABLED", "true").lower() == "true"
 
