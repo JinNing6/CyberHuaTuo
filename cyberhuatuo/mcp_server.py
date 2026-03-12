@@ -451,7 +451,7 @@ async def save_prescription(
             f"- **保存路径**: {result['filepath']}",
         ]
 
-        # GitHub 同步（双层架构：直推成功→常驻 / 直推失败→创建 Issue 瞬时药方）
+        # GitHub 同步（双层架构：直推成功→常驻主任专家 / 直推失败→创建 Issue 临时医学实习生药方）
         sync_status = "⏭️ 未启用（GITHUB_SYNC_ENABLED=false 或未配置 GITHUB_TOKEN）"
         if config.GITHUB_SYNC_ENABLED and config.GITHUB_TOKEN:
             try:

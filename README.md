@@ -140,7 +140,7 @@ Find proven cures & nourishing recipes.
 **All prescriptions, one counter.**
 
 *Dual-layer architecture:*
-*📜 Permanent + ⚡ Ephemeral*
+*📜 Permanent Expert + ⚡ Temporary Intern*
 *Upload → instantly searchable.*
 
 </td>
@@ -526,13 +526,13 @@ Add this to your AI tool's MCP config (Claude Desktop / Cursor / VS Code / Gemin
 
 | Tool | Description |
 |------|-------------|
-| `diagnose` | 🩺 望闻问切 AI diagnosis — searches **both** 📜 permanent + ⚡ ephemeral prescriptions |
+| `diagnose` | 🩺 望闻问切 AI diagnosis — searches **both** 📜 permanent expert + ⚡ temporary intern prescriptions |
 | `search_knowledge_base` | 🔍 Dual-layer semantic search (ChromaDB + GitHub Issues) |
 | `security_checkup` | 🛡️ Six-meridian security audit on your Agent code |
 | `fetch_official_docs` | 📚 Real-time official docs via Context7 (50+ frameworks) |
 | `mine_github_issue` | ⛏️ Extract & refine GitHub Issues into standard cases |
 | `save_prescription` | 📥 Save prescriptions locally + auto-sync to GitHub |
-| `upload_prescription` | 🌐 **Upload prescriptions** — auto-creates GitHub Issue (⚡ ephemeral), CI promotes to 📜 permanent |
+| `upload_prescription` | 🌐 **Upload prescriptions** — auto-creates GitHub Issue (⚡ temporary intern), CI promotes to 📜 permanent expert |
 | `my_contribution_stats` | 🏅 Check your Hall of Divine Doctors title & contribution count |
 | `list_frameworks` | 📋 List all supported frameworks & tech stacks |
 
@@ -549,9 +549,9 @@ Add this to your AI tool's MCP config (Claude Desktop / Cursor / VS Code / Gemin
 ```
   📤 User uploads prescription via MCP
            │
-           ├── Owner? ──→ Direct push to main (📜 Permanent)
+           ├── Owner? ──→ Direct push to main (📜 Permanent Expert)
            │
-           └── External? ──→ Create GitHub Issue (⚡ Ephemeral)
+           └── External? ──→ Create GitHub Issue (⚡ Temporary Intern)
                                     │
                               Instantly searchable!
                                     │
@@ -567,12 +567,12 @@ Add this to your AI tool's MCP config (Claude Desktop / Cursor / VS Code / Gemin
 
 | Layer | Carrier | Access | Features |
 |:-----:|:-------:|:------:|:--------:|
-| 📜 **Permanent** | `cases/*.md` (main branch) | CI-reviewed only | Shipped with PyPI, always available |
-| ⚡ **Ephemeral** | GitHub Issues (labeled) | Any GitHub user | Instant upload, zero permission needed |
+| 📜 **Permanent Expert** | `cases/*.md` (main branch) | CI-reviewed only | Shipped with PyPI, always available |
+| ⚡ **Temporary Intern** | GitHub Issues (labeled) | Any GitHub user | Instant upload, zero permission needed |
 
 **When you search**, `diagnose` and `search_knowledge_base` query **both layers** simultaneously — results are tagged `📜` or `⚡` so you know their review status.
 
-**当你搜索时**，`diagnose` 和 `search_knowledge_base` **同时查询两层** — 结果会标注 `📜 常驻` 或 `⚡ 瞬时` 来源。
+**当你搜索时**，`diagnose` 和 `search_knowledge_base` **同时查询两层** — 结果会标注 `📜 常驻主任专家` 或 `⚡ 临时医学实习生` 来源。
 
 ### 🎒 Agent Skills Protocol (Self-Rescue)
 
