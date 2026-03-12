@@ -582,6 +582,18 @@ Simply copy the `skills/cyberhuatuo-rescue` directory into your project's `.curs
 
 ---
 
+## 🏅 Hall of Divine Doctors — Global Leaderboard & Titles
+
+**名医堂 — 全球医师排名与即时激励**
+
+We turned bug fixing into a cultivation journey! Every time you (or your AI agent on your behalf) solve a problem and upload a prescription using MCP, you instantly earn points and climb the ranks in the **Hall of Divine Doctors (名医堂)**.
+
+*   **Instant Feedback**: The moment `upload_prescription` succeeds, the MCP server returns your new title (e.g., 🏥 Resident Doctor) and real-time contribution count directly in your chat interface.
+*   **AI Encouragement**: Your AI is instructed to proactively remind and encourage you to upload your successful fixes to claim your titles!
+*   **Live Leaderboard**: Your contributions are synced to the GitHub Hall of Fame, establishing your reputation globally as a master of "Cyber Medicine."
+
+---
+
 ## 🌐 Brand Matrix — Why So Many Package Names?
 
 ## 品牌矩阵 — 为什么注册这么多包名？

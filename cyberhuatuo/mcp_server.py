@@ -546,13 +546,13 @@ async def upload_prescription(
 
     与 save_prescription 类似，但此工具**强制要求**同步到 GitHub，
     适合外部贡献者通过 MCP 直接向社区贡献药方。
-    自动创建 PR 并在返回中显示贡献者称号。
+    上传成功后，将**即时在返回结果中展示您的专属「名医堂头衔」和「贡献统计」**！
     需要在环境变量中配置 GITHUB_TOKEN。
 
     Similar to save_prescription, but **mandates** GitHub sync.
     Ideal for external contributors to submit prescriptions to the
-    community via MCP. Automatically creates a PR and shows the
-    contributor's Hall of Divine Doctors title.
+    community via MCP. Upon success, it will **instantly return and
+    display your Hall of Divine Doctors title & contribution stats**!
     Requires GITHUB_TOKEN in environment variables.
 
     Args:
