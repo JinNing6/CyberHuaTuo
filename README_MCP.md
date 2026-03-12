@@ -224,9 +224,9 @@ pip install -r requirements.txt
 | `category` | string | ❌ | 按分类过滤（agent/foundation/infrastructure） |
 | `search` | string | ❌ | 关键词搜索 |
 
-### 📥 `save_prescription` — 自动保存贡献药方
+### 📥 `save_prescription` — 保存贡献药方（本地 + 自动同步 GitHub）
 
-直接将新发现的问题及修复药方保存至赛博华佗的知识库系统。保存后，系统将会自动分配 ID 并在您的下次查询前重载缓存。
+保存药方到本地知识库。如果配置了 `GITHUB_TOKEN` 且 `GITHUB_SYNC_ENABLED=true`，会自动推送到 GitHub 仓库。保存后会自动分配 ID、重载缓存索引，并返回**贡献者名医堂称号**。
 
 | 参数 | 类型 | 必填 | 说明 |
 |------|------|------|------|
@@ -240,8 +240,35 @@ pip install -r requirements.txt
 | `complexity` | string | ❌ | 复杂性等级 (`simple`/`moderate`/`complex`/`extreme`) |
 | `tags` | array | ❌ | 自定义标签集 |
 | `title_en` | string | ❌ | 对应的英文标题 |
+| `contributor_github` | string | ❌ | 贡献者 GitHub 用户名（用于名医堂称号追踪） |
 
----
+### 🌐 `upload_prescription` — 上传药方到 GitHub（必须配置 GITHUB_TOKEN）
+
+与 `save_prescription` 参数完全相同，但**强制要求**同步到 GitHub 仓库。适合外部贡献者通过 MCP 直接向社区贡献药方。无 `GITHUB_TOKEN` 时会返回配置引导。
+
+支持两种同步策略（自动选择）：
+- **直接推送**：如果你是仓库 Owner/Collaborator
+- **Fork + PR**：外部贡献者自动 Fork 并创建 PR
+
+### 🏅 `my_contribution_stats` — 查询名医堂称号
+
+查询指定 GitHub 用户在赛博华佗知识库中的贡献次数和当前称号。
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `github_username` | string | ✅ | GitHub 用户名 |
+
+**称号体系**：
+
+| 称号 | 条件 |
+|:---:|:---:|
+| 🏥 坐堂医师 Resident Doctor | 1+ 贡献 |
+| ⚕️ 主治医师 Attending Physician | 3+ 贡献 |
+| 👨‍⚕️ 名医 Renowned Doctor | 5+ 贡献 |
+| 🌟 神医 Divine Doctor | 10+ 贡献 |
+| 👑 华佗再世 Hua Tuo Reborn | 20+ 贡献 |
+
+
 
 ## 资源 (Resources)
 

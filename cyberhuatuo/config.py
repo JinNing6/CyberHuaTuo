@@ -139,6 +139,12 @@ class Config:
     MINE_MIN_REACTIONS: int = int(os.getenv("MINE_MIN_REACTIONS", "3"))
     MINE_MIN_COMMENTS: int = int(os.getenv("MINE_MIN_COMMENTS", "2"))
 
+    # GitHub 同步配置（MCP 纯无后端模式使用）
+    GITHUB_SYNC_ENABLED: bool = os.getenv("GITHUB_SYNC_ENABLED", "true").lower() == "true"
+    GITHUB_SYNC_OWNER: str = os.getenv("GITHUB_SYNC_OWNER", "JinNing6")
+    GITHUB_SYNC_REPO: str = os.getenv("GITHUB_SYNC_REPO", "CyberHuaTuo")
+    GITHUB_SYNC_BRANCH: str = os.getenv("GITHUB_SYNC_BRANCH", "main")
+
     # 滋补药方配置
     NOURISHING_ENABLED: bool = os.getenv("NOURISHING_ENABLED", "true").lower() == "true"
 

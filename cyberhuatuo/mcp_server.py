@@ -21,6 +21,12 @@ from .doc_sources import (
 from .indexer import build_index, scan_cases
 from .searcher import SearchResult, search_cases
 from .contributor import CaseSubmission, save_case_file
+from .github_sync import (
+    GitHubSyncer,
+    calculate_title,
+    count_contributor_cases,
+    get_contributor_summary,
+)
 from .banner import play_boot_animation
 
 logger = logging.getLogger("cyberhuatuo.mcp")
@@ -327,7 +333,7 @@ async def mine_github_issue(
 
 
 @mcp.tool()
-def save_prescription(
+async def save_prescription(
     title: str,
     prescription: str,
     framework: str,
@@ -388,26 +394,256 @@ def save_prescription(
         )
 
         result = save_case_file(submission)
-        
+
         # 获取现有的客户端判断是否需要强制触发一次重新索引
         global _chroma_client
         if _chroma_client is not None:
-             # 由于当前版本不支持增量添加单个 Case 到 ChromaDB
-             # 此处简单的将全局变量重置，以便下次查询时重新加载整个 cases 目录
-             # (此为一种简单的懒加载重置策略进行缓存失效)
-             _chroma_client = None
-             logger.info("✅ 新药方已落盘，已清除 ChromaDB 实例缓存以便下次重载索引。")
+            _chroma_client = None
+            logger.info("✅ 新药方已落盘，已清除 ChromaDB 实例缓存以便下次重载索引。")
 
-        return (
-            f"✅ 药方保存成功！\n\n"
-            f"- **病例 ID**: {result['case_id']}\n"
-            f"- **保存路径**: {result['filepath']}\n"
-            f"- **温馨提示**: 系统缓存已标记过期，将在您下次诊断时自动重新构建最新知识库索引。"
+        output_parts = [
+            "✅ 药方保存成功！\n",
+            f"- **病例 ID**: {result['case_id']}",
+            f"- **保存路径**: {result['filepath']}",
+        ]
+
+        # GitHub 同步
+        sync_status = "⏭️ 未启用（GITHUB_SYNC_ENABLED=false 或未配置 GITHUB_TOKEN）"
+        if config.GITHUB_SYNC_ENABLED and config.GITHUB_TOKEN:
+            try:
+                syncer = GitHubSyncer()
+                content = result.get("content_preview", "")
+                # 读取完整文件内容
+                abs_path = result.get("absolute_path", "")
+                if abs_path:
+                    from pathlib import Path
+
+                    full_content = Path(abs_path).read_text(encoding="utf-8")
+                else:
+                    full_content = content
+
+                sync_result = await _run_sync(
+                    syncer, result["filepath"], full_content, contributor_github
+                )
+
+                if sync_result["success"]:
+                    method = sync_result["method"]
+                    if method == "direct_push":
+                        commit_sha = sync_result.get("commit_sha", "")
+                        sync_status = f"✅ 已推送到 {config.GITHUB_SYNC_OWNER}/{config.GITHUB_SYNC_REPO} (commit: {commit_sha})"
+                    elif method == "fork_pr":
+                        pr_url = sync_result.get("pr_url", "")
+                        sync_status = f"✅ 已创建 PR: {pr_url}"
+                else:
+                    sync_status = f"⚠️ 同步失败: {sync_result.get('error', '未知错误')}"
+            except Exception as e:
+                sync_status = f"⚠️ 同步异常: {str(e)}"
+                logger.warning(f"GitHub 同步异常: {e}", exc_info=True)
+
+        output_parts.append(f"- **GitHub 同步**: {sync_status}")
+
+        # 贡献者称号
+        if contributor_github and contributor_github != "anonymous":
+            summary = get_contributor_summary(contributor_github)
+            output_parts.append(
+                f"- **贡献者称号**: {summary['title_emoji']} {summary['title']} "
+                f"(累计 {summary['contribution_count']} 次贡献)"
+            )
+
+        output_parts.append(
+            "\n💡 **温馨提示**: 系统缓存已标记过期，将在您下次诊断时自动重新构建最新知识库索引。"
         )
+
+        return "\n".join(output_parts)
 
     except Exception as e:
         logger.error(f"保存药方失败: {e}", exc_info=True)
         return f"⚠️ 药方保存失败: {str(e)}"
+
+
+@mcp.tool()
+async def upload_prescription(
+    title: str,
+    prescription: str,
+    framework: str,
+    symptom: str = "",
+    error_message: str = "",
+    root_cause: str = "",
+    severity: str = "medium",
+    complexity: str = "moderate",
+    tags: list[str] = None,
+    title_en: str = "",
+    framework_version: str = "",
+    language: str = "python",
+    contributor_github: str = "anonymous",
+    source_url: str = "",
+) -> str:
+    """
+    🌐 上传药方到 GitHub 知识库（必须配置 GITHUB_TOKEN）
+    Upload a prescription directly to the CyberHuaTuo GitHub repository.
+
+    与 save_prescription 类似，但此工具**强制要求**同步到 GitHub，
+    适合外部贡献者通过 MCP 直接向社区贡献药方。
+    自动创建 PR 并在返回中显示贡献者称号。
+    需要在环境变量中配置 GITHUB_TOKEN。
+
+    Args:
+        title: 问题标题 (中文为主，建议 20 字内)
+        prescription: 详细修复方案 (Markdown 格式)
+        framework: 框架标识 (如 langchain, pytorch)
+        symptom: 症状详细描述
+        error_message: 纯报错日志或 Traceback
+        root_cause: 根本原因分析
+        severity: 严重性 (low / medium / high / critical)
+        complexity: 复杂度 (simple / moderate / complex / extreme)
+        tags: 标签数组
+        title_en: 英文问题标题
+        framework_version: 框架版本
+        language: 编程语言 (如 python, typescript)
+        contributor_github: 贡献者的 Github 用户名
+        source_url: 参考链接
+    """
+    if not config.GITHUB_TOKEN:
+        return (
+            "⚠️ 上传失败：未配置 GITHUB_TOKEN。\n\n"
+            "请在环境变量或 `.env` 文件中配置：\n"
+            "```\nGITHUB_TOKEN=ghp_your-token-here\n```\n\n"
+            "💡 如果只想保存到本地，请使用 `save_prescription` 工具。"
+        )
+
+    # 保存到本地 + 同步到 GitHub（复用 save_prescription 逻辑）
+    try:
+        if tags is None:
+            tags = []
+
+        submission = CaseSubmission(
+            title=title,
+            prescription=prescription,
+            framework=framework,
+            symptom=symptom,
+            error_message=error_message,
+            root_cause=root_cause,
+            severity=severity,
+            complexity=complexity,
+            tags=tags,
+            title_en=title_en,
+            framework_version=framework_version,
+            language=language,
+            contributor_github=contributor_github,
+            source_url=source_url,
+        )
+
+        result = save_case_file(submission)
+
+        # 清除缓存
+        global _chroma_client
+        if _chroma_client is not None:
+            _chroma_client = None
+
+        # 必须同步到 GitHub
+        from pathlib import Path
+
+        abs_path = result.get("absolute_path", "")
+        full_content = Path(abs_path).read_text(encoding="utf-8") if abs_path else ""
+
+        syncer = GitHubSyncer()
+        sync_result = await _run_sync(
+            syncer, result["filepath"], full_content, contributor_github
+        )
+
+        output_parts = [
+            "# 🌐 药方上传结果\n",
+            f"- **病例 ID**: {result['case_id']}",
+            f"- **本地路径**: {result['filepath']}",
+        ]
+
+        if sync_result["success"]:
+            method = sync_result["method"]
+            if method == "direct_push":
+                commit_sha = sync_result.get("commit_sha", "")
+                output_parts.append(
+                    f"- **GitHub**: ✅ 已推送 (commit: {commit_sha})"
+                )
+            elif method == "fork_pr":
+                pr_url = sync_result.get("pr_url", "")
+                output_parts.append(f"- **GitHub**: ✅ 已创建 PR: {pr_url}")
+        else:
+            output_parts.append(
+                f"- **GitHub**: ⚠️ 同步失败: {sync_result.get('error', '未知错误')}"
+            )
+
+        # 贡献者称号
+        if contributor_github and contributor_github != "anonymous":
+            summary = get_contributor_summary(contributor_github)
+            output_parts.append(
+                f"\n### 🏅 名医堂称号\n"
+                f"- **贡献者**: @{contributor_github}\n"
+                f"- **称号**: {summary['title_emoji']} {summary['title']}\n"
+                f"- **累计贡献**: {summary['contribution_count']} 次"
+            )
+
+        return "\n".join(output_parts)
+
+    except Exception as e:
+        logger.error(f"上传药方失败: {e}", exc_info=True)
+        return f"⚠️ 上传药方失败: {str(e)}"
+
+
+@mcp.tool()
+def my_contribution_stats(
+    github_username: str,
+) -> str:
+    """
+    🏅 查询贡献者的名医堂称号和贡献统计
+    Check a contributor's Hall of Divine Doctors title and contribution stats.
+
+    查询指定 GitHub 用户在赛博华佗知识库中的贡献次数和当前称号。
+    称号体系：学徒 → 坐堂医师 → 主治医师 → 名医 → 神医 → 华佗再世。
+
+    Args:
+        github_username: GitHub 用户名
+    """
+    summary = get_contributor_summary(github_username)
+    count = summary["contribution_count"]
+    emoji = summary["title_emoji"]
+    title = summary["title"]
+
+    output_parts = [
+        "# 🏅 名医堂 · 贡献者档案\n",
+        f"**贡献者**: @{github_username}",
+        f"**当前称号**: {emoji} {title}",
+        f"**累计贡献**: {count} 个药方\n",
+        "---\n",
+        "### 📊 称号体系",
+        "",
+        "| 称号 | 条件 | 状态 |",
+        "|:---:|:---:|:---:|",
+    ]
+
+    # 标记当前等级
+    tiers_display = [
+        (1, "🏥", "坐堂医师 Resident Doctor"),
+        (3, "⚕️", "主治医师 Attending Physician"),
+        (5, "👨‍⚕️", "名医 Renowned Doctor"),
+        (10, "🌟", "神医 Divine Doctor"),
+        (20, "👑", "华佗再世 Hua Tuo Reborn"),
+    ]
+
+    for threshold, tier_emoji, tier_title in tiers_display:
+        if count >= threshold:
+            status = "✅ 已达成"
+        else:
+            remaining = threshold - count
+            status = f"🔒 还需 {remaining} 次贡献"
+        output_parts.append(
+            f"| {tier_emoji} {tier_title} | {threshold}+ 贡献 | {status} |"
+        )
+
+    output_parts.append(
+        f"\n> 💊 通过 `save_prescription` 或 `upload_prescription` 贡献药方来提升你的称号！"
+    )
+
+    return "\n".join(output_parts)
 
 
 @mcp.tool()
@@ -575,6 +811,20 @@ def contribute_case(
 # ============================================================
 # 🔧 辅助函数
 # ============================================================
+
+
+async def _run_sync(
+    syncer: GitHubSyncer,
+    relative_path: str,
+    content: str,
+    contributor_github: str,
+) -> dict:
+    """执行 GitHub 同步的内部辅助函数"""
+    return await syncer.sync_prescription(
+        relative_path=relative_path,
+        content=content,
+        contributor_github=contributor_github,
+    )
 
 
 def _format_search_results(query: str, results: list[SearchResult]) -> str:
