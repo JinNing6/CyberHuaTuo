@@ -148,12 +148,9 @@ def generate_svg(data: dict) -> str:
     max_r = min(w, h) / 2 - 50  # 最大半径 ≈250
 
     # 八卦符号与名称（先天八卦序：乾兑离震巽坎艮坤）
-    BAGUA_TRIGRAMS = ["☰", "☱", "☲", "☳", "☴", "☵", "☶", "☷"]
-    BAGUA_NAMES = ["乾", "兑", "离", "震", "巽", "坎", "艮", "坤"]
-    BAGUA_COLORS = ["#FFD700", "#60A5FA", "#FF6B6B", "#2ED573", "#A78BFA", "#00BFFF", "#FF8C42", "#00D09C"]
-
-    # 框架配色列表
-    color_list = list(FRAMEWORK_COLORS.values())
+    bagua_trigrams = ["☰", "☱", "☲", "☳", "☴", "☵", "☶", "☷"]
+    bagua_names = ["乾", "兑", "离", "震", "巽", "坎", "艮", "坤"]
+    bagua_colors = ["#FFD700", "#60A5FA", "#FF6B6B", "#2ED573", "#A78BFA", "#00BFFF", "#FF8C42", "#00D09C"]
 
     lines = []
     lines.append(f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {w} {h}" width="{w}" height="{h}">')
@@ -371,7 +368,7 @@ def generate_svg(data: dict) -> str:
         a = (2 * math.pi / 8) * j - math.pi / 2
         tx = cx + trigram_r * math.cos(a)
         ty = cy + trigram_r * math.sin(a)
-        bg_color = BAGUA_COLORS[j]
+        bg_color = bagua_colors[j]
 
         # 卦象背景小圆
         lines.append(
@@ -386,7 +383,7 @@ def generate_svg(data: dict) -> str:
         lines.append(
             f'<text x="{tx:.1f}" y="{ty + 1:.1f}" text-anchor="middle" '
             f'dominant-baseline="central" fill="{bg_color}" '
-            f'font-size="9" opacity="0.9">{BAGUA_TRIGRAMS[j]}</text>'
+            f'font-size="9" opacity="0.9">{bagua_trigrams[j]}</text>'
         )
         # 方位名 (放在卦象外侧)
         name_r = trigram_r + 16
@@ -396,7 +393,7 @@ def generate_svg(data: dict) -> str:
             f'<text x="{nx:.1f}" y="{ny + 1:.1f}" text-anchor="middle" '
             f'dominant-baseline="central" fill="{bg_color}" '
             f'font-family="sans-serif" font-size="7" font-weight="600" opacity="0.45">'
-            f'{BAGUA_NAMES[j]}</text>'
+            f'{bagua_names[j]}</text>'
         )
 
     # ═══════════════════════════════════════════
@@ -1145,7 +1142,7 @@ def generate_html(data: dict) -> str:
         transparent: true, opacity: 0.9, roughness: 0.1, metalness: 0.9,
       }});
       const half1 = new THREE.Mesh(half1Geom, half1Mat);
-      
+
       // 半球: Green (TCM)
       const half2Geom = new THREE.SphereGeometry(2.0, 32, 32, Math.PI, Math.PI);
       const half2Mat = new THREE.MeshStandardMaterial({{
@@ -1318,7 +1315,7 @@ def generate_html(data: dict) -> str:
       fws.forEach((fw, i) => {{
         const colorStr = FW_COLORS[fw]?.primary || '#888888';
         const radius = 10 + i * 2.5;
-        
+
         // 八边形线框
         const circleGeom = new THREE.CircleGeometry(radius, 8);
         const edges = new THREE.EdgesGeometry(circleGeom);
@@ -1761,7 +1758,7 @@ def generate_html(data: dict) -> str:
       // 太极核心与八阵轨道缓旋 (Cyber TCM Dynamics)
       const taiChi = scene.getObjectByName('taiChiCore');
       if (taiChi) taiChi.rotation.y = t * 0.3;
-      
+
       const compass = scene.getObjectByName('baguaCompass');
       if (compass) compass.rotation.y = t * -0.05;
 
