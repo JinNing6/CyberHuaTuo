@@ -668,7 +668,9 @@ async def upload_prescription(
                 f"\n### 🏅 名医堂称号\n"
                 f"- **贡献者**: @{contributor_github}\n"
                 f"- **称号**: {summary['title_emoji']} {summary['title']}\n"
-                f"- **累计贡献**: {summary['contribution_count']} 次"
+                f"- **累计贡献**: {summary['contribution_count']} 次\n"
+                f"\n🏆 **您的排名已同步至全球AI医师排行榜**\n"
+                f"👉 立即查看您的行业名片: https://github.com/JinNing6/CyberHuaTuo#%E5%90%8D%E5%8C%BB%E6%8E%92%E8%A1%8C"
             )
 
         return "\n".join(output_parts)
