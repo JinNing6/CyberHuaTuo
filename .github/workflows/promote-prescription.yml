@@ -48,11 +48,13 @@ jobs:
           ISSUE_BODY: ${{ github.event.issue.body }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
           ISSUE_AUTHOR: ${{ github.event.issue.user.login }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         with:
           script: |
             const issueBody = process.env.ISSUE_BODY || '';
             const issueNumber = parseInt(process.env.ISSUE_NUMBER);
             const issueAuthor = process.env.ISSUE_AUTHOR || 'anonymous';
+            const openaiKey = process.env.OPENAI_API_KEY || '';
 
             // 1. 提取结构化 JSON 数据
             const jsonMatch = issueBody.match(/```json\s*\n([\s\S]*?)\n```/);
@@ -80,7 +82,7 @@ jobs:
               return;
             }
 
-            // 3. 内容合规性检查
+            // 3. 内容长度检查
             if (data.prescription.length < 20) {
               core.setOutput('status', 'filtered');
               core.setOutput('reason', '药方内容过短（少于 20 字符），请提供更详细的解决方案');
@@ -93,7 +95,74 @@ jobs:
               return;
             }
 
-            // 4. 生成病例文件内容
+            // ============================================================
+            // 4. OpenAI Moderation 安全审查（免费 · omni-moderation-latest）
+            //    检测: hate, harassment, self-harm, sexual, violence 等
+            // ============================================================
+            if (openaiKey) {
+              const moderationInput = [
+                `Title: ${data.title}`,
+                data.symptom ? `Symptom: ${data.symptom}` : '',
+                data.error_message ? `Error: ${data.error_message}` : '',
+                data.root_cause ? `Root Cause: ${data.root_cause}` : '',
+                `Prescription: ${data.prescription}`,
+              ].filter(Boolean).join('\n');
+
+              try {
+                const moderationResp = await fetch('https://api.openai.com/v1/moderations', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${openaiKey}`,
+                  },
+                  body: JSON.stringify({
+                    model: 'omni-moderation-latest',
+                    input: moderationInput,
+                  }),
+                });
+
+                if (moderationResp.ok) {
+                  const moderationData = await moderationResp.json();
+                  const result = moderationData.results?.[0];
+
+                  if (result?.flagged) {
+                    // 找出被标记的类别
+                    const flaggedCategories = Object.entries(result.categories || {})
+                      .filter(([_, flagged]) => flagged)
+                      .map(([category, _]) => category);
+
+                    // 找出得分最高的类别
+                    const scores = result.category_scores || {};
+                    const topCategory = Object.entries(scores)
+                      .sort(([,a], [,b]) => b - a)
+                      .slice(0, 3)
+                      .map(([cat, score]) => `${cat}: ${(score * 100).toFixed(1)}%`)
+                      .join(', ');
+
+                    core.setOutput('status', 'filtered');
+                    core.setOutput('reason',
+                      `⚠️ OpenAI Moderation 安全审查未通过\n` +
+                      `违规类别: ${flaggedCategories.join(', ')}\n` +
+                      `详细评分: ${topCategory}\n\n` +
+                      `药方内容包含不适合公开发布的内容，请修改后重新提交。`
+                    );
+                    return;
+                  }
+
+                  core.info('✅ OpenAI Moderation 审查通过');
+                } else {
+                  // API 调用失败不阻塞流程，仅警告
+                  core.warning(`OpenAI Moderation API 调用失败 (${moderationResp.status})，跳过安全审查`);
+                }
+              } catch (e) {
+                // 网络错误不阻塞流程
+                core.warning(`OpenAI Moderation 调用异常: ${e.message}，跳过安全审查`);
+              }
+            } else {
+              core.info('ℹ️ 未配置 OPENAI_API_KEY，跳过 Moderation 安全审查');
+            }
+
+            // 5. 生成病例文件内容
             const today = new Date().toISOString().split('T')[0];
             const framework = data.framework || 'unknown';
             const severity = data.severity || 'medium';
