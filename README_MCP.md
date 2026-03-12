@@ -148,6 +148,19 @@ pip install -r requirements.txt
 - *"搜索一下 CrewAI 相关的已知问题"*
 - *"对这段 Agent 代码做安全体检"*
 
+## 🌐 品牌矩阵 (Brand Matrix)
+
+为了保护开源生态并提供全球化的无缝使用体验，CyberHuaTuo 团队在 PyPI 上建立了一系列涵盖东西方古代医学神祗的**官方别名包（Alias Packages）**。
+
+您可以执行、安装以下**任意一个**名字，它们都会自动包含并重定向至最核心的 `cyberhuatuo` 引擎：
+
+*   **东方建安神医 (核心)**：`cyberhuatuo`, `openhuatuo`
+*   **希罗神话系**：`cyber-asclepius`, `open-asclepius`, `cyber-panacea`, `open-panacea`
+*   **人类医学先驱**：`cyber-hippocrates`, `open-hippocrates`, `cyber-galen`, `open-galen`
+*   **古老文明极客**：`cyber-imhotep`, `open-imhotep`, `cyber-avicenna`, `open-avicenna`
+
+无论您身处何种文化语境，执行 `uvx <上述任意名字>` 即可直接唤醒赛博神医为你诊断代码。
+
 ---
 
 ## 可用工具 (Tools)
