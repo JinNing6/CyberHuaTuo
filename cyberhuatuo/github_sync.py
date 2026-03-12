@@ -506,18 +506,77 @@ class GitHubSyncer:
         return result
 
 
+def get_global_ranking_stats(cases_dir: Path | None = None) -> dict[str, int]:
+    """
+    扫描 cases/ 目录，统计所有贡献者的贡献次数。
+    返回 { "username_lower": count, ... }
+    """
+    if cases_dir is None:
+        cases_dir = config.CASES_DIR
+
+    if not cases_dir.exists():
+        return {}
+
+    stats = {}
+    
+    for md_file in cases_dir.rglob("*.md"):
+        if md_file.name.startswith("_"):
+            continue
+        try:
+            text = md_file.read_text(encoding="utf-8")
+            match = re.match(r"^---\s*\n(.*?)\n---", text, re.DOTALL)
+            if not match:
+                continue
+            meta = yaml.safe_load(match.group(1))
+            if not isinstance(meta, dict):
+                continue
+            contributors = meta.get("contributors", [])
+            if isinstance(contributors, list):
+                for c in contributors:
+                    gh = ""
+                    if isinstance(c, dict):
+                        gh = c.get("github", "")
+                    elif isinstance(c, str):
+                        gh = c
+                    if gh:
+                        gh_lower = gh.lower()
+                        stats[gh_lower] = stats.get(gh_lower, 0) + 1
+        except Exception:
+            continue
+            
+    return stats
+
+
 def get_contributor_summary(github_username: str) -> dict:
     """
-    获取贡献者的完整统计摘要
+    获取贡献者的完整统计摘要，包括全球排名信息。
 
     Returns:
-        dict 包含贡献次数、称号 emoji、称号名称
+        dict 包含贡献次数、称号 emoji、称号名称、全球排行、总计医师人数
     """
     count = count_contributor_cases(github_username)
     emoji, title = calculate_title(count)
+    
+    # 动态计算全球排名
+    stats = get_global_ranking_stats()
+    username_lower = github_username.lower()
+    stats[username_lower] = max(stats.get(username_lower, 0), count)
+    
+    # 按照贡献数降序排序
+    sorted_stats = sorted(stats.items(), key=lambda x: x[1], reverse=True)
+    
+    global_total = len(sorted_stats)
+    rank = 1
+    for i, (u, c) in enumerate(sorted_stats):
+        if u == username_lower:
+            rank = i + 1
+            break
+
     return {
         "github": github_username,
         "contribution_count": count,
         "title_emoji": emoji,
         "title": title,
+        "global_rank": rank,
+        "global_total": global_total,
     }

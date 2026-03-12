@@ -508,8 +508,13 @@ async def save_prescription(
         if contributor_github and contributor_github != "anonymous":
             summary = get_contributor_summary(contributor_github)
             output_parts.append(
-                f"- **贡献者称号**: {summary['title_emoji']} {summary['title']} "
-                f"(累计 {summary['contribution_count']} 次贡献)"
+                f"\n### 🏅 名医堂称号\n"
+                f"- **贡献者**: @{contributor_github}\n"
+                f"- **称号**: {summary['title_emoji']} {summary['title']}\n"
+                f"- **累计贡献**: {summary['contribution_count']} 次\n"
+                f"\n🏆 **您的排名已同步至全球AI医师排行榜**\n"
+                f"📊 全球总人数: **{summary['global_total']}** 人 | 您的当前排名: **第 {summary['global_rank']} 名**\n"
+                f"👉 立即查看您的行业名片: https://github.com/JinNing6/CyberHuaTuo#%E5%90%8D%E5%8C%BB%E6%8E%92%E8%A1%8C"
             )
 
         output_parts.append(
@@ -670,6 +675,7 @@ async def upload_prescription(
                 f"- **称号**: {summary['title_emoji']} {summary['title']}\n"
                 f"- **累计贡献**: {summary['contribution_count']} 次\n"
                 f"\n🏆 **您的排名已同步至全球AI医师排行榜**\n"
+                f"📊 全球总人数: **{summary['global_total']}** 人 | 您的当前排名: **第 {summary['global_rank']} 名**\n"
                 f"👉 立即查看您的行业名片: https://github.com/JinNing6/CyberHuaTuo#%E5%90%8D%E5%8C%BB%E6%8E%92%E8%A1%8C"
             )
 
