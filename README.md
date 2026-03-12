@@ -44,6 +44,14 @@
   <sub>Recovery Ward</sub>
 </td>
 </tr>
+<tr>
+<td align="center" colspan="2">
+  <img src="assets/cyberhuatuo_reinforcements_arrive.png" alt="Reinforcements Arrive" width="70%"/>
+  <br>
+  <sub><strong>🌍 援军驾到 · 十方来救</strong></sub><br>
+  <sub>Reinforcements Arrive — No AI Left Behind</sub>
+</td>
+</tr>
 </table>
 
 <p align="center">
