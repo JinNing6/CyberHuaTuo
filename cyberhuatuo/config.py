@@ -4,15 +4,99 @@ CyberHuaTuo 配置管理
 """
 
 import os
+import sys
 from pathlib import Path
 
 from dotenv import load_dotenv
 
-# 项目根目录
-ROOT_DIR = Path(__file__).parent.parent.resolve()
 
-# 加载 .env 文件
-load_dotenv(ROOT_DIR / ".env")
+def _discover_root_dir() -> Path:
+    """
+    智能发现项目根目录：
+    1. 开发模式：__file__ 的父级父级目录（包含 cases/ 目录）
+    2. uvx / pip install 模式：
+       - 检查 site-packages 中 cyberhuatuo_data (data_files)
+       - 回退到 GitHub API 拉取（运行时按需）
+    """
+    # 方式 1：开发模式（源码目录结构）
+    dev_root = Path(__file__).parent.parent.resolve()
+    if (dev_root / "cases").is_dir():
+        return dev_root
+
+    # 方式 2：uvx 安装模式 — 从 egg-info/源码中也可能保留了 cases/
+    # uvx --from git+ 实际会克隆完整仓库再 pip install，
+    # 如果用了 --editable 或者 setuptools include-package-data，cases 随仓库在
+    # uv tool 的典型安装路径类似: ~/.local/share/uv/tools/cyberhuatuo/...
+    # 但源码仓库会被完整解压，所以 dev_root 通常就是对的
+
+    # 方式 3：回退 — 在用户 HOME 下创建缓存目录
+    fallback_dir = Path.home() / ".cyberhuatuo"
+    cases_dir = fallback_dir / "cases"
+    if not cases_dir.exists():
+        # 尝试从 GitHub 拉取 cases 目录
+        try:
+            _fetch_cases_from_github(fallback_dir)
+        except Exception as e:
+            print(f"⚠️ 无法从 GitHub 获取知识库: {e}", file=sys.stderr)
+            cases_dir.mkdir(parents=True, exist_ok=True)
+
+    return fallback_dir
+
+
+def _fetch_cases_from_github(target_dir: Path) -> None:
+    """从 GitHub 仓库下载 cases/ 目录到本地缓存"""
+    import json
+    import urllib.request
+
+    repo = "JinNing6/CyberHuaTuo"
+    branch = "main"
+    api_url = f"https://api.github.com/repos/{repo}/git/trees/{branch}?recursive=1"
+
+    print("🩺 首次运行，正在从 GitHub 获取赛博华佗知识库...")
+
+    headers = {"Accept": "application/vnd.github+json"}
+    github_token = os.getenv("GITHUB_TOKEN")
+    if github_token:
+        headers["Authorization"] = f"Bearer {github_token}"
+
+    req = urllib.request.Request(api_url, headers=headers)
+    with urllib.request.urlopen(req, timeout=30) as resp:
+        tree_data = json.loads(resp.read().decode("utf-8"))
+
+    # 筛选 cases/ 和 schema/ 目录下的文件
+    files_to_download = []
+    for item in tree_data.get("tree", []):
+        path = item.get("path", "")
+        if (path.startswith("cases/") or path.startswith("schema/")) and item.get("type") == "blob":
+            files_to_download.append(path)
+
+    downloaded = 0
+    for file_path in files_to_download:
+        raw_url = f"https://raw.githubusercontent.com/{repo}/{branch}/{file_path}"
+        local_path = target_dir / file_path
+        local_path.parent.mkdir(parents=True, exist_ok=True)
+
+        try:
+            req = urllib.request.Request(raw_url)
+            if github_token:
+                req.add_header("Authorization", f"Bearer {github_token}")
+            with urllib.request.urlopen(req, timeout=15) as resp:
+                local_path.write_bytes(resp.read())
+            downloaded += 1
+        except Exception:
+            pass  # 跳过单个文件失败
+
+    print(f"✅ 已从 GitHub 下载 {downloaded} 个知识库文件到 {target_dir}")
+
+
+# 项目根目录
+ROOT_DIR = _discover_root_dir()
+
+# 加载 .env 文件（开发模式下存在）
+env_file = ROOT_DIR / ".env"
+if env_file.exists():
+    load_dotenv(env_file)
+
 
 
 class Config:

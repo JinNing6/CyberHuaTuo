@@ -17,14 +17,30 @@
 
 ## 快速开始
 
-### 1. 安装依赖
+### ⚡ 方式一：一行直连（推荐！）
 
-```bash
-cd CyberHuaTuo
-pip install -r requirements.txt
+> **前提**：安装 [uv](https://docs.astral.sh/uv/getting-started/installation/)（Python 包管理工具）
+
+在任意 AI 工具（Claude Desktop / Cursor / VS Code / Gemini CLI）中添加：
+
+```json
+{
+  "mcpServers": {
+    "cyberhuatuo": {
+      "command": "uvx",
+      "args": ["cyberhuatuo"]
+    }
+  }
+}
 ```
 
-### 2. 配置 AI 工具
+> `uvx` 自动从 PyPI 安装并运行，无需手动操作。与 Anthropic 官方 MCP Server 相同的标准方式。
+
+---
+
+### 🚀 方式二：GitHub 直连（获取最新开发版）
+
+如果想使用 GitHub 上的最新代码（可能包含尚未发布到 PyPI 的新功能）：
 
 #### Claude Desktop
 
@@ -34,9 +50,8 @@ pip install -r requirements.txt
 {
   "mcpServers": {
     "cyberhuatuo": {
-      "command": "python",
-      "args": ["-m", "cyberhuatuo.mcp_server"],
-      "cwd": "/path/to/CyberHuaTuo"
+      "command": "uvx",
+      "args": ["--from", "git+https://github.com/JinNing6/CyberHuaTuo", "cyberhuatuo-mcp"]
     }
   }
 }
@@ -50,9 +65,8 @@ pip install -r requirements.txt
 {
   "mcpServers": {
     "cyberhuatuo": {
-      "command": "python",
-      "args": ["-m", "cyberhuatuo.mcp_server"],
-      "cwd": "/path/to/CyberHuaTuo"
+      "command": "uvx",
+      "args": ["--from", "git+https://github.com/JinNing6/CyberHuaTuo", "cyberhuatuo-mcp"]
     }
   }
 }
@@ -67,9 +81,8 @@ pip install -r requirements.txt
   "mcp": {
     "servers": {
       "cyberhuatuo": {
-        "command": "python",
-        "args": ["-m", "cyberhuatuo.mcp_server"],
-        "cwd": "/path/to/CyberHuaTuo"
+        "command": "uvx",
+        "args": ["--from", "git+https://github.com/JinNing6/CyberHuaTuo", "cyberhuatuo-mcp"]
       }
     }
   }
@@ -79,6 +92,39 @@ pip install -r requirements.txt
 #### Gemini CLI
 
 在 `~/.gemini/settings.json` 中添加：
+
+```json
+{
+  "mcpServers": {
+    "cyberhuatuo": {
+      "command": "uvx",
+      "args": ["--from", "git+https://github.com/JinNing6/CyberHuaTuo", "cyberhuatuo-mcp"]
+    }
+  }
+}
+```
+
+> **工作原理**：
+> `uvx` 会自动从 GitHub 仓库下载代码 → 安装依赖 → 启动 MCP Server。
+> 首次运行时会自动从 GitHub 获取最新的知识库数据。
+> 无需手动 clone 或 pip install。
+
+---
+
+### 方式三：本地安装（开发者 / 离线使用）
+
+如果你需要修改代码或离线使用：
+
+```bash
+# 1. 克隆仓库
+git clone https://github.com/JinNing6/CyberHuaTuo.git
+cd CyberHuaTuo
+
+# 2. 安装依赖
+pip install -r requirements.txt
+```
+
+然后在 AI 工具中配置：
 
 ```json
 {

@@ -21,6 +21,7 @@ from .doc_sources import (
 from .indexer import build_index, scan_cases
 from .searcher import SearchResult, search_cases
 from .contributor import CaseSubmission, save_case_file
+from .banner import play_boot_animation
 
 logger = logging.getLogger("cyberhuatuo.mcp")
 
@@ -622,6 +623,17 @@ def _format_search_results(query: str, results: list[SearchResult]) -> str:
 
 def main():
     """启动 CyberHuaTuo MCP Server"""
+    # 播放赛博华佗启动动画
+    try:
+        cases = scan_cases()
+        play_boot_animation(
+            case_count=len(cases),
+            framework_count=len(ALL_FRAMEWORKS),
+            transport="stdio",
+        )
+    except Exception:
+        pass  # 动画失败不影响启动
+
     mcp.run(transport="stdio")
 
 
