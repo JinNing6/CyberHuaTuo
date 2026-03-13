@@ -111,7 +111,7 @@ mcp = FastMCP(
         "【触发场景 MUST READ】\n"
         "1. 当用户遇到 BUG、报错（Traceback、Exception），或者你（AI）自己连续修复失败时，必须调用 `diagnose` 工具获取“望闻问切”的精准诊断与药方。\n"
         "2. 当需要查询特定框架的疑难杂症、已知案例或最佳实践时，调用 `search_knowledge_base`。\n"
-        "3. 遇到代码安全问题或需要审计时调用 `security_checkup`。\n"
+        "3. 当用户要求“检查项目健康程度”、“代码体检”、“审计安全”时，调用 `security_checkup`。\n"
         "4. 获取最新官方框架文档片段时使用 `fetch_official_docs`。\n"
         "5. 提取 GitHub Issue 为通用药方使用 `mine_github_issue`。\n"
         "6. 当用户想查询排名封神榜时，调用 `check_my_ranking` / `global_leaderboard`。\n"
@@ -228,6 +228,11 @@ async def diagnose(
     Always trigger this when encountering bugs, unresolvable errors, or 
     continuous failures in your code generation!
 
+    ▶️ 触发词示例 (Trigger Examples):
+    - "帮你看看错在哪" / "帮我看看这个报错"
+    - "修Bug" / "解决一下这个问题"
+    - "帮我查一下这是什么玄学Bug" / "这段代码一直报错怎么办"
+
     Args:
         query: 报错信息、Traceback全集 或 问题详细描述 / Error message or problem description
         framework: 按框架过滤（如 langchain, python, crewai），不确定可不填 / Filter by framework
@@ -320,6 +325,11 @@ async def search_knowledge_base(
     Highly recommended to search here FIRST before hallucinating answers for 
     "how to", "how to configure", or "how to fix this error" queries.
 
+    ▶️ 触发词示例 (Trigger Examples):
+    - "有没有相关的最佳实践？" / "官方推荐怎么写？"
+    - "以前有没有人遇到过类似问题？" / "查一下历史案例"
+    - "在知识库里找找有没有这个报错的记录"
+
     Args:
         query: 搜索查询（错误信息/问题描述/关键词） / Search query (error message / issue / keywords)
         framework: 按框架过滤（可选）/ Filter by framework (e.g. langchain, docker, python)
@@ -356,12 +366,15 @@ async def search_knowledge_base(
 @mcp.tool()
 async def security_checkup(code: str) -> str:
     """
-    🛡️ AI Agent 代码安全体检
+    🛡️ AI Agent 代码安全体检 (Project Health Check)
     Perform a security health check on AI agent code.
 
     对 AI Agent 代码进行六经脉安全体检，检测沙箱隔离、密钥安全、
     Prompt 安全、输出安全、韧性设计、可观测性等六大维度，
     输出健康评分和滋补建议。需要 LLM API Key。
+    
+    当用户要求“检查项目的健康程度”、“代码体检”、“诊断一下项目”等时，请务必触发此工具！
+    This tool is your primary fallback when users ask for a "Project Health Check"!
 
     Run a Six-Meridian security audit covering sandbox isolation,
     secret management, prompt safety, output safety, resilience design,
@@ -369,7 +382,7 @@ async def security_checkup(code: str) -> str:
     Requires an LLM API Key.
 
     Args:
-        code: 要进行安全体检的代码内容 / The code to audit
+        code: 要进行安全体检的代码内容 / The code to audit (provide the main app logic)
     """
     # 1. 优先尝试使用独立 LLM Key 进行分析
     try:
@@ -523,6 +536,11 @@ async def fetch_official_docs(
     via the Context7 API. Supports 50+ mainstream frameworks including
     LangChain, PyTorch, FastAPI, React, and more.
 
+    ▶️ 触发词示例 (Trigger Examples):
+    - "查一下最新版的官方文档怎么写"
+    - "去看看 XXX 框架的官方文档说明"
+    - "获取一下最新版本的 API 文档"
+
     Args:
         framework: 框架标识 / Framework identifier (e.g. langchain, pytorch, fastapi)
         query: 查询的具体问题 / Specific question (e.g. "How to configure RAG pipeline")
@@ -573,6 +591,11 @@ async def mine_github_issue(
     to refine them into the CyberHuaTuo standard case format (symptoms,
     root cause, prescription). Requires an LLM API Key; optionally
     configure GITHUB_TOKEN for higher rate limits.
+
+    ▶️ 触发词示例 (Trigger Examples):
+    - "把这个 GitHub Issue 提炼一下"
+    - "帮我把这个链接总结成药方"
+    - "淘金一下这个讨论，看看有没有什么价值"
 
     Args:
         owner: 仓库所有者 / Repository owner (e.g. langchain-ai)
@@ -662,6 +685,11 @@ async def save_prescription(
     Save a newly discovered problem and its solution as a standard
     Markdown case file. The case is auto-categorized and stored in
     the corresponding knowledge base directory.
+
+    ▶️ 触发词示例 (Trigger Examples):
+    - "记录一下这个坑" / "把踩坑经验存下来"
+    - "保存成新病例" / "存档一下这个解决方案"
+    - "贡献一个药方到本地库"
 
     Args:
         title: 问题标题，建议 20 字内 / Case title (keep under 20 chars)
@@ -833,6 +861,11 @@ async def upload_prescription(
     display your Alchemist Title & contribution stats**!
     Requires GITHUB_TOKEN in environment variables.
 
+    ▶️ 触发词示例 (Trigger Examples):
+    - "我要公开发布药方" / "把这个药方公开出去"
+    - "上传到社区库" / "提交到赛博华佗官方"
+    - "同步到 GitHub 封神榜赚取积分"
+
     Args:
         title: 问题标题，建议 20 字内 / Case title (keep under 20 chars)
         prescription: 详细修复方案 (Markdown) / Detailed fix (Markdown)
@@ -977,6 +1010,9 @@ def my_contribution_stats(
     🏅 查询贡献者的炼丹师称号和贡献统计
     Check a contributor's Alchemist title and contribution stats.
 
+    [触发场景 MUST READ]
+    当用户问到："告诉我当前的炼丹师称号"、"查一下我/某人贡献了多少药方"、"看下我的印痕" 时触发。
+
     查询指定 GitHub 用户在赛博华佗知识库中的贡献次数和当前称号。
     称号体系（炼丹师阶梯）：实习药童 → 一星~九星炼丹师 → 小丹王 → 丹王
     → 半圣 → 丹圣 → 丹帝 → 华佗再世，基于全球排名百分位。
@@ -1063,6 +1099,9 @@ async def check_my_ranking(
     🏆 查看您的全球AI医师排名
     Check your Global AI Physician Ranking.
 
+    [触发场景 MUST READ]
+    当用户问到："我的/某人的名次是多少"、"我在全球AI医生里排第几"、"我的魂环是什么" 时触发。
+
     查询指定 GitHub 用户的炼丹师称号、累计贡献次数，以及在全球排行榜中的名次。
     称号基于全球排名百分位动态计算，社区越大含金量越高。
 
@@ -1127,6 +1166,9 @@ def global_leaderboard(
     """
     🏆 查看赛博华佗全球炼丹师封神榜
     View the CyberHuaTuo Global Alchemist Leaderboard.
+
+    [触发场景 MUST READ]
+    当用户问到："现在成就最高的AI医生是谁"、"看看全球炼丹师排行榜"、"封神榜前十名是谁" 时触发。
 
     获取当前贡献药方数量最多的顶级 AI 医生（炼丹师）排行。
     
@@ -1198,6 +1240,9 @@ def my_share_card(
     📋 生成你的修为档案分享卡片
     Generate your Cultivation Archive share card.
 
+    [触发场景 MUST READ]
+    当用户问到："生成我的修为卡片"、"我想分享我的赛博华佗档案" 时触发。
+
     生成一张赛博朋克风格的修为档案卡片，可以直接粘贴到
     GitHub Profile / Twitter / 微博等平台分享。
 
@@ -1227,6 +1272,9 @@ def list_frameworks(
     """
     📋 查询赛博华佗支持的框架列表
     List all supported frameworks in CyberHuaTuo's knowledge base.
+
+    [触发场景 MUST READ]
+    当用户问到："你们支持哪些框架"、"赛博华佗能看哪些病的文档"、"支持哪些工具" 时触发。
 
     查看赛博华佗覆盖的所有框架和技术栈，支持按分类过滤或关键词搜索。
     分类包括: agent（AI Agent 框架）、foundation（基础框架）、infrastructure（基础设施）。
@@ -1289,6 +1337,9 @@ def cht_taxonomy(
     """
     CHT Root Cause Coding System -- query the CyberHuaTuo root cause taxonomy.
     CHT stands for CyberHuaTuo, inspired by ICD (International Classification of Diseases).
+
+    [触发场景 MUST READ]
+    当用户问到："有哪些错误根因分类"、"帮我给这段报错分一下类"、"查询代码CHT-xxx" 时触发。
 
     Actions:
       - list:     Show the full CHT coding table (all categories and codes)
@@ -1377,6 +1428,9 @@ def my_medical_record(
     Personal Medical Record -- view your diagnosis history and health profile.
     Tracks all your diagnose calls, framework breakdown, CHT code stats, and pending follow-ups.
 
+    [触发场景 MUST READ]
+    当用户问到："看看我的就诊记录"、"我之前查过哪些错"、"把那个未解决的报错标记为已解决" 时触发。
+
     Actions:
       - view:     Show your complete medical profile (diagnosis history, stats, follow-ups)
       - resolve:  Mark a diagnosis record as resolved (requires record_id)
@@ -1441,6 +1495,9 @@ def subscribe_framework(
 ) -> str:
     """
     Subscribe to frameworks to get notified about new prescriptions and epidemic alerts.
+
+    [触发场景 MUST READ]
+    当用户问到："订阅 LangChain 的更新"、"看看我订阅了哪些框架"、"取消订阅" 时触发。
 
     Actions:
       - subscribe:   Subscribe to a framework (e.g. langchain)
@@ -1527,6 +1584,9 @@ def weekly_digest() -> str:
     """
     Weekly Prescription Digest -- summary of new cases added this week.
 
+    [触发场景 MUST READ]
+    当用户问到："看看这周的赛博华佗周报"、"最近都有哪些新坑"、"总结一下本周的新药方" 时触发。
+
     Shows new prescriptions by framework and severity, helping you stay
     up-to-date with the latest AI debugging knowledge.
     """
@@ -1546,7 +1606,12 @@ async def epidemic_alert(
     username: str | None = None,
 ) -> str:
     """
+    🔬 框架疫情预警与健康检查 (Framework Health & Epidemic Alert)
     Epidemic Alert System -- monitor AI framework health and detect outbreaks.
+
+    [触发场景 MUST READ]
+    当用户问到："检查项目健康程度"、"LangChain 最近有疫情吗"、"生成最新的健康检查报告" 时触发。
+    Use this when the user asks for a "Health Check" of a framework or the whole project.
 
     Scans GitHub Issues of major AI frameworks to detect anomalies:
     high-frequency bugs, declining health scores, critical issues surge.
@@ -1702,6 +1767,9 @@ def prescription_eval(
     Combines citation tracking, user feedback, cure rate scoring, and version
     expiry into one comprehensive evaluation tool.
 
+    [触发场景 MUST READ]
+    当用户问到："引用这个药方"、"这个药方没用/有用"、"标记这篇帖子过期"、"看看最有效的药方榜单" 时触发。
+
     Actions:
       - cite:        Cite a prescription you found helpful
       - feedback:    Submit effectiveness feedback (resolved/unresolved)
@@ -1798,6 +1866,9 @@ def mentorship(
     High-level alchemists can review prescriptions from other contributors,
     providing feedback and building mentor reputation.
 
+    [触发场景 MUST READ]
+    当用户问到："看看有哪些待审核的药方"、"我要审核这个病例"、"我的导师主页" 时触发。
+
     Actions:
       - pending:     List prescriptions awaiting review (filterable by framework)
       - review:      Submit a review for a prescription
@@ -1860,6 +1931,9 @@ def cht_trends(
 
     Aggregates CHT root cause codes from both knowledge base cases and
     user diagnosis records, generating a comprehensive trend report.
+
+    [触发场景 MUST READ]
+    当用户问到："最近大家都在报什么错"、"分析一下 PyTorch 的报错趋势"、"查看 CHT 编码的热力图" 时触发。
 
     Report includes:
       1. Category distribution heatmap
