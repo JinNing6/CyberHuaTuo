@@ -1,4 +1,4 @@
-name: 🏆 Update Global AI Physician Ranking
+name: 🏆 Update Alchemist Apotheosis Board
 
 on:
   push:
@@ -9,6 +9,18 @@ on:
       - '.github/workflows/update_leaderboard.yml'
       - 'tools/update_leaderboard.py'
 
+  # 药方晋升完成后自动触发（近实时）
+  workflow_run:
+    workflows: ["💊 Promote Prescription"]
+    types: [completed]
+
+  # 每小时定时同步（兜底）
+  schedule:
+    - cron: '0 * * * *'
+
+  # 支持手动触发
+  workflow_dispatch:
+
 jobs:
   update-leaderboard:
     runs-on: ubuntu-latest
@@ -16,26 +28,26 @@ jobs:
       contents: write
       
     steps:
-      - name: Checkout repository
+      - name: 📥 Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
           
-      - name: Set up Python
+      - name: 🐍 Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
           
-      - name: Install dependencies
+      - name: 📦 Install dependencies
         run: pip install pyyaml
 
-      - name: Run Leaderboard Generator
+      - name: 🧬 Run Alchemist Leaderboard Generator
         run: python tools/update_leaderboard.py
         
-      - name: Commit and push changes
+      - name: 📝 Commit and push changes
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "docs(leaderboard): 🏆 auto-sync global AI physician rankings"
+          commit_message: "docs(leaderboard): 🏆 auto-sync alchemist apotheosis board"
           file_pattern: "README.md README_CN.md"
           commit_user_name: "CyberHuaTuo Bot"
           commit_user_email: "bot@cyberhuatuo.dev"
