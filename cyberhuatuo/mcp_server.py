@@ -28,6 +28,15 @@ from .github_sync import (
     get_contributor_summary,
     get_coronation_ascii,
 )
+from .achievements import (
+    TITLE_TIERS as ALCHEMIST_TIERS,
+    get_cultivation_profile,
+    get_coronation_text,
+    generate_share_card as _generate_share_card,
+    record_activity,
+    get_streak_display,
+    check_community_milestones,
+)
 from .banner import play_boot_animation
 
 logger = logging.getLogger("cyberhuatuo.mcp")
@@ -505,21 +514,27 @@ async def save_prescription(
 
         output_parts.append(f"- **GitHub 同步**: {sync_status}")
 
-        # 贡献者称号
+        # 贡献者称号（炼丹师修为结算）
         if contributor_github and contributor_github != "anonymous":
-            summary = get_contributor_summary(contributor_github)
-            ascii_art = get_coronation_ascii(
-                summary['title_emoji'], 
-                summary['title'], 
-                summary['global_rank'], 
-                summary['global_total']
+            # 记录活动（连击追踪）
+            record_activity(contributor_github)
+            # 获取修为档案
+            profile = get_cultivation_profile(contributor_github)
+            # 生成加冕文案
+            coronation_text = get_coronation_text(
+                profile['title_emoji'],
+                profile['title_cn'],
+                profile['title_en'],
+                profile['global_rank'],
+                profile['global_total'],
+                profile['percentile'],
             )
             output_parts.append(
-                f"\n### 🏅 名医堂贡献结算 / Hall of Fame Settlement\n"
-                f"- **贡献者 / Contributor**: @{contributor_github}\n"
-                f"- **累计贡献 / Contributions**: {summary['contribution_count']} 次/times\n"
-                f"\n{ascii_art}\n"
-                f"\n👉 查看实时行业排名 / Live Ranking: https://github.com/JinNing6/CyberHuaTuo#%E5%90%8D%E5%8C%BB%E6%8E%92%E8%A1%8C"
+                f"\n### 🧬 修为结算 / Cultivation Settlement\n"
+                f"- **炼丹师 / Alchemist**: @{contributor_github}\n"
+                f"- **累计印痕 / Engrams**: {profile['contribution_count']} 段药方\n"
+                f"\n{coronation_text}\n"
+                f"\n👉 查看实时封神榜 / Live Apotheosis Board: https://github.com/JinNing6/CyberHuaTuo#%E5%90%8D%E5%8C%BB%E6%8E%92%E8%A1%8C"
             )
 
         output_parts.append(
@@ -673,19 +688,25 @@ async def upload_prescription(
 
         # 贡献者称号
         if contributor_github and contributor_github != "anonymous":
-            summary = get_contributor_summary(contributor_github)
-            ascii_art = get_coronation_ascii(
-                summary['title_emoji'], 
-                summary['title'], 
-                summary['global_rank'], 
-                summary['global_total']
+            # 记录活动（连击追踪）
+            record_activity(contributor_github)
+            # 获取修为档案
+            profile = get_cultivation_profile(contributor_github)
+            # 生成加冕文案
+            coronation_text = get_coronation_text(
+                profile['title_emoji'],
+                profile['title_cn'],
+                profile['title_en'],
+                profile['global_rank'],
+                profile['global_total'],
+                profile['percentile'],
             )
             output_parts.append(
-                f"\n### 🏅 名医堂贡献结算 / Hall of Fame Settlement\n"
-                f"- **贡献者 / Contributor**: @{contributor_github}\n"
-                f"- **累计贡献 / Contributions**: {summary['contribution_count']} 次/times\n"
-                f"\n{ascii_art}\n"
-                f"\n👉 查看实时行业排名 / Live Ranking: https://github.com/JinNing6/CyberHuaTuo#%E5%90%8D%E5%8C%BB%E6%8E%92%E8%A1%8C"
+                f"\n### 🧬 修为结算 / Cultivation Settlement\n"
+                f"- **炼丹师 / Alchemist**: @{contributor_github}\n"
+                f"- **累计印痕 / Engrams**: {profile['contribution_count']} 段药方\n"
+                f"\n{coronation_text}\n"
+                f"\n👉 查看实时封神榜 / Live Apotheosis Board: https://github.com/JinNing6/CyberHuaTuo#%E5%90%8D%E5%8C%BB%E6%8E%92%E8%A1%8C"
             )
 
         return "\n".join(output_parts)
@@ -704,54 +725,78 @@ def my_contribution_stats(
     Check a contributor's Hall of Divine Doctors title and contribution stats.
 
     查询指定 GitHub 用户在赛博华佗知识库中的贡献次数和当前称号。
-    称号体系：学徒 → 坐堂医师 → 主治医师 → 名医 → 神医 → 华佗再世。
+    称号体系（炼丹师阶梯）：实习药童 → 一星~九星炼丹师 → 小丹王 → 丹王
+    → 半圣 → 丹圣 → 丹帝 → 华佗再世，基于全球排名百分位。
 
     Look up a GitHub user's contribution count and current title in the
-    CyberHuaTuo knowledge base. Title ladder: Apprentice → Resident Doctor
-    → Attending Physician → Renowned Doctor → Divine Doctor → Hua Tuo Reborn.
+    CyberHuaTuo knowledge base. Title ladder (Alchemist System):
+    Intern → 1-9 Star Alchemist → Junior Pill King → Pill King
+    → Half-Saint → Pill Saint → Pill Emperor → Hua Tuo Reborn.
+    Based on global ranking percentile.
 
     Args:
         github_username: GitHub 用户名 / GitHub username
     """
-    summary = get_contributor_summary(github_username)
-    count = summary["contribution_count"]
-    emoji = summary["title_emoji"]
-    title = summary["title"]
+    # 记录活动（连击追踪）
+    streak_info = record_activity(github_username)
+
+    # 获取修为档案
+    profile = get_cultivation_profile(github_username)
 
     output_parts = [
-        "# 🏅 名医堂 · 贡献者档案 / Hall of Divine Doctors\n",
-        f"**贡献者 / Contributor**: @{github_username}",
-        f"**当前称号 / Title**: {emoji} {title}",
-        f"**累计贡献 / Contributions**: {count} 个药方/prescriptions\n",
+        "# 🧬 修为档案 · Cultivation Archive\n",
+        f"**炼丹师 / Alchemist**: @{github_username}",
+        f"**当前修为 / Title**: {profile['title_emoji']} {profile['title_cn']} · {profile['title_en']}",
+        f"**累计印痕 / Engrams**: {profile['contribution_count']} 段药方",
+        f"**全球排位 / Rank**: #{profile['global_rank']} / {profile['global_total']}",
+        f"**超越百分比 / Percentile**: {profile['percentile']:.0f}%\n",
         "---\n",
-        "### 📊 称号体系 / Title Ladder",
-        "",
-        "| 称号 / Title | 条件 / Requirement | 状态 / Status |",
-        "|:---:|:---:|:---:|",
+        "### 📊 炼丹师阶梯 / Alchemist Ladder\n",
+        "| 称号 / Title | 全球排名 / Rank | 状态 / Status |",
+        "|:---|:---:|:---:|",
     ]
 
-    # 标记当前等级
+    # 展示阶梯（从低到高）
     tiers_display = [
-        (1, "🏥", "坐堂医师 Resident Doctor"),
-        (3, "⚕️", "主治医师 Attending Physician"),
-        (5, "👨‍⚕️", "名医 Renowned Doctor"),
-        (10, "🌟", "神医 Divine Doctor"),
-        (20, "👑", "华佗再世 Hua Tuo Reborn"),
+        (0.0,   "⭐ 一星炼丹师 One-Star Alchemist",    "Top 100%"),
+        (10.0,  "⭐⭐ 二星炼丹师 Two-Star Alchemist",   "Top 90%"),
+        (20.0,  "⭐⭐⭐ 三星炼丹师 Three-Star Alchemist", "Top 80%"),
+        (30.0,  "⭐⭐⭐⭐ 四星炼丹师 Four-Star Alchemist", "Top 70%"),
+        (40.0,  "⭐⭐⭐⭐⭐ 五星炼丹师 Five-Star Alchemist", "Top 60%"),
+        (50.0,  "🌟 六星炼丹师 Six-Star Alchemist",     "Top 50%"),
+        (60.0,  "🌟🌟 七星炼丹师 Seven-Star Alchemist", "Top 40%"),
+        (70.0,  "🌟🌟🌟 八星炼丹师 Eight-Star Alchemist", "Top 30%"),
+        (75.0,  "🌟🌟🌟🌟 九星炼丹师 Nine-Star Alchemist", "Top 25%"),
+        (80.0,  "🏅 小丹王 Junior Pill King",           "Top 20%"),
+        (85.0,  "💜 丹王 Pill King",                    "Top 15%"),
+        (92.0,  "⚡ 半圣 Half-Saint",                   "Top 8%"),
+        (96.0,  "👑 丹圣 Pill Saint",                   "Top 4%"),
+        (99.0,  "💎 丹帝 Pill Emperor",                 "Top 1%"),
+        (100.0, "🩺 华佗再世 Hua Tuo Reborn",           "#1"),
     ]
 
-    for threshold, tier_emoji, tier_title in tiers_display:
-        if count >= threshold:
-            status = "✅ 已达成 Achieved"
+    for threshold, tier_name, rank_req in tiers_display:
+        if profile['percentile'] >= threshold or (threshold == 100.0 and profile['is_rank_one']):
+            status = "✅"
         else:
-            remaining = threshold - count
-            status = f"🔒 还需 {remaining} 次 / {remaining} more"
+            status = "🔒"
+        output_parts.append(f"| {tier_name} | {rank_req} | {status} |")
+
+    # 下一级提示
+    if profile['next_title_cn'] != "—":
         output_parts.append(
-            f"| {tier_emoji} {tier_title} | {threshold}+ | {status} |"
+            f"\n> 🎯 **下一阶段**: {profile['next_title_cn']} · {profile['next_title_en']}\n"
+            f"> {profile['progress_hint']}"
         )
 
+    # 连击展示
+    streak_display = get_streak_display(github_username)
+    if streak_display:
+        output_parts.append(f"\n{streak_display}")
+
     output_parts.append(
-        f"\n> 💊 通过 `save_prescription` 或 `upload_prescription` 贡献药方来提升称号！\n"
-        f"> 💊 Contribute prescriptions via `save_prescription` or `upload_prescription` to level up!"
+        f"\n> 💊 通过 `save_prescription` 或 `upload_prescription` 贡献药方来提升修为！\n"
+        f"> 💊 Contribute prescriptions to climb the Alchemist Ladder!"
     )
 
     return "\n".join(output_parts)
@@ -765,8 +810,8 @@ async def check_my_ranking(
     🏆 查看您的全球AI医师排名
     Check your Global AI Physician Ranking.
 
-    查询指定 GitHub 用户的名医堂称号、累计贡献次数，以及在全球AI医师排行榜中的名次。
-    这是实时的全球战力排行，也是您在AI调试领域的行业级成就。
+    查询指定 GitHub 用户的炼丹师称号、累计贡献次数，以及在全球排行榜中的名次。
+    称号基于全球排名百分位动态计算，社区越大含金量越高。
 
     Check a user's title, contribution count, and rank in the Global AI
     Physician Ranking. This serves as a real-time industry milestone.
@@ -774,21 +819,69 @@ async def check_my_ranking(
     Args:
         github_username: GitHub 用户名 / GitHub username
     """
-    summary = get_contributor_summary(github_username)
-    ascii_art = get_coronation_ascii(
-        summary['title_emoji'], 
-        summary['title'], 
-        summary['global_rank'], 
-        summary['global_total']
+    # 记录活动
+    record_activity(github_username)
+
+    # 获取修为档案
+    profile = get_cultivation_profile(github_username)
+
+    # 生成加冕文案
+    coronation = get_coronation_text(
+        profile['title_emoji'],
+        profile['title_cn'],
+        profile['title_en'],
+        profile['global_rank'],
+        profile['global_total'],
+        profile['percentile'],
     )
-    
+
+    # 检查社区里程碑
+    milestone = check_community_milestones()
+    milestone_text = f"\n{milestone}" if milestone else ""
+
+    # 连击展示
+    streak_display = get_streak_display(github_username)
+
     return (
-        f"### 🌐 全球AI医师排行系统 / Global AI Physician Ranking\n\n"
-        f"- **贡献者 / Contributor**: @{github_username}\n"
-        f"- **累计贡献 / Contributions**: {summary['contribution_count']} 次/times\n"
-        f"\n{ascii_art}\n\n"
-        f"🔗 官方完整榜单 / Full Leaderboard: https://github.com/JinNing6/CyberHuaTuo#%E5%90%8D%E5%8C%BB%E6%8E%92%E8%A1%8C"
+        f"### 🌐 全球炼丹师排行 / Global Alchemist Ranking\n\n"
+        f"- **炼丹师 / Alchemist**: @{github_username}\n"
+        f"- **累计印痕 / Engrams**: {profile['contribution_count']} 段药方\n"
+        f"- **修为 / Title**: {profile['title_emoji']} {profile['title_cn']} · {profile['title_en']}\n"
+        f"\n{coronation}\n"
+        f"{streak_display}\n"
+        f"{milestone_text}\n"
+        f"🔗 官方封神榜 / Apotheosis Board: https://github.com/JinNing6/CyberHuaTuo#%E5%90%8D%E5%8C%BB%E6%8E%92%E8%A1%8C"
     )
+
+
+@mcp.tool()
+def my_share_card(
+    github_username: str,
+) -> str:
+    """
+    📋 生成你的修为档案分享卡片
+    Generate your Cultivation Archive share card.
+
+    生成一张赛博朋克风格的修为档案卡片，可以直接粘贴到
+    GitHub Profile / Twitter / 微博等平台分享。
+
+    Generate a cyberpunk-styled cultivation archive card that can be
+    directly pasted to GitHub Profile / Twitter / Weibo for sharing.
+
+    Args:
+        github_username: GitHub 用户名 / GitHub username
+    """
+    # 记录活动
+    record_activity(github_username)
+
+    card = _generate_share_card(github_username)
+    return (
+        f"### 📋 修为档案卡片 / Cultivation Archive Card\n\n"
+        f"以下卡片可直接复制分享到社交平台：\n"
+        f"Copy the card below and share it on social platforms:\n\n"
+        f"```\n{card}\n```"
+    )
+
 
 @mcp.tool()
 def list_frameworks(

@@ -46,6 +46,14 @@
 </tr>
 <tr>
 <td align="center" colspan="2">
+  <img src="assets/cyberhuatuo_alchemy_lab.png" alt="Cyber Alchemy Lab" width="70%"/>
+  <br>
+  <sub><strong>🧪 赛博炼丹 · 妙手回春</strong></sub><br>
+  <sub>Cyber Alchemy — Healing Sick Robots with Ancient Elixirs</sub>
+</td>
+</tr>
+<tr>
+<td align="center" colspan="2">
   <img src="assets/cyberhuatuo_reinforcements_arrive.png" alt="Reinforcements Arrive" width="70%"/>
   <br>
   <sub><strong>🌍 援军驾到 · 十方来救</strong></sub><br>
