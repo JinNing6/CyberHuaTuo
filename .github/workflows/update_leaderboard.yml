@@ -1,0 +1,42 @@
+name: 🏆 Update Global AI Physician Ranking
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'cases/**'
+      - '.github/workflows/update_leaderboard.yml'
+      - 'tools/update_leaderboard.py'
+
+jobs:
+  update-leaderboard:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          
+      - name: Install dependencies
+        run: pip install pyyaml
+
+      - name: Run Leaderboard Generator
+        run: python tools/update_leaderboard.py
+        
+      - name: Commit and push changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "docs(leaderboard): 🏆 auto-sync global AI physician rankings"
+          file_pattern: "README.md README_CN.md"
+          commit_user_name: "CyberHuaTuo Bot"
+          commit_user_email: "bot@cyberhuatuo.dev"
+          commit_author: "CyberHuaTuo Bot <bot@cyberhuatuo.dev>"

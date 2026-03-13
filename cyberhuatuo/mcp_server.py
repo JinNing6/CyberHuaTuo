@@ -26,6 +26,7 @@ from .github_sync import (
     calculate_title,
     count_contributor_cases,
     get_contributor_summary,
+    get_coronation_ascii,
 )
 from .banner import play_boot_animation
 
@@ -507,14 +508,18 @@ async def save_prescription(
         # 贡献者称号
         if contributor_github and contributor_github != "anonymous":
             summary = get_contributor_summary(contributor_github)
+            ascii_art = get_coronation_ascii(
+                summary['title_emoji'], 
+                summary['title'], 
+                summary['global_rank'], 
+                summary['global_total']
+            )
             output_parts.append(
-                f"\n### 🏅 名医堂称号\n"
-                f"- **贡献者**: @{contributor_github}\n"
-                f"- **称号**: {summary['title_emoji']} {summary['title']}\n"
-                f"- **累计贡献**: {summary['contribution_count']} 次\n"
-                f"\n🏆 **您的排名已同步至全球AI医师排行榜**\n"
-                f"📊 全球总人数: **{summary['global_total']}** 人 | 您的当前排名: **第 {summary['global_rank']} 名**\n"
-                f"👉 立即查看您的行业名片: https://github.com/JinNing6/CyberHuaTuo#%E5%90%8D%E5%8C%BB%E6%8E%92%E8%A1%8C"
+                f"\n### 🏅 名医堂贡献结算 / Hall of Fame Settlement\n"
+                f"- **贡献者 / Contributor**: @{contributor_github}\n"
+                f"- **累计贡献 / Contributions**: {summary['contribution_count']} 次/times\n"
+                f"\n{ascii_art}\n"
+                f"\n👉 查看实时行业排名 / Live Ranking: https://github.com/JinNing6/CyberHuaTuo#%E5%90%8D%E5%8C%BB%E6%8E%92%E8%A1%8C"
             )
 
         output_parts.append(
@@ -669,14 +674,18 @@ async def upload_prescription(
         # 贡献者称号
         if contributor_github and contributor_github != "anonymous":
             summary = get_contributor_summary(contributor_github)
+            ascii_art = get_coronation_ascii(
+                summary['title_emoji'], 
+                summary['title'], 
+                summary['global_rank'], 
+                summary['global_total']
+            )
             output_parts.append(
-                f"\n### 🏅 名医堂称号\n"
-                f"- **贡献者**: @{contributor_github}\n"
-                f"- **称号**: {summary['title_emoji']} {summary['title']}\n"
-                f"- **累计贡献**: {summary['contribution_count']} 次\n"
-                f"\n🏆 **您的排名已同步至全球AI医师排行榜**\n"
-                f"📊 全球总人数: **{summary['global_total']}** 人 | 您的当前排名: **第 {summary['global_rank']} 名**\n"
-                f"👉 立即查看您的行业名片: https://github.com/JinNing6/CyberHuaTuo#%E5%90%8D%E5%8C%BB%E6%8E%92%E8%A1%8C"
+                f"\n### 🏅 名医堂贡献结算 / Hall of Fame Settlement\n"
+                f"- **贡献者 / Contributor**: @{contributor_github}\n"
+                f"- **累计贡献 / Contributions**: {summary['contribution_count']} 次/times\n"
+                f"\n{ascii_art}\n"
+                f"\n👉 查看实时行业排名 / Live Ranking: https://github.com/JinNing6/CyberHuaTuo#%E5%90%8D%E5%8C%BB%E6%8E%92%E8%A1%8C"
             )
 
         return "\n".join(output_parts)
@@ -710,14 +719,14 @@ def my_contribution_stats(
     title = summary["title"]
 
     output_parts = [
-        "# 🏅 名医堂 · 贡献者档案\n",
-        f"**贡献者**: @{github_username}",
-        f"**当前称号**: {emoji} {title}",
-        f"**累计贡献**: {count} 个药方\n",
+        "# 🏅 名医堂 · 贡献者档案 / Hall of Divine Doctors\n",
+        f"**贡献者 / Contributor**: @{github_username}",
+        f"**当前称号 / Title**: {emoji} {title}",
+        f"**累计贡献 / Contributions**: {count} 个药方/prescriptions\n",
         "---\n",
-        "### 📊 称号体系",
+        "### 📊 称号体系 / Title Ladder",
         "",
-        "| 称号 | 条件 | 状态 |",
+        "| 称号 / Title | 条件 / Requirement | 状态 / Status |",
         "|:---:|:---:|:---:|",
     ]
 
@@ -732,20 +741,54 @@ def my_contribution_stats(
 
     for threshold, tier_emoji, tier_title in tiers_display:
         if count >= threshold:
-            status = "✅ 已达成"
+            status = "✅ 已达成 Achieved"
         else:
             remaining = threshold - count
-            status = f"🔒 还需 {remaining} 次贡献"
+            status = f"🔒 还需 {remaining} 次 / {remaining} more"
         output_parts.append(
-            f"| {tier_emoji} {tier_title} | {threshold}+ 贡献 | {status} |"
+            f"| {tier_emoji} {tier_title} | {threshold}+ | {status} |"
         )
 
     output_parts.append(
-        f"\n> 💊 通过 `save_prescription` 或 `upload_prescription` 贡献药方来提升你的称号！"
+        f"\n> 💊 通过 `save_prescription` 或 `upload_prescription` 贡献药方来提升称号！\n"
+        f"> 💊 Contribute prescriptions via `save_prescription` or `upload_prescription` to level up!"
     )
 
     return "\n".join(output_parts)
 
+
+@mcp.tool()
+async def check_my_ranking(
+    github_username: str,
+) -> str:
+    """
+    🏆 查看您的全球AI医师排名
+    Check your Global AI Physician Ranking.
+
+    查询指定 GitHub 用户的名医堂称号、累计贡献次数，以及在全球AI医师排行榜中的名次。
+    这是实时的全球战力排行，也是您在AI调试领域的行业级成就。
+
+    Check a user's title, contribution count, and rank in the Global AI
+    Physician Ranking. This serves as a real-time industry milestone.
+
+    Args:
+        github_username: GitHub 用户名 / GitHub username
+    """
+    summary = get_contributor_summary(github_username)
+    ascii_art = get_coronation_ascii(
+        summary['title_emoji'], 
+        summary['title'], 
+        summary['global_rank'], 
+        summary['global_total']
+    )
+    
+    return (
+        f"### 🌐 全球AI医师排行系统 / Global AI Physician Ranking\n\n"
+        f"- **贡献者 / Contributor**: @{github_username}\n"
+        f"- **累计贡献 / Contributions**: {summary['contribution_count']} 次/times\n"
+        f"\n{ascii_art}\n\n"
+        f"🔗 官方完整榜单 / Full Leaderboard: https://github.com/JinNing6/CyberHuaTuo#%E5%90%8D%E5%8C%BB%E6%8E%92%E8%A1%8C"
+    )
 
 @mcp.tool()
 def list_frameworks(

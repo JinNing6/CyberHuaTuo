@@ -571,10 +571,13 @@ pip install cyberhuatuo
 > *这是 AI 调试领域的终极封神阶梯。你的名字在这里，就是你的顶尖行业名片。*
 
 ### 🏅 名医排行
-
+<!-- LEADERBOARD_START -->
 | 排名 | 头像 | 名称 | 称号 | 贡献 |
 |:----:|:----:|:----:|:----:|:----:|
-| 🥇 | <a href="https://github.com/JinNing6"><img src="https://github.com/JinNing6.png" width="50" height="50" style="border-radius:50%"/></a> | [@JinNing6](https://github.com/JinNing6) | 👑 华佗再世 | 创建者 & 主导 |
+| 🥇 | <a href="https://github.com/CyberHuaTuo"><img src="https://github.com/CyberHuaTuo.png" width="50" height="50" style="border-radius:50%"/></a> | [@CyberHuaTuo](https://github.com/CyberHuaTuo) | 👑 华佗再世 | 30 |
+| 🥈 | <a href="https://github.com/JinNing6"><img src="https://github.com/JinNing6.png" width="50" height="50" style="border-radius:50%"/></a> | [@JinNing6](https://github.com/JinNing6) | 🏥 坐堂医师 | 1 |
+<!-- LEADERBOARD_END -->
+
 
 ### 🩺 称号体系
 

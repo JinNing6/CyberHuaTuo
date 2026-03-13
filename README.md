@@ -717,10 +717,13 @@ Today, 1,800 years later, AI developers face their own "ancient prescriptions" �
 > *这是 AI 调试领域的终极封神阶梯。你的名字在这里，就是你的顶尖行业名片。*
 
 ### 🏅 Hall of Fame / 名医排行
-
+<!-- LEADERBOARD_START -->
 | Rank | Avatar | Name | Title / 称号 | Contributions / 贡献 |
 |:----:|:------:|:----:|:------------:|:-------------------:|
-| 🥇 | <a href="https://github.com/JinNing6"><img src="https://github.com/JinNing6.png" width="50" height="50" style="border-radius:50%"/></a> | [@JinNing6](https://github.com/JinNing6) | 👑 华佗再世 Hua Tuo Reborn | Creator & Lead |
+| 🥇 | <a href="https://github.com/CyberHuaTuo"><img src="https://github.com/CyberHuaTuo.png" width="50" height="50" style="border-radius:50%"/></a> | [@CyberHuaTuo](https://github.com/CyberHuaTuo) | 👑 华佗再世 Hua Tuo Reborn | 30 |
+| 🥈 | <a href="https://github.com/JinNing6"><img src="https://github.com/JinNing6.png" width="50" height="50" style="border-radius:50%"/></a> | [@JinNing6](https://github.com/JinNing6) | 🏥 坐堂医师 Resident Doctor | 1 |
+<!-- LEADERBOARD_END -->
+
 
 ### 🩺 Title System / 称号体系
 

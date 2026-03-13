@@ -580,3 +580,52 @@ def get_contributor_summary(github_username: str) -> dict:
         "global_rank": rank,
         "global_total": global_total,
     }
+
+def get_coronation_ascii(title_emoji: str, title: str, global_rank: int, global_total: int) -> str:
+    """
+    基于称号和全球排名生成极客与修仙风格结合的 ASCII 加冕动画文案。 (双语版)
+    Bilingual geek and cultivation-styled ASCII coronation animation.
+    """
+    percentile = 100
+    if global_total > 1:
+        percentile = round(((global_total - global_rank) / (global_total - 1)) * 100, 1)
+        
+    top_str_cn = f"🏅 全球排位: #{global_rank} / {global_total} (超越 {percentile}% 开发者)"
+    top_str_en = f"🏅 Global Rank: #{global_rank} / {global_total} (Top {round(100 - percentile, 1)}%)"
+    
+    # 根据不同级别匹配不同的震撼法阵/王座风格
+    ascii_art = ""
+    
+    if global_rank == 1 or "华佗再世" in title:
+        ascii_art = f"""
+     .──────────────────────────────────────────────────────────.
+    /   \\       {title_emoji} {title} 👑 降临 / Arrives      /   \\
+   |  ∆  |   【 世 界 级 神 医 诞 生 / WORLD-CLASS HEALER 】  |  ∆  |
+    \\___/                                                      \\___/
+     | |{top_str_cn.center(56)}| |
+     | |{top_str_en.center(56)}| |
+     | | 无与伦比的除错奥义，开源宇宙的守护者！(The Guardian)  | |
+    .───.──────────────────────────────────────────────────────.───.
+    """
+    elif global_rank <= 3 or "神医" in title:
+        ascii_art = f"""
+    ╔════════════════════════════════════════════════════════════╗
+    ║                 {title_emoji} {title}                  ║
+    ║        【 传 奇 医 者 晋 升 / LEGENDARY HEALER 】        ║
+    ║                                                            ║
+    ║{top_str_cn.center(60)}║
+    ║{top_str_en.center(60)}║
+    ║      每一次诊断都在改写历史！ (Rewriting AI history!)    ║
+    ╚════════════════════════════════════════════════════════════╝
+    """
+    else:
+        # 普通激励
+        ascii_art = f"""
+    ┌────────────────────────────────────────────────────────────┐
+    │  ★ 恭喜荣登榜单！ 当前头衔 / Title: {title_emoji} {title}  │
+    │{top_str_cn.center(60)}│
+    │{top_str_en.center(60)}│
+    │继续贡献药方，攀登全球AI医师终极阶梯！(Keep contributing!)│
+    └────────────────────────────────────────────────────────────┘
+    """
+    return ascii_art.strip("\n")
