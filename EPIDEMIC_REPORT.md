@@ -1,8 +1,8 @@
 # 🦠 Agent 生态疫情通报
 # Agent Ecosystem Epidemic Report
 
-> **报告日期**: 2026-03-12
-> **生成时间**: 2026-03-12T01:00:54.053421+00:00
+> **报告日期**: 2026-03-13
+> **生成时间**: 2026-03-13T01:06:26.966341+00:00
 > **监控框架**: 10 个主流 Agent 框架
 
 ---
@@ -12,10 +12,10 @@
 | 指标 Metric | 数值 Value |
 |:---|:---|
 | 📈 监控框架数 Frameworks | **10** |
-| 🔓 总开放 Issues Total Open | **2,382** |
-| 📥 本周新增 New (7d) | **112** |
-| ✅ 本周关闭 Closed (7d) | **101** |
-| 💚 平均健康分 Avg Score | **49.3/100** |
+| 🔓 总开放 Issues Total Open | **2,390** |
+| 📥 本周新增 New (7d) | **113** |
+| ✅ 本周关闭 Closed (7d) | **91** |
+| 💚 平均健康分 Avg Score | **48.2/100** |
 
 ### 🏆 健康度排行 / Health Ranking
 
@@ -26,8 +26,8 @@
 ### ⚠️ 需要关注 / Needs Attention
 
 - 🔴 **langchain**
-- 🔴 **crewai**
 - 🔴 **openai-sdk**
+- 🔴 **dspy**
 - 🔴 **mcp**
 - 🔴 **langgraph**
 
@@ -36,14 +36,16 @@
 - [langchain] 🔴 存在 5 个高影响 Bug Issues
 - [langchain] 🐛 Bug 类 Issue 占比达 50%
 - [crewai] 🔴 存在 5 个高影响 Bug Issues
-- [crewai] 🐛 Bug 类 Issue 占比达 42%
+- [crewai] 🐛 Bug 类 Issue 占比达 44%
 - [llamaindex] 🔴 存在 5 个高影响 Bug Issues
 - [llamaindex] 🐛 Bug 类 Issue 占比达 40%
 - [openai-sdk] 🔴 存在 5 个高影响 Bug Issues
 - [openai-sdk] 🐛 Bug 类 Issue 占比达 65%
 - [dspy] 🔴 存在 5 个高影响 Bug Issues
 - [mcp] 🔴 存在 5 个高影响 Bug Issues
+- [pydantic-ai] ⚠️ 关闭率偏低：本周新增 17，仅关闭 5
 - [pydantic-ai] 🔴 存在 5 个高影响 Bug Issues
+- [langgraph] ⚠️ 关闭率偏低：本周新增 11，仅关闭 3
 - [langgraph] 🔴 存在 5 个高影响 Bug Issues
 - [langgraph] 🐛 Bug 类 Issue 占比达 55%
 
@@ -56,11 +58,11 @@
 
 | 指标 | 数值 |
 |:---|:---|
-| 开放 Issues Open | 89 |
-| 本周新增 New (7d) | 3 |
-| 本月新增 New (30d) | 44 |
+| 开放 Issues Open | 90 |
+| 本周新增 New (7d) | 6 |
+| 本月新增 New (30d) | 37 |
 | 本周关闭 Closed (7d) | 12 |
-| 本月关闭 Closed (30d) | 47 |
+| 本月关闭 Closed (30d) | 46 |
 | Bug 类 Issues | 0 |
 
 **🔥 热门 Issues / Hot Issues**:
@@ -70,12 +72,12 @@
 ---
 
 ### 🟡 microsoft/autogen
-**框架**: `autogen` | **健康分数 Health Score**: **64.5/100** | **趋势 Trend**: → stable
+**框架**: `autogen` | **健康分数 Health Score**: **62.0/100** | **趋势 Trend**: ↑ improving
 
 | 指标 | 数值 |
 |:---|:---|
 | 开放 Issues Open | 448 |
-| 本周新增 New (7d) | 4 |
+| 本周新增 New (7d) | 3 |
 | 本月新增 New (30d) | 19 |
 | 本周关闭 Closed (7d) | 2 |
 | 本月关闭 Closed (30d) | 3 |
@@ -88,17 +90,17 @@
 
 ---
 
-### 🟠 run-llama/llama_index
-**框架**: `llamaindex` | **健康分数 Health Score**: **59.8/100** | **趋势 Trend**: → stable
+### 🟡 run-llama/llama_index
+**框架**: `llamaindex` | **健康分数 Health Score**: **60.0/100** | **趋势 Trend**: → stable
 
 | 指标 | 数值 |
 |:---|:---|
-| 开放 Issues Open | 203 |
-| 本周新增 New (7d) | 13 |
-| 本月新增 New (30d) | 57 |
+| 开放 Issues Open | 202 |
+| 本周新增 New (7d) | 11 |
+| 本月新增 New (30d) | 56 |
 | 本周关闭 Closed (7d) | 26 |
-| 本月关闭 Closed (30d) | 103 |
-| Bug 类 Issues | 82 |
+| 本月关闭 Closed (30d) | 104 |
+| Bug 类 Issues | 81 |
 
 **异常告警 Anomalies**:
 - 🔴 存在 5 个高影响 Bug Issues
@@ -116,19 +118,43 @@
 
 ---
 
+### 🟠 crewAIInc/crewAI
+**框架**: `crewai` | **健康分数 Health Score**: **54.8/100** | **趋势 Trend**: ↑ improving
+
+| 指标 | 数值 |
+|:---|:---|
+| 开放 Issues Open | 71 |
+| 本周新增 New (7d) | 9 |
+| 本月新增 New (30d) | 68 |
+| 本周关闭 Closed (7d) | 16 |
+| 本月关闭 Closed (30d) | 42 |
+| Bug 类 Issues | 31 |
+
+**异常告警 Anomalies**:
+- 🔴 存在 5 个高影响 Bug Issues
+- 🐛 Bug 类 Issue 占比达 44%
+
+**🚨 高危 Issues / Critical Issues**:
+- [[BUG] TaskOutput.pydantic is None on first guardrail attempt but parsed on retri](https://github.com/crewAIInc/crewAI/issues/4369) (👍 1)
+- [[BUG] Bedrock LLM Claude Sonnet returning empty Input Params on Tools calling wi](https://github.com/crewAIInc/crewAI/issues/4470) (👍 0)
+- [[BUG] AWS Bedrock tool calls extract empty arguments - uses wrong field name](https://github.com/crewAIInc/crewAI/issues/4748) (👍 0)
+
+---
+
 ### 🟠 pydantic/pydantic-ai
-**框架**: `pydantic-ai` | **健康分数 Health Score**: **57.9/100** | **趋势 Trend**: → stable
+**框架**: `pydantic-ai` | **健康分数 Health Score**: **51.0/100** | **趋势 Trend**: ↑ improving
 
 | 指标 | 数值 |
 |:---|:---|
 | 开放 Issues Open | 414 |
-| 本周新增 New (7d) | 25 |
-| 本月新增 New (30d) | 130 |
-| 本周关闭 Closed (7d) | 19 |
+| 本周新增 New (7d) | 17 |
+| 本月新增 New (30d) | 123 |
+| 本周关闭 Closed (7d) | 5 |
 | 本月关闭 Closed (30d) | 97 |
 | Bug 类 Issues | 70 |
 
 **异常告警 Anomalies**:
+- ⚠️ 关闭率偏低：本周新增 17，仅关闭 5
 - 🔴 存在 5 个高影响 Bug Issues
 
 **🔥 热门 Issues / Hot Issues**:
@@ -143,44 +169,17 @@
 
 ---
 
-### 🟠 stanfordnlp/dspy
-**框架**: `dspy` | **健康分数 Health Score**: **51.4/100** | **趋势 Trend**: → stable
-
-| 指标 | 数值 |
-|:---|:---|
-| 开放 Issues Open | 276 |
-| 本周新增 New (7d) | 5 |
-| 本月新增 New (30d) | 18 |
-| 本周关闭 Closed (7d) | 6 |
-| 本月关闭 Closed (30d) | 33 |
-| Bug 类 Issues | 75 |
-
-**异常告警 Anomalies**:
-- 🔴 存在 5 个高影响 Bug Issues
-
-**🔥 热门 Issues / Hot Issues**:
-- [How do I optimise for F1 score?](https://github.com/stanfordnlp/dspy/issues/556) (👍 10 / 💬 6)
-- [Better async support](https://github.com/stanfordnlp/dspy/issues/1975) (👍 12 / 💬 3)
-- [[Feature] Support for Video](https://github.com/stanfordnlp/dspy/issues/8507) (👍 14 / 💬 10)
-
-**🚨 高危 Issues / Critical Issues**:
-- [[Bug] TypeError: SFTConfig.__init__() got an unexpected keyword argument 'max_se](https://github.com/stanfordnlp/dspy/issues/8762) (👍 5)
-- [[Bug] ChainOfThoughtWithHint is broken (at least for Azure)](https://github.com/stanfordnlp/dspy/issues/8205) (👍 2)
-- [[Bug] Bus error on import when cache on network drive (occurs rarely on some mac](https://github.com/stanfordnlp/dspy/issues/8799) (👍 2)
-
----
-
 ### 🟠 modelcontextprotocol/python-sdk
-**框架**: `mcp` | **健康分数 Health Score**: **47.2/100** | **趋势 Trend**: → stable
+**框架**: `mcp` | **健康分数 Health Score**: **47.8/100** | **趋势 Trend**: ↑ improving
 
 | 指标 | 数值 |
 |:---|:---|
-| 开放 Issues Open | 247 |
-| 本周新增 New (7d) | 9 |
-| 本月新增 New (30d) | 48 |
-| 本周关闭 Closed (7d) | 10 |
-| 本月关闭 Closed (30d) | 47 |
-| Bug 类 Issues | 96 |
+| 开放 Issues Open | 246 |
+| 本周新增 New (7d) | 7 |
+| 本月新增 New (30d) | 49 |
+| 本周关闭 Closed (7d) | 8 |
+| 本月关闭 Closed (30d) | 49 |
+| Bug 类 Issues | 95 |
 
 **异常告警 Anomalies**:
 - 🔴 存在 5 个高影响 Bug Issues
@@ -197,40 +196,44 @@
 
 ---
 
-### 🟠 crewAIInc/crewAI
-**框架**: `crewai` | **健康分数 Health Score**: **43.0/100** | **趋势 Trend**: → stable
+### 🔴 stanfordnlp/dspy
+**框架**: `dspy` | **健康分数 Health Score**: **39.6/100** | **趋势 Trend**: ↓ declining
 
 | 指标 | 数值 |
 |:---|:---|
-| 开放 Issues Open | 77 |
+| 开放 Issues Open | 283 |
 | 本周新增 New (7d) | 12 |
-| 本月新增 New (30d) | 67 |
-| 本周关闭 Closed (7d) | 11 |
-| 本月关闭 Closed (30d) | 37 |
-| Bug 类 Issues | 32 |
+| 本月新增 New (30d) | 23 |
+| 本周关闭 Closed (7d) | 5 |
+| 本月关闭 Closed (30d) | 33 |
+| Bug 类 Issues | 77 |
 
 **异常告警 Anomalies**:
 - 🔴 存在 5 个高影响 Bug Issues
-- 🐛 Bug 类 Issue 占比达 42%
+
+**🔥 热门 Issues / Hot Issues**:
+- [How do I optimise for F1 score?](https://github.com/stanfordnlp/dspy/issues/556) (👍 10 / 💬 6)
+- [Better async support](https://github.com/stanfordnlp/dspy/issues/1975) (👍 12 / 💬 3)
+- [[Feature] Support for Video](https://github.com/stanfordnlp/dspy/issues/8507) (👍 14 / 💬 10)
 
 **🚨 高危 Issues / Critical Issues**:
-- [[BUG] TaskOutput.pydantic is None on first guardrail attempt but parsed on retri](https://github.com/crewAIInc/crewAI/issues/4369) (👍 1)
-- [[BUG] OpenAI dependency conflict + LiteLLM fallback failure when using Groq GPT-](https://github.com/crewAIInc/crewAI/issues/4262) (👍 0)
-- [[BUG] LLM call does not adhere to pydantic response_model fails for "gpt5nano"](https://github.com/crewAIInc/crewAI/issues/4478) (👍 0)
+- [[Bug] TypeError: SFTConfig.__init__() got an unexpected keyword argument 'max_se](https://github.com/stanfordnlp/dspy/issues/8762) (👍 5)
+- [[Bug] ChainOfThoughtWithHint is broken (at least for Azure)](https://github.com/stanfordnlp/dspy/issues/8205) (👍 2)
+- [[Bug] Bus error on import when cache on network drive (occurs rarely on some mac](https://github.com/stanfordnlp/dspy/issues/8799) (👍 2)
 
 ---
 
 ### 🔴 langchain-ai/langchain
-**框架**: `langchain` | **健康分数 Health Score**: **33.1/100** | **趋势 Trend**: → stable
+**框架**: `langchain` | **健康分数 Health Score**: **33.4/100** | **趋势 Trend**: → stable
 
 | 指标 | 数值 |
 |:---|:---|
-| 开放 Issues Open | 260 |
-| 本周新增 New (7d) | 28 |
-| 本月新增 New (30d) | 99 |
-| 本周关闭 Closed (7d) | 11 |
-| 本月关闭 Closed (30d) | 96 |
-| Bug 类 Issues | 129 |
+| 开放 Issues Open | 263 |
+| 本周新增 New (7d) | 31 |
+| 本月新增 New (30d) | 102 |
+| 本周关闭 Closed (7d) | 13 |
+| 本月关闭 Closed (30d) | 91 |
+| Bug 类 Issues | 131 |
 
 **异常告警 Anomalies**:
 - 🔴 存在 5 个高影响 Bug Issues
@@ -248,34 +251,6 @@
 
 ---
 
-### 🔴 langchain-ai/langgraph
-**框架**: `langgraph` | **健康分数 Health Score**: **26.4/100** | **趋势 Trend**: ↑ improving
-
-| 指标 | 数值 |
-|:---|:---|
-| 开放 Issues Open | 200 |
-| 本周新增 New (7d) | 7 |
-| 本月新增 New (30d) | 50 |
-| 本周关闭 Closed (7d) | 3 |
-| 本月关闭 Closed (30d) | 19 |
-| Bug 类 Issues | 109 |
-
-**异常告警 Anomalies**:
-- 🔴 存在 5 个高影响 Bug Issues
-- 🐛 Bug 类 Issue 占比达 55%
-
-**🔥 热门 Issues / Hot Issues**:
-- [langgraph-checkpoint-postgres (psycopg.OperationalError: sending query and param](https://github.com/langchain-ai/langgraph/issues/3716) (👍 11 / 💬 47)
-- [Run Cancellation Causes Loss of Streamed State Not Yet Persisted as a Checkpoint](https://github.com/langchain-ai/langgraph/issues/5672) (👍 5 / 💬 6)
-- [In Langgraph studio the subgraph part is not shown when we invoke the subgraphs ](https://github.com/langchain-ai/langgraph/issues/3372) (👍 4 / 💬 15)
-
-**🚨 高危 Issues / Critical Issues**:
-- [langgraph-checkpoint-postgres (psycopg.OperationalError: sending query and param](https://github.com/langchain-ai/langgraph/issues/3716) (👍 11)
-- [Run Cancellation Causes Loss of Streamed State Not Yet Persisted as a Checkpoint](https://github.com/langchain-ai/langgraph/issues/5672) (👍 5)
-- [When invoking a graph of an agent with tools with "messages" streaming mode, the](https://github.com/langchain-ai/langgraph/issues/4653) (👍 3)
-
----
-
 ### 🔴 openai/openai-python
 **框架**: `openai-sdk` | **健康分数 Health Score**: **24.5/100** | **趋势 Trend**: → stable
 
@@ -283,7 +258,7 @@
 |:---|:---|
 | 开放 Issues Open | 168 |
 | 本周新增 New (7d) | 6 |
-| 本月新增 New (30d) | 31 |
+| 本月新增 New (30d) | 29 |
 | 本周关闭 Closed (7d) | 1 |
 | 本月关闭 Closed (30d) | 8 |
 | Bug 类 Issues | 110 |
@@ -301,6 +276,35 @@
 - [beta.chat.completions.parse returns unhandled ValidationError](https://github.com/openai/openai-python/issues/1763) (👍 13)
 - [Validation error for ResponseTextDeltaEvent after updating to 1.97.1](https://github.com/openai/openai-python/issues/2489) (👍 11)
 - [Unrestricted caching keyed by generated types causes memory leak in multi-thread](https://github.com/openai/openai-python/issues/2672) (👍 11)
+
+---
+
+### 🔴 langchain-ai/langgraph
+**框架**: `langgraph` | **健康分数 Health Score**: **24.1/100** | **趋势 Trend**: → stable
+
+| 指标 | 数值 |
+|:---|:---|
+| 开放 Issues Open | 205 |
+| 本周新增 New (7d) | 11 |
+| 本月新增 New (30d) | 53 |
+| 本周关闭 Closed (7d) | 3 |
+| 本月关闭 Closed (30d) | 19 |
+| Bug 类 Issues | 112 |
+
+**异常告警 Anomalies**:
+- ⚠️ 关闭率偏低：本周新增 11，仅关闭 3
+- 🔴 存在 5 个高影响 Bug Issues
+- 🐛 Bug 类 Issue 占比达 55%
+
+**🔥 热门 Issues / Hot Issues**:
+- [langgraph-checkpoint-postgres (psycopg.OperationalError: sending query and param](https://github.com/langchain-ai/langgraph/issues/3716) (👍 11 / 💬 47)
+- [Run Cancellation Causes Loss of Streamed State Not Yet Persisted as a Checkpoint](https://github.com/langchain-ai/langgraph/issues/5672) (👍 5 / 💬 6)
+- [In Langgraph studio the subgraph part is not shown when we invoke the subgraphs ](https://github.com/langchain-ai/langgraph/issues/3372) (👍 4 / 💬 15)
+
+**🚨 高危 Issues / Critical Issues**:
+- [langgraph-checkpoint-postgres (psycopg.OperationalError: sending query and param](https://github.com/langchain-ai/langgraph/issues/3716) (👍 11)
+- [Run Cancellation Causes Loss of Streamed State Not Yet Persisted as a Checkpoint](https://github.com/langchain-ai/langgraph/issues/5672) (👍 5)
+- [When invoking a graph of an agent with tools with "messages" streaming mode, the](https://github.com/langchain-ai/langgraph/issues/4653) (👍 3)
 
 ---
 
