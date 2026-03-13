@@ -229,62 +229,139 @@ async def security_checkup(code: str) -> str:
     Args:
         code: 要进行安全体检的代码内容 / The code to audit
     """
+    # 1. 优先尝试使用独立 LLM Key 进行分析
     try:
         from .nourishing import security_checkup as do_checkup
 
         result = await do_checkup(code=code)
 
+        # 如果因为缺少 LLM Key 失败，走宿主智能体回退路径
         if "error" in result and result.get("health_score", 0) == -1:
-            return f"⚠️ 安全体检失败: {result['error']}"
+            error_msg = result.get("error", "")
+            if "API Key" in error_msg or "未配置" in error_msg:
+                return _build_host_agent_checkup_template(code)
+            return f"⚠️ 安全体检失败: {error_msg}"
 
-        # 格式化输出
-        output_parts = [
-            "# 🩺 赛博华佗安全体检报告",
-            "",
-            f"**健康评分**: {result.get('health_score', 'N/A')} / 100",
-            f"**健康等级**: {result.get('level', 'N/A')}",
-            "",
-        ]
-
-        # 各维度评分
-        dimensions = result.get("dimensions", [])
-        if dimensions:
-            output_parts.append("## 六经脉评分")
-            output_parts.append("")
-            for dim in dimensions:
-                emoji = dim.get("emoji", "📊")
-                name = dim.get("name", "")
-                score = dim.get("score", "N/A")
-                status = dim.get("status", "")
-                output_parts.append(f"- {emoji} **{name}**: {score}/100 ({status})")
-                findings = dim.get("findings", [])
-                for f in findings:
-                    output_parts.append(f"  - {f}")
-                advice = dim.get("advice", "")
-                if advice:
-                    output_parts.append(f"  - 💊 建议: {advice}")
-            output_parts.append("")
-
-        # 紧急问题
-        top_issues = result.get("top_issues", [])
-        if top_issues:
-            output_parts.append("## ⚠️ 最紧急的问题")
-            output_parts.append("")
-            for i, issue in enumerate(top_issues, 1):
-                output_parts.append(f"{i}. {issue}")
-            output_parts.append("")
-
-        # 总结
-        summary = result.get("summary", "")
-        if summary:
-            output_parts.append(f"## 总结\n\n{summary}")
-
-        return "\n".join(output_parts)
+        # LLM 分析成功，格式化输出
+        return _format_checkup_result(result)
 
     except ImportError:
-        return "⚠️ 请安装 litellm: `pip install litellm`"
+        # litellm 未安装，回退到宿主智能体分析
+        return _build_host_agent_checkup_template(code)
     except Exception as e:
-        return f"⚠️ 安全体检失败: {str(e)}"
+        # 其他异常（如网络错误），也回退到宿主智能体分析
+        logger.warning(f"LLM 安全体检异常，回退到宿主智能体分析: {e}")
+        return _build_host_agent_checkup_template(code)
+
+
+def _format_checkup_result(result: dict) -> str:
+    """格式化 LLM 返回的安全体检结果"""
+    output_parts = [
+        "# 🩺 赛博华佗安全体检报告",
+        "",
+        f"**健康评分**: {result.get('health_score', 'N/A')} / 100",
+        f"**健康等级**: {result.get('level', 'N/A')}",
+        "",
+    ]
+
+    # 各维度评分
+    dimensions = result.get("dimensions", [])
+    if dimensions:
+        output_parts.append("## 六经脉评分")
+        output_parts.append("")
+        for dim in dimensions:
+            emoji = dim.get("emoji", "📊")
+            name = dim.get("name", "")
+            score = dim.get("score", "N/A")
+            status = dim.get("status", "")
+            output_parts.append(f"- {emoji} **{name}**: {score}/100 ({status})")
+            findings = dim.get("findings", [])
+            for f in findings:
+                output_parts.append(f"  - {f}")
+            advice = dim.get("advice", "")
+            if advice:
+                output_parts.append(f"  - 💊 建议: {advice}")
+        output_parts.append("")
+
+    # 紧急问题
+    top_issues = result.get("top_issues", [])
+    if top_issues:
+        output_parts.append("## ⚠️ 最紧急的问题")
+        output_parts.append("")
+        for i, issue in enumerate(top_issues, 1):
+            output_parts.append(f"{i}. {issue}")
+        output_parts.append("")
+
+    # 总结
+    summary = result.get("summary", "")
+    if summary:
+        output_parts.append(f"## 总结\n\n{summary}")
+
+    return "\n".join(output_parts)
+
+
+def _build_host_agent_checkup_template(code: str) -> str:
+    """
+    构建宿主智能体安全体检模板。
+
+    当 MCP Server 未配置独立 LLM API Key 时，不报错，
+    而是返回结构化的六经脉分析框架 + 用户代码，
+    让调用此工具的宿主智能体（IDE 中的 AI Agent）直接完成分析。
+
+    设计理念：MCP 工具在 IDE 中被宿主智能体调用时，宿主本身就是 LLM，
+    无需再额外调用一次 LLM。工具只需提供「分析框架」，宿主自然完成分析。
+    """
+    return (
+        "# 🩺 赛博华佗安全体检 · 六经脉分析框架\n\n"
+        "**模式**: 宿主智能体直接分析（无需独立 LLM API Key）\n\n"
+        "请你作为赛博华佗「养生堂」主治医师，对以下代码进行**六经脉安全体检**。\n"
+        "你的职责是检测潜在安全风险和不良实践，给出健康评分和滋补建议。\n\n"
+        "---\n\n"
+        "## 📋 六经脉检查维度\n\n"
+        "请逐一分析以下六大维度，每个维度给出 **0-100 分**和具体发现：\n\n"
+        "### 🛡️ 经脉一：沙箱隔离\n"
+        "- 代码执行是否有隔离保护（subprocess、Docker、RestrictedPython）？\n"
+        "- 是否使用了危险的 `exec()`/`eval()` 而无保护？\n"
+        "- Agent 工具是否有权限边界？\n\n"
+        "### 🔑 经脉二：密钥安全\n"
+        "- API Key 是否硬编码在代码中？\n"
+        "- 密钥是否通过安全方式（环境变量/Secrets Manager）管理？\n"
+        "- 日志中是否可能泄漏密钥？\n\n"
+        "### 🧠 经脉三：Prompt 安全\n"
+        "- 是否有 Prompt 注入防御机制？\n"
+        "- System Prompt 是否有防泄漏措施？\n"
+        "- 用户输入是否在嵌入 Prompt 前做了消毒？\n\n"
+        "### 🔒 经脉四：输出安全\n"
+        "- LLM 输出是否在消费前做了验证/消毒？\n"
+        "- 是否存在 XSS/SQL注入/命令注入风险？\n"
+        "- Agent 动作是否有人工确认环节（Human-in-the-Loop）？\n\n"
+        "### ⏱️ 经脉五：韧性设计\n"
+        "- 是否有超时控制和重试机制？\n"
+        "- 错误处理是否完善（try/except）？\n"
+        "- 是否有限流/速率控制？\n\n"
+        "### 📊 经脉六：可观测性\n"
+        "- 是否有结构化日志记录？\n"
+        "- 是否有链路追踪（tracing）？\n"
+        "- 是否有监控和告警？\n\n"
+        "---\n\n"
+        "## 📊 评分标准\n\n"
+        "| 分数段 | 健康等级 |\n"
+        "|:------:|:--------:|\n"
+        "| 90-100 | 🟢 强壮如虎 |\n"
+        "| 70-89  | 🔵 气血充沛 |\n"
+        "| 50-69  | 🟡 需要调理 |\n"
+        "| 30-49  | 🟠 体虚多病 |\n"
+        "| 0-29   | 🔴 病入膏肓 |\n\n"
+        "---\n\n"
+        "## 🔬 待检代码\n\n"
+        f"```\n{code}\n```\n\n"
+        "---\n\n"
+        "**请输出完整的六经脉体检报告**，包括：\n"
+        "1. 总健康评分（0-100）和健康等级\n"
+        "2. 每个经脉的分数、发现的问题、和滋补建议\n"
+        "3. Top 3 最紧急的问题\n"
+        "4. 总结评估\n"
+    )
 
 
 @mcp.tool()
