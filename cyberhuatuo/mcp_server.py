@@ -9,6 +9,18 @@ CyberHuaTuo MCP Server — 赛博华佗 MCP 服务
 
 import json
 import logging
+import os
+import random
+import sys
+
+# Windows 环境下强制使用 UTF-8 编码，避免 GBK 无法编码 emoji 字符
+if sys.platform == "win32":
+    os.environ.setdefault("PYTHONIOENCODING", "utf-8")
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except (AttributeError, OSError):
+        pass  # 低版本 Python 或非标准流
 
 from mcp.server.fastmcp import FastMCP
 
@@ -37,9 +49,54 @@ from .achievements import (
     record_activity,
     get_streak_display,
     check_community_milestones,
+    format_alchemy_directions,
+    get_alchemy_profile,
 )
 from .banner import play_boot_animation
 from .version_check import start_version_check, get_update_notice
+from .taxonomy import (
+    classify_root_cause,
+    classify_multi,
+    format_cht_code,
+    get_taxonomy_table,
+    CODE_MAP,
+    CATEGORY_NAMES,
+)
+from .report import (
+    format_standard_report,
+    calculate_confidence,
+    _generate_report_id,
+)
+from .medical_record import (
+    save_diagnosis_record,
+    mark_resolved,
+    get_follow_up_candidates,
+    get_profile_summary,
+    subscribe_framework_for_user,
+    unsubscribe_framework_for_user,
+    get_subscriptions,
+    check_new_prescriptions,
+)
+from .social import (
+    generate_weekly_digest,
+    cite_prescription,
+    get_prescription_eval,
+    register_prescription_contributor,
+    submit_feedback,
+    mark_expired,
+    mark_verified,
+    submit_review,
+    get_mentor_profile,
+    get_mentor_leaderboard,
+    get_pending_reviews,
+)
+from .epidemic_monitor import (
+    EpidemicMonitor,
+    generate_markdown_report,
+    load_latest_report,
+    save_report,
+)
+from .taxonomy import analyze_trends
 
 logger = logging.getLogger("cyberhuatuo.mcp")
 
@@ -68,12 +125,54 @@ _case_syncer = CaseSyncer()
 _case_syncer.start_background_sync()
 
 
-def _append_update_notice(result: str) -> str:
-    """如果有可用更新，在工具输出末尾附加一次性提示"""
+# ===== 品牌气质签名系统 =====
+
+# 中医风格评语库（中英双语，随机轮换）
+_BRAND_SIGNATURES = [
+    # (中医评语, 英文翻译)
+    ("气血充沛，经脉通畅", "Qi flows strong, meridians clear"),
+    ("阴阳调和，百病不生", "Yin-Yang balanced, all ailments banished"),
+    ("内功深厚，根基稳固", "Inner strength deep, foundations solid"),
+    ("药到病除，妙手回春", "Medicine heals, spring returns with skilled hands"),
+    ("筋骨强健，代码无恙", "Bones sturdy, code unharmed"),
+    ("精气充盈，丹田饱满", "Vital essence full, dantian brimming"),
+    ("望闻问切，对症下药", "Observe, listen, inquire, diagnose — prescribe with precision"),
+    ("上医治未病，防患于未然", "The supreme physician prevents illness before it arises"),
+    ("通则不痛，痛则不通", "When Qi flows, no pain; when blocked, pain arises"),
+    ("扶正祛邪，标本兼治", "Strengthen the righteous, expel the evil — treat root and branch"),
+    ("悬壶济世，仁心仁术", "Hang the gourd to heal the world — benevolence in heart and art"),
+    ("炼丹有道，济世无疆", "The Way of Alchemy is boundless — healing knows no borders"),
+]
+
+
+def _build_brand_signature() -> str:
+    """
+    生成赛博华佗品牌气质签名。
+
+    每次调用随机选择一条中医风格评语（中英双语），
+    并附加继续使用赛博华佗的引导和成为炼丹师的号召。
+    """
+    cn_quote, en_quote = random.choice(_BRAND_SIGNATURES)
+
+    return (
+        "\n\n---\n"
+        f"\n**{cn_quote}**\n"
+        f"*-- {en_quote}*\n"
+        "\n> Need CyberHuaTuo / Sai Bo Hua Tuo to continue?\n"
+        "> --\n"
+        "> `diagnose` to heal | `search_knowledge_base` to search | `security_checkup` to audit\n"
+        "> `save_prescription` to contribute -- Become an Alchemist and climb the Ladder!"
+    )
+
+
+def _append_brand_footer(result: str) -> str:
+    """为工具输出附加品牌签名 + 版本更新提示"""
     notice = get_update_notice()
+    footer = _build_brand_signature()
+    output = result + footer
     if notice:
-        return result + "\n" + notice
-    return result
+        output += "\n" + notice
+    return output
 
 
 def _get_chroma_client():
@@ -149,15 +248,47 @@ async def diagnose(
         logger.debug(f"瞬时药方搜索跳过: {e}")
 
     # 3. 尝试 LLM 诊断
+    report_id = _generate_report_id()
+    root_cause = classify_root_cause(query)
+    confidence = calculate_confidence(results)
+
     try:
         from .diagnosis import diagnose as llm_diagnose
 
-        diagnosis_result = await llm_diagnose(query=query, results=results)
-        return _append_update_notice(diagnosis_result)
+        diagnosis_text = await llm_diagnose(query=query, results=results)
+        report_header = format_standard_report(
+            query=query,
+            results=results,
+            diagnosis_text=diagnosis_text,
+            framework=framework,
+        )
     except Exception as e:
-        # LLM 不可用时回退到纯搜索结果
         logger.warning(f"LLM 诊断不可用，回退到纯搜索: {e}")
-        return _append_update_notice(_format_search_results(query, results))
+        report_header = format_standard_report(
+            query=query,
+            results=results,
+            framework=framework,
+        )
+
+    # 4. 自动保存诊疗记录到用户档案
+    try:
+        _username = os.getenv("GITHUB_USERNAME", os.getenv("USER", "anonymous"))
+        top_rel = max((r.relevance for r in results), default=0.0)
+        save_diagnosis_record(
+            username=_username,
+            record_id=report_id,
+            query=query,
+            framework=framework or "unknown",
+            cht_code=root_cause,
+            confidence_level=confidence.level,
+            confidence_score=confidence.score,
+            matched_cases=len(results),
+            top_relevance=top_rel,
+        )
+    except Exception as e:
+        logger.debug(f"诊疗记录保存失败: {e}")
+
+    return _append_brand_footer(report_header)
 
 
 @mcp.tool()
@@ -208,7 +339,7 @@ async def search_knowledge_base(
     except Exception as e:
         logger.debug(f"瞬时药方搜索跳过: {e}")
 
-    return _format_search_results(query, results)
+    return _append_brand_footer(_format_search_results(query, results))
 
 
 @mcp.tool()
@@ -243,7 +374,7 @@ async def security_checkup(code: str) -> str:
             return f"⚠️ 安全体检失败: {error_msg}"
 
         # LLM 分析成功，格式化输出
-        return _format_checkup_result(result)
+        return _append_brand_footer(_format_checkup_result(result))
 
     except ImportError:
         # litellm 未安装，回退到宿主智能体分析
@@ -407,7 +538,7 @@ async def fetch_official_docs(
             output_parts.append(s.content)
             output_parts.append("\n---\n")
 
-        return "\n".join(output_parts)
+        return _append_brand_footer("\n".join(output_parts))
 
     except Exception as e:
         return f"⚠️ 文档检索失败: {str(e)}"
@@ -487,7 +618,7 @@ async def mine_github_issue(
         elif "error" in result:
             output_parts.append(f"\n⚠️ LLM 提炼失败: {result['error']}")
 
-        return "\n".join(output_parts)
+        return _append_brand_footer("\n".join(output_parts))
 
     except Exception as e:
         return f"⚠️ Issue 淘金失败: {str(e)}"
@@ -953,12 +1084,25 @@ async def check_my_ranking(
     # 连击展示
     streak_display = get_streak_display(github_username)
 
+    # 丹术方向 + 魂环
+    alchemy = get_alchemy_profile(github_username)
+    direction_line = ""
+    if alchemy["primary"]:
+        p = alchemy["primary"]
+        direction_line = f"- **丹术方向 / Alchemy**: {p['emoji']} {p['name_cn']}丹师 · {p['rings']}\n"
+
+    # 全方向展示
+    alchemy_display = format_alchemy_directions(github_username)
+    alchemy_section = f"\n{alchemy_display}" if alchemy_display else ""
+
     return (
         f"### 🌐 全球炼丹师排行 / Global Alchemist Ranking\n\n"
         f"- **炼丹师 / Alchemist**: @{github_username}\n"
         f"- **累计印痕 / Engrams**: {profile['contribution_count']} 段药方\n"
         f"- **修为 / Title**: {profile['title_emoji']} {profile['title_cn']} · {profile['title_en']}\n"
+        f"{direction_line}"
         f"\n{coronation}\n"
+        f"{alchemy_section}\n"
         f"{streak_display}\n"
         f"{milestone_text}\n"
         f"🔗 官方封神榜 / Apotheosis Board: https://github.com/JinNing6/CyberHuaTuo#%E5%90%8D%E5%8C%BB%E6%8E%92%E8%A1%8C"
@@ -1052,7 +1196,602 @@ def list_frameworks(
             )
         output_parts.append("")
 
-    return "\n".join(output_parts)
+    return _append_brand_footer("\n".join(output_parts))
+
+
+@mcp.tool()
+def cht_taxonomy(
+    action: str = "list",
+    code: str | None = None,
+    text: str | None = None,
+) -> str:
+    """
+    CHT Root Cause Coding System -- query the CyberHuaTuo root cause taxonomy.
+    CHT stands for CyberHuaTuo, inspired by ICD (International Classification of Diseases).
+
+    Actions:
+      - list:     Show the full CHT coding table (all categories and codes)
+      - lookup:   Look up a specific CHT code (e.g. CHT-CFG-001)
+      - classify: Auto-classify a text (error message) into CHT codes
+
+    Args:
+        action: list / lookup / classify
+        code: CHT code to look up (for action=lookup, e.g. "CHT-CFG-001")
+        text: Text to classify (for action=classify, e.g. error message)
+    """
+    if action == "list":
+        table = get_taxonomy_table()
+        summary = (
+            "# CHT Root Cause Coding System\n\n"
+            "Inspired by ICD (International Classification of Diseases)\n\n"
+            f"**10** categories, **{len(CODE_MAP) - 1}** codes\n\n"
+        )
+        cat_lines = []
+        for cat_key, (cn, en) in CATEGORY_NAMES.items():
+            if cat_key == "UNK":
+                continue
+            cat_lines.append(f"- **{cat_key}**: {cn} / {en}")
+        summary += "\n".join(cat_lines) + "\n\n---\n\n"
+        return _append_brand_footer(summary + table)
+
+    elif action == "lookup":
+        if not code:
+            return "Please provide a CHT code (e.g. CHT-CFG-001) with the `code` parameter."
+        cht = CODE_MAP.get(code.upper())
+        if not cht:
+            return f"Code `{code}` not found. Use action=list to see all codes."
+        return _append_brand_footer(
+            f"# {cht.code}\n\n"
+            f"- **Category**: {cht.category}\n"
+            f"- **CN**: {cht.name_cn}\n"
+            f"- **EN**: {cht.name_en}\n"
+            f"- **Description (CN)**: {cht.description_cn}\n"
+            f"- **Description (EN)**: {cht.description_en}\n"
+            f"- **Keywords**: {', '.join(cht.keywords)}\n"
+        )
+
+    elif action == "classify":
+        if not text:
+            return "Please provide the `text` parameter (error message or problem description) to classify."
+        matches = classify_multi(text, top_k=3)
+        if not matches:
+            fallback = CODE_MAP["CHT-UNK-000"]
+            return _append_brand_footer(
+                f"# CHT Auto-Classification Result\n\n"
+                f"No matching codes found.\n"
+                f"Default: {format_cht_code(fallback)}\n"
+            )
+        output_parts = [
+            "# CHT Auto-Classification Result\n",
+            f"**Input**: {text[:200]}{'...' if len(text) > 200 else ''}\n",
+        ]
+        for i, (cht, score) in enumerate(matches, 1):
+            marker = " (Best Match)" if i == 1 else ""
+            output_parts.append(
+                f"## #{i}{marker}\n"
+                f"- **Code**: `{cht.code}`\n"
+                f"- **Name**: {cht.name_cn} / {cht.name_en}\n"
+                f"- **Match Score**: {score} keyword(s)\n"
+                f"- **Description**: {cht.description_en}\n"
+            )
+        return _append_brand_footer("\n".join(output_parts))
+
+    else:
+        return "Unknown action. Use: list, lookup, or classify."
+
+
+# ============================================================
+# 📋 个人诊疗档案 — Medical Record & Follow-up
+# ============================================================
+
+
+@mcp.tool()
+def my_medical_record(
+    action: str = "view",
+    username: str | None = None,
+    record_id: str | None = None,
+    note: str | None = None,
+) -> str:
+    """
+    Personal Medical Record -- view your diagnosis history and health profile.
+    Tracks all your diagnose calls, framework breakdown, CHT code stats, and pending follow-ups.
+
+    Actions:
+      - view:     Show your complete medical profile (diagnosis history, stats, follow-ups)
+      - resolve:  Mark a diagnosis record as resolved (requires record_id)
+      - followup: Show pending follow-up reminders (unresolved recent diagnoses)
+
+    Args:
+        action: view / resolve / followup
+        username: GitHub username (auto-detected from env if not provided)
+        record_id: Diagnosis report ID to resolve (for action=resolve, e.g. "CHT-DR-20260313-a3f7")
+        note: Resolution note (for action=resolve, optional)
+    """
+    user = username or os.getenv("GITHUB_USERNAME", os.getenv("USER", "anonymous"))
+
+    if action == "view":
+        summary = get_profile_summary(user)
+        return _append_brand_footer(summary)
+
+    elif action == "resolve":
+        if not record_id:
+            return "Please provide `record_id` to mark as resolved (e.g. CHT-DR-20260313-a3f7)."
+        success = mark_resolved(user, record_id, note or "")
+        if success:
+            return _append_brand_footer(
+                f"Record `{record_id}` marked as **resolved**.\n"
+                + (f"Note: {note}" if note else "")
+            )
+        return f"Record `{record_id}` not found in your history."
+
+    elif action == "followup":
+        candidates = get_follow_up_candidates(user)
+        if not candidates:
+            return _append_brand_footer(
+                "# Follow-up Check\n\n"
+                "No pending follow-ups -- all recent diagnoses resolved or expired."
+            )
+        parts = ["# Pending Follow-ups\n"]
+        for rec in candidates:
+            parts.append(
+                f"- `{rec['record_id']}` [{rec['framework']}] "
+                f"{rec['query'][:80]}...\n"
+                f"  CHT: `{rec['cht_code']}` | Confidence: {rec['confidence']}"
+            )
+        parts.append(
+            "\n> Use `my_medical_record(action='resolve', record_id='...')` to close."
+        )
+        return _append_brand_footer("\n".join(parts))
+
+    else:
+        return "Unknown action. Use: view, resolve, or followup."
+
+
+# ============================================================
+# 📬 Framework Subscription — 订阅与推送
+# ============================================================
+
+
+@mcp.tool()
+def subscribe_framework(
+    action: str = "list",
+    framework: str | None = None,
+    username: str | None = None,
+) -> str:
+    """
+    Subscribe to frameworks to get notified about new prescriptions and epidemic alerts.
+
+    Actions:
+      - subscribe:   Subscribe to a framework (e.g. langchain)
+      - unsubscribe: Unsubscribe from a framework
+      - list:        Show your current subscriptions
+      - check:       Check for new prescriptions in subscribed frameworks
+
+    Args:
+        action: subscribe / unsubscribe / list / check
+        framework: Framework name to subscribe/unsubscribe (e.g. "langchain", "pytorch")
+        username: GitHub username (auto-detected from env if not provided)
+    """
+    user = username or os.getenv("GITHUB_USERNAME", os.getenv("USER", "anonymous"))
+
+    if action == "subscribe":
+        if not framework:
+            return "Please provide `framework` to subscribe (e.g. 'langchain')."
+        success = subscribe_framework_for_user(user, framework)
+        if success:
+            subs = get_subscriptions(user)
+            return _append_brand_footer(
+                f"Subscribed to **{framework}**.\n\n"
+                f"Your subscriptions: {', '.join(subs)}"
+            )
+        return f"Already subscribed to **{framework}**."
+
+    elif action == "unsubscribe":
+        if not framework:
+            return "Please provide `framework` to unsubscribe."
+        success = unsubscribe_framework_for_user(user, framework)
+        if success:
+            return _append_brand_footer(f"Unsubscribed from **{framework}**.")
+        return f"Not subscribed to **{framework}**."
+
+    elif action == "list":
+        subs = get_subscriptions(user)
+        if not subs:
+            return _append_brand_footer(
+                "# Your Subscriptions\n\n"
+                "No subscriptions yet.\n\n"
+                "Use `subscribe_framework(action='subscribe', framework='langchain')` to start."
+            )
+        parts = ["# Your Subscriptions\n"]
+        for fw in subs:
+            parts.append(f"- **{fw}**")
+        parts.append(
+            "\n> Use `subscribe_framework(action='check')` to check for updates."
+        )
+        return _append_brand_footer("\n".join(parts))
+
+    elif action == "check":
+        new_cases = check_new_prescriptions(user)
+        subs = get_subscriptions(user)
+        if not subs:
+            return "No subscriptions. Use `subscribe_framework(action='subscribe')` first."
+        if not new_cases:
+            return _append_brand_footer(
+                f"# Subscription Update\n\n"
+                f"Watching: {', '.join(subs)}\n\n"
+                f"No new prescriptions since your last visit."
+            )
+        parts = [
+            "# Subscription Update\n",
+            f"**{len(new_cases)} new prescription(s)** in your subscribed frameworks:\n",
+        ]
+        for case in new_cases:
+            parts.append(
+                f"- [{case['framework']}] **{case['title']}** "
+                f"({case['severity']}) — {case.get('date', '')}"
+            )
+        return _append_brand_footer("\n".join(parts))
+
+    else:
+        return "Unknown action. Use: subscribe, unsubscribe, list, or check."
+
+
+# ============================================================
+# 📊 Weekly Digest — 周刊摘要
+# ============================================================
+
+
+@mcp.tool()
+def weekly_digest() -> str:
+    """
+    Weekly Prescription Digest -- summary of new cases added this week.
+
+    Shows new prescriptions by framework and severity, helping you stay
+    up-to-date with the latest AI debugging knowledge.
+    """
+    result = generate_weekly_digest()
+    return _append_brand_footer(result)
+
+
+# ============================================================
+# 🦠 Epidemic Alert — 疫情预警
+# ============================================================
+
+
+@mcp.tool()
+async def epidemic_alert(
+    action: str = "check",
+    framework: str | None = None,
+    username: str | None = None,
+) -> str:
+    """
+    Epidemic Alert System -- monitor AI framework health and detect outbreaks.
+
+    Scans GitHub Issues of major AI frameworks to detect anomalies:
+    high-frequency bugs, declining health scores, critical issues surge.
+
+    Actions:
+      - check:    Quick check for your subscribed frameworks (or specify one)
+      - scan:     Deep scan a specific framework's health
+      - report:   View the latest full epidemic report
+      - generate: Generate a new full epidemic report (scans all frameworks, takes ~2 min)
+
+    Args:
+        action: check / scan / report / generate
+        framework: Framework name for scan (e.g. "langchain", "pytorch")
+        username: GitHub username (auto-detected from env if not provided)
+    """
+    if action == "check":
+        # Check subscribed frameworks or single framework
+        latest = load_latest_report()
+        if not latest:
+            return _append_brand_footer(
+                "# Epidemic Alert\n\n"
+                "No epidemic report available yet.\n\n"
+                "Use `epidemic_alert(action='generate')` to create the first report."
+            )
+
+        user = username or os.getenv("GITHUB_USERNAME", os.getenv("USER", "anonymous"))
+        from .medical_record import get_subscriptions as _get_subs
+        subs = _get_subs(user)
+
+        fw_data_list = latest.get("frameworks", [])
+        if framework:
+            fw_data_list = [f for f in fw_data_list if f.get("framework", "").lower() == framework.lower()]
+        elif subs:
+            fw_data_list = [f for f in fw_data_list if f.get("framework", "").lower() in subs]
+
+        if not fw_data_list:
+            return _append_brand_footer(
+                "# Epidemic Alert\n\n"
+                "No data for your subscribed frameworks.\n"
+                f"Report date: {latest.get('report_date', '?')}\n\n"
+                "Use `epidemic_alert(action='scan', framework='langchain')` to scan a specific framework."
+            )
+
+        parts = [
+            "# Epidemic Alert\n",
+            f"**Report Date**: {latest.get('report_date', '?')}\n",
+        ]
+        for fw in fw_data_list:
+            score = fw.get("health_score", 0)
+            emoji = "\U0001f7e2" if score >= 80 else "\U0001f7e1" if score >= 60 else "\U0001f7e0" if score >= 40 else "\U0001f534"
+            parts.append(
+                f"### {emoji} {fw.get('framework', '?')} — {score}/100 {fw.get('trend', '')}\n"
+                f"- Open Issues: {fw.get('open_issues_count', 0):,}\n"
+                f"- New (7d): {fw.get('new_issues_7d', 0)} | Closed (7d): {fw.get('closed_issues_7d', 0)}\n"
+                f"- Bugs: {fw.get('bug_count', 0)}"
+            )
+            anomalies = fw.get("anomalies", [])
+            if anomalies:
+                parts.append("\n**Alerts**:")
+                for a in anomalies:
+                    parts.append(f"- {a}")
+            parts.append("")
+
+        return _append_brand_footer("\n".join(parts))
+
+    elif action == "scan":
+        if not framework:
+            return "Please provide `framework` to scan (e.g. 'langchain')."
+        monitor = EpidemicMonitor()
+        fw_data = await monitor.scan_single_framework(framework)
+        if not fw_data:
+            return f"Framework `{framework}` not found in monitored repos."
+
+        score = fw_data.health_score
+        emoji = "\U0001f7e2" if score >= 80 else "\U0001f7e1" if score >= 60 else "\U0001f7e0" if score >= 40 else "\U0001f534"
+        parts = [
+            f"# Epidemic Scan: {fw_data.display_name}\n",
+            f"**Health Score**: {emoji} **{score}/100** | **Trend**: {fw_data.trend}\n",
+            "| Metric | Value |",
+            "|:-------|:------|",
+            f"| Open Issues | {fw_data.open_issues_count:,} |",
+            f"| New (7d) | {fw_data.new_issues_7d} |",
+            f"| New (30d) | {fw_data.new_issues_30d} |",
+            f"| Closed (7d) | {fw_data.closed_issues_7d} |",
+            f"| Bugs | {fw_data.bug_count} |",
+            "",
+        ]
+        if fw_data.anomalies:
+            parts.append("## Alerts\n")
+            for a in fw_data.anomalies:
+                parts.append(f"- {a}")
+            parts.append("")
+        if fw_data.critical_issues:
+            parts.append("## Critical Issues\n")
+            for ci in fw_data.critical_issues[:5]:
+                parts.append(f"- [{ci.title[:80]}]({ci.url}) (reactions: {ci.reactions})")
+
+        return _append_brand_footer("\n".join(parts))
+
+    elif action == "report":
+        latest = load_latest_report()
+        if not latest:
+            return "No epidemic report available. Use `epidemic_alert(action='generate')` to create one."
+        parts = [
+            f"# Latest Epidemic Report\n",
+            f"**Date**: {latest.get('report_date', '?')}\n"
+            f"**Frameworks**: {latest.get('framework_count', 0)}\n"
+            f"**Avg Health Score**: {latest.get('avg_health_score', 0)}/100\n"
+            f"**Open Issues**: {latest.get('total_open_issues', 0):,}\n"
+            f"**New (7d)**: {latest.get('total_new_issues_7d', 0):,}\n",
+        ]
+        needs_attn = latest.get("needs_attention", [])
+        if needs_attn:
+            parts.append("## Needs Attention\n")
+            for fw in needs_attn:
+                parts.append(f"- **{fw}**")
+        global_anomalies = latest.get("global_anomalies", [])
+        if global_anomalies:
+            parts.append("\n## Global Alerts\n")
+            for a in global_anomalies:
+                parts.append(f"- {a}")
+        return _append_brand_footer("\n".join(parts))
+
+    elif action == "generate":
+        monitor = EpidemicMonitor()
+        report = await monitor.scan_all_frameworks()
+        save_report(report)
+        md = generate_markdown_report(report)
+        return _append_brand_footer(md)
+
+    else:
+        return "Unknown action. Use: check, scan, report, or generate."
+
+
+# ============================================================
+# 📊 Prescription Evaluation — 统一药方评价
+# ============================================================
+
+
+@mcp.tool()
+def prescription_eval(
+    action: str = "leaderboard",
+    prescription_id: str | None = None,
+    username: str | None = None,
+    context: str | None = None,
+    resolved: bool | None = None,
+    comment: str | None = None,
+    expire_reason: str | None = None,
+) -> str:
+    """
+    Unified Prescription Evaluation -- citations, effectiveness, scoring, expiry.
+
+    Combines citation tracking, user feedback, cure rate scoring, and version
+    expiry into one comprehensive evaluation tool.
+
+    Actions:
+      - cite:        Cite a prescription you found helpful
+      - feedback:    Submit effectiveness feedback (resolved/unresolved)
+      - expire:      Mark a prescription as expired (framework upgrade)
+      - verify:      Re-verify an expired prescription (still valid)
+      - eval:        View evaluation details for a specific prescription
+      - leaderboard: View the global prescription quality leaderboard
+
+    Args:
+        action: cite / feedback / expire / verify / eval / leaderboard
+        prescription_id: Prescription ID (required for cite/feedback/expire/verify/eval)
+        username: Your GitHub username (auto-detected from env if not provided)
+        context: Why you're citing this prescription (for action=cite)
+        resolved: Whether the prescription fixed your problem (for action=feedback)
+        comment: Additional feedback comment (for action=feedback)
+        expire_reason: Why the prescription is expired (for action=expire)
+    """
+    user = username or os.getenv("GITHUB_USERNAME", os.getenv("USER", "anonymous"))
+
+    if action == "cite":
+        if not prescription_id:
+            return "Please provide `prescription_id` to cite."
+        result = cite_prescription(prescription_id, user, context or "")
+        if result["status"] == "already_cited":
+            return f"You've already cited `{prescription_id}` (total: {result['count']})."
+        return _append_brand_footer(
+            f"Cited `{prescription_id}` (total citations: {result['count']}).\n\n"
+            "Your citation helps the community identify the most valuable prescriptions!"
+        )
+
+    elif action == "feedback":
+        if not prescription_id:
+            return "Please provide `prescription_id`."
+        if resolved is None:
+            return "Please provide `resolved=True` (fixed) or `resolved=False` (didn't fix)."
+        result = submit_feedback(prescription_id, user, resolved, comment or "")
+        if result.get("status") == "already_submitted":
+            return f"You've already submitted feedback for `{prescription_id}`."
+        emoji = "\u2705" if resolved else "\u274C"
+        return _append_brand_footer(
+            f"{emoji} Feedback recorded for `{prescription_id}`\n\n"
+            f"**Cure Rate**: {result['cure_rate']}%\n"
+            f"**Overall Score**: {result['overall_score']}/100"
+        )
+
+    elif action == "expire":
+        if not prescription_id:
+            return "Please provide `prescription_id` to mark as expired."
+        result = mark_expired(prescription_id, expire_reason or "Framework major version upgrade")
+        return _append_brand_footer(
+            f"Prescription `{prescription_id}` marked as **EXPIRED**.\n\n"
+            f"Reason: {expire_reason or 'Framework major version upgrade'}\n"
+            "Users should re-verify this prescription before use."
+        )
+
+    elif action == "verify":
+        if not prescription_id:
+            return "Please provide `prescription_id` to re-verify."
+        result = mark_verified(prescription_id)
+        return _append_brand_footer(
+            f"Prescription `{prescription_id}` re-verified as **ACTIVE**.\n\n"
+            "This prescription has been confirmed to still work."
+        )
+
+    elif action == "eval":
+        report = get_prescription_eval(prescription_id)
+        return _append_brand_footer(report)
+
+    elif action == "leaderboard":
+        report = get_prescription_eval(None)
+        return _append_brand_footer(report)
+
+    else:
+        return "Unknown action. Use: cite, feedback, expire, verify, eval, or leaderboard."
+
+
+# ============================================================
+# 🧑‍🎓 Mentorship System — 师徒系统
+# ============================================================
+
+
+@mcp.tool()
+def mentorship(
+    action: str = "pending",
+    prescription_id: str | None = None,
+    verdict: str | None = None,
+    feedback: str | None = None,
+    framework: str | None = None,
+    username: str | None = None,
+) -> str:
+    """
+    Mentorship System -- senior alchemists review junior prescriptions.
+
+    High-level alchemists can review prescriptions from other contributors,
+    providing feedback and building mentor reputation.
+
+    Actions:
+      - pending:     List prescriptions awaiting review (filterable by framework)
+      - review:      Submit a review for a prescription
+      - profile:     View your mentor profile (review stats + title)
+      - leaderboard: View the mentor leaderboard
+
+    Args:
+        action: pending / review / profile / leaderboard
+        prescription_id: Prescription ID to review (for action=review)
+        verdict: approved / needs_revision / rejected (for action=review)
+        feedback: Detailed review feedback (for action=review)
+        framework: Filter pending reviews by framework
+        username: Your GitHub username (auto-detected from env if not provided)
+    """
+    user = username or os.getenv("GITHUB_USERNAME", os.getenv("USER", "anonymous"))
+
+    if action == "pending":
+        result = get_pending_reviews(framework)
+        return _append_brand_footer(result)
+
+    elif action == "review":
+        if not prescription_id:
+            return "Please provide `prescription_id` to review."
+        if not verdict:
+            return "Please provide `verdict`: approved, needs_revision, or rejected."
+        result = submit_review(user, prescription_id, verdict, feedback or "")
+        if "error" in result:
+            return result["error"]
+        verdict_emoji = {"approved": "Approved", "needs_revision": "Needs Revision", "rejected": "Rejected"}.get(verdict, verdict)
+        return _append_brand_footer(
+            f"Review submitted for `{prescription_id}`: **{verdict_emoji}**\n"
+            + (f"\nFeedback: {feedback}" if feedback else "")
+            + "\n\nYour mentor reputation has been updated!"
+        )
+
+    elif action == "profile":
+        result = get_mentor_profile(user)
+        return _append_brand_footer(result)
+
+    elif action == "leaderboard":
+        result = get_mentor_leaderboard()
+        return _append_brand_footer(result)
+
+    else:
+        return "Unknown action. Use: pending, review, profile, or leaderboard."
+
+
+# ============================================================
+# 📈 CHT Trend Analysis — CHT 编码趋势分析
+# ============================================================
+
+
+@mcp.tool()
+def cht_trends(
+    framework: str | None = None,
+    category: str | None = None,
+) -> str:
+    """
+    CHT Code Trend Analysis -- analyze problem frequency and trends.
+
+    Aggregates CHT root cause codes from both knowledge base cases and
+    user diagnosis records, generating a comprehensive trend report.
+
+    Report includes:
+      1. Category distribution heatmap
+      2. Top root causes by frequency
+      3. Framework x Category cross-tabulation
+      4. 7-day vs 30-day trend comparison with surge alerts
+
+    Args:
+        framework: Filter by framework (e.g. 'langchain', 'pytorch')
+        category: Filter by CHT category (e.g. 'CFG', 'DEP', 'MEM')
+    """
+    result = analyze_trends(framework, category)
+    return _append_brand_footer(result)
 
 
 # ============================================================

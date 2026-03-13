@@ -91,6 +91,63 @@ def count_contributor_cases(
     return count
 
 
+def count_contributor_cases_by_framework(
+    github_username: str,
+    cases_dir: Path | None = None,
+) -> dict[str, int]:
+    """
+    统计指定用户在各框架下的贡献数。
+
+    Returns:
+        dict[str, int] — 框架名→贡献数, e.g. {"langchain": 5, "pytorch": 3}
+    """
+    if cases_dir is None:
+        cases_dir = config.CASES_DIR
+
+    if not cases_dir.exists():
+        return {}
+
+    framework_counts: dict[str, int] = {}
+    username_lower = github_username.lower()
+
+    for md_file in cases_dir.rglob("*.md"):
+        if md_file.name.startswith("_"):
+            continue
+        try:
+            text = md_file.read_text(encoding="utf-8")
+            match = re.match(r"^---\s*\n(.*?)\n---", text, re.DOTALL)
+            if not match:
+                continue
+            meta = yaml.safe_load(match.group(1))
+            if not isinstance(meta, dict):
+                continue
+
+            contributors = meta.get("contributors", [])
+            is_contributor = False
+            if isinstance(contributors, list):
+                for c in contributors:
+                    gh = ""
+                    if isinstance(c, dict):
+                        gh = c.get("github", "")
+                    elif isinstance(c, str):
+                        gh = c
+                    if gh.lower() == username_lower:
+                        is_contributor = True
+                        break
+
+            if is_contributor:
+                fw = meta.get("framework", "general")
+                if isinstance(fw, str) and fw:
+                    fw = fw.lower().strip()
+                else:
+                    fw = "general"
+                framework_counts[fw] = framework_counts.get(fw, 0) + 1
+        except Exception:
+            continue
+
+    return framework_counts
+
+
 # ============================================================
 # 🔄 GitHub API 同步客户端
 # ============================================================

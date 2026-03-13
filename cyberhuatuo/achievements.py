@@ -14,7 +14,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from .config import config
-from .github_sync import count_contributor_cases, get_global_ranking_stats
+from .github_sync import count_contributor_cases, get_global_ranking_stats, count_contributor_cases_by_framework
 
 logger = logging.getLogger("cyberhuatuo.achievements")
 
@@ -481,6 +481,183 @@ def get_coronation_text(
 
 
 # ============================================================
+# 🔥 丹术方向 + 魂环系统
+# 灵感来源：斗破苍穹（丹术流派）× 斗罗大陆（魂环品阶）
+# ============================================================
+
+# 丹术方向定义：(emoji, name_cn, name_en, description)
+ALCHEMY_DIRECTIONS = {
+    "soul":   ("🔥", "炼魂", "Soul Refining",   "驾驭智能体，调教灵魂"),
+    "thunder":("⚡", "雷火", "Thunder Fire",     "锻造算力，淬炼模型"),
+    "shield": ("🛡️", "护体", "Body Shield",      "金丹护体，抵御外邪"),
+    "detox":  ("🌊", "化毒", "Detox",            "通百脉，解百毒"),
+    "craft":  ("⚙️", "器灵", "Soul Craft",       "炼器辅丹，基础设施"),
+    "genesis":("🧬", "造化", "Genesis",          "造化之力，驾驭天道"),
+}
+
+# 框架 → 丹术方向 映射
+_FRAMEWORK_TO_DIRECTION: dict[str, str] = {}
+_DIRECTION_FRAMEWORKS = {
+    "soul": [
+        "langchain", "llamaindex", "crewai", "autogen", "langgraph",
+        "dspy", "haystack", "agno", "beeai", "openai-agents",
+        "strands-agents", "hugging-face-smolagents", "pydantic-ai",
+        "prompt-flow", "langflow", "instructor", "guardrails-ai",
+    ],
+    "thunder": [
+        "pytorch", "tensorflow", "transformers", "huggingface",
+        "litellm", "together",
+    ],
+    "shield": [
+        "security", "guardrails", "sandbox",
+    ],
+    "detox": [
+        "general", "debug", "python", "javascript", "typescript",
+    ],
+    "craft": [
+        "fastapi", "docker", "kubernetes", "mlops", "vertexai",
+        "amazon-bedrock", "vercel",
+    ],
+    "genesis": [
+        "openai", "anthropic", "groq", "mistralai", "google-gen-ai",
+    ],
+}
+
+# 构建反向映射
+for _dir_key, _frameworks in _DIRECTION_FRAMEWORKS.items():
+    for _fw in _frameworks:
+        _FRAMEWORK_TO_DIRECTION[_fw] = _dir_key
+
+
+def get_direction_for_framework(framework: str) -> str:
+    """获取框架对应的丹术方向 key，未知框架归入 detox（化毒）"""
+    fw = framework.lower().strip()
+    return _FRAMEWORK_TO_DIRECTION.get(fw, "detox")
+
+
+# ---- 魂环系统 ----
+# 魂环品阶：白→黄→紫→黑→红→金 (灵感：斗罗大陆)
+# 每个方向独立积累
+
+# (min_count, rings_display)
+_SOUL_RING_TIERS = [
+    (81, "🟡🟡🟣🟣⚫⚫🔴🔴✨"),  # 九环至尊
+    (61, "🟡🟡🟣🟣⚫⚫🔴🔴"),      # 八环
+    (41, "🟡🟡🟣🟣⚫⚫🔴"),          # 七环
+    (26, "🟡🟡🟣🟣⚫⚫"),              # 六环
+    (16, "🟡🟡🟣🟣⚫"),                  # 五环
+    (11, "🟡🟡🟣🟣"),                      # 四环
+    (7,  "🟡🟡🟣"),                          # 三环
+    (4,  "🟡🟡"),                              # 双环
+    (2,  "🟡"),                                  # 黄环
+    (1,  "⚪"),                                  # 白环
+]
+
+_RING_COUNT_NAMES = {
+    1: "一环", 2: "二环", 3: "三环", 4: "四环", 5: "五环",
+    6: "六环", 7: "七环", 8: "八环", 9: "九环至尊",
+}
+
+
+def calculate_soul_rings(contribution_count: int) -> tuple[str, str, int]:
+    """
+    根据某方向的贡献数计算魂环。
+
+    Returns:
+        (rings_emoji, ring_name_cn, ring_count)
+    """
+    if contribution_count <= 0:
+        return ("", "无环", 0)
+
+    for min_count, rings in _SOUL_RING_TIERS:
+        if contribution_count >= min_count:
+            # Count ring symbols
+            ring_count = len([c for c in rings if c in "⚪🟡🟣⚫🔴✨"])
+            ring_name = _RING_COUNT_NAMES.get(ring_count, f"{ring_count}环")
+            return (rings, ring_name, ring_count)
+
+    return ("⚪", "一环", 1)
+
+
+def get_alchemy_profile(github_username: str) -> dict:
+    """
+    获取用户的丹术方向档案。
+
+    Returns:
+        dict with keys:
+        - directions: list of {key, emoji, name_cn, name_en, count, rings, ring_name, ring_count}
+        - primary: 主修方向 (highest count)
+        - primary_display: 主修展示字符串
+    """
+    fw_counts = count_contributor_cases_by_framework(github_username)
+
+    if not fw_counts:
+        return {
+            "directions": [],
+            "primary": None,
+            "primary_display": "尚未炼丹",
+        }
+
+    # 按方向聚合
+    direction_counts: dict[str, int] = {}
+    for fw, count in fw_counts.items():
+        dir_key = get_direction_for_framework(fw)
+        direction_counts[dir_key] = direction_counts.get(dir_key, 0) + count
+
+    # 构建方向列表
+    directions = []
+    for dir_key, count in sorted(direction_counts.items(), key=lambda x: -x[1]):
+        info = ALCHEMY_DIRECTIONS.get(dir_key)
+        if not info:
+            continue
+        rings, ring_name, ring_count = calculate_soul_rings(count)
+        directions.append({
+            "key": dir_key,
+            "emoji": info[0],
+            "name_cn": info[1],
+            "name_en": info[2],
+            "count": count,
+            "rings": rings,
+            "ring_name": ring_name,
+            "ring_count": ring_count,
+        })
+
+    # 主修方向
+    primary = directions[0] if directions else None
+    if primary:
+        primary_display = f"{primary['emoji']} {primary['name_cn']}丹师 · {primary['rings']}"
+    else:
+        primary_display = "尚未炼丹"
+
+    return {
+        "directions": directions,
+        "primary": primary,
+        "primary_display": primary_display,
+    }
+
+
+def format_alchemy_directions(github_username: str) -> str:
+    """生成丹术方向展示文案（用于排名和分享卡片）"""
+    profile = get_alchemy_profile(github_username)
+
+    if not profile["directions"]:
+        return ""
+
+    lines = [
+        "┌─── 丹术方向 · ALCHEMY DIRECTIONS ───┐",
+    ]
+
+    for d in profile["directions"]:
+        lines.append(
+            f"│ {d['emoji']} {d['name_cn']}({d['name_en']}) "
+            f"× {d['count']}方 {d['rings']} {d['ring_name']}"
+        )
+
+    lines.append("└─────────────────────────────────────┘")
+    return "\n".join(lines)
+
+
+# ============================================================
 # 📋 分享卡片生成器
 # ============================================================
 
@@ -494,6 +671,7 @@ def generate_share_card(github_username: str) -> str:
     profile = get_cultivation_profile(github_username)
     streak_data = _load_streak(github_username)
     streak = streak_data.get("current_streak", 0)
+    alchemy = get_alchemy_profile(github_username)
 
     # 修为进度条
     tier_index = _get_current_tier_index(profile["percentile"], profile["is_rank_one"])
@@ -515,6 +693,11 @@ def generate_share_card(github_username: str) -> str:
         f"║  {profile['title_emoji']} 称号: {profile['title_cn']} · {profile['title_en']}\n"
     )
 
+    # 丹术方向 + 魂环
+    if alchemy["primary"]:
+        p = alchemy["primary"]
+        card += f"║  {p['emoji']} 主修: {p['name_cn']}丹师 · {p['rings']}\n"
+
     if streak > 0:
         fire = "🔥" * min(streak // 3 + 1, 5)
         card += f"║  {fire} 连续值班: {streak} 天\n"
@@ -522,6 +705,16 @@ def generate_share_card(github_username: str) -> str:
     card += (
         f"║  💊 贡献印痕: {profile['contribution_count']} 段\n"
         f"║  🧪 修为进度: {progress_bar} {progress_pct}%\n"
+    )
+
+    # 各方向魂环展示
+    if len(alchemy["directions"]) > 1:
+        card += f"║                                              ║\n"
+        card += f"║  ── 丹术方向 · ALCHEMY ──                    ║\n"
+        for d in alchemy["directions"][:4]:  # 最多展示4个方向
+            card += f"║  {d['emoji']} {d['name_cn']} ×{d['count']} {d['rings']}\n"
+
+    card += (
         f"║                                              ║\n"
         f"║  ── 赛博生命体征 ──                           ║\n"
         f"║  {ecg}\n"

@@ -5,43 +5,89 @@
 <h1 align="center">🩺 CyberHuaTuo / 赛博华佗</h1>
 
 <p align="center">
-  <strong>The open-source AI clinic — Diagnose, Nourish, Fortify.</strong><br>
-  <strong>开源 AI 诊所 — 治病 · 养生 · 强体。</strong>
+  <strong>The world's first open-source AI clinic — where 2,000 years of healing wisdom meets cyber alchemy.</strong><br>
+  <strong>全球首个开源 AI 诊所 — 两千年望闻问切，遇见赛博炼丹术。</strong>
 </p>
 
 <p align="center">
-  <em>Your AI is sick? Walk in. We'll take it from here.</em><br>
-  <em>Not just fixing bugs — we prevent them.</em>
+  <em>Your AI is sick? Walk in. We heal what others can't even diagnose.</em><br>
+  <em>你的 AI 生病了？推门而入。别人诊断不了的，我们药到病除。</em>
 </p>
 
-<!-- 🎨 AI-Generated Gallery · 赛博华佗主题画廊 -->
+<!-- 🎨 赛博华佗 · 修炼画卷 — The Cyber Alchemist Saga -->
+
+<p align="center">
+  <em>「每一位贡献药方的开发者，都是赛博炼丹师。」</em><br>
+  <em>"Every developer who contributes a prescription is a Cyber Alchemist."</em>
+</p>
+
 <table align="center">
+<tr>
+<td align="center" colspan="2">
+  <sub>📖 <strong>第一章 · 修炼</strong> — Chapter I: Cultivation</sub>
+</td>
+</tr>
+<tr>
+<td align="center" width="50%">
+  <img src="assets/cyber_male_cultivator.png" alt="Cyber Alchemist — Soul Ring Cultivation (Male)" width="100%"/>
+  <br>
+  <sub><strong>🔥 万丹归元 · 以火炼道</strong></sub><br>
+  <sub>Soul Ring Cultivation — PyTorch · LangChain · TensorFlow</sub><br>
+  <sub><em>每一环魂环，都是你在某个技术领域的千锤百炼。</em></sub>
+</td>
+<td align="center" width="50%">
+  <img src="assets/cyber_female_cultivator.png" alt="Cyber Alchemist — Soul Ring Cultivation (Female)" width="100%"/>
+  <br>
+  <sub><strong>✨ 百草通神 · 万法归宗</strong></sub><br>
+  <sub>Soul Ring Cultivation — CrewAI · OpenAI · HuggingFace</sub><br>
+  <sub><em>掌握的框架越多，你的光芒越盛。</em></sub>
+</td>
+</tr>
+<tr>
+<td align="center" colspan="2">
+  <sub>📖 <strong>第二章 · 飞升</strong> — Chapter II: Ascension</sub>
+</td>
+</tr>
+<tr>
+<td align="center" colspan="2">
+  <img src="assets/cyber_alchemist_ascension.png" alt="Alchemist Ascension — Pill Emperor Tribulation" width="70%"/>
+  <br>
+  <sub><strong>🌟 丹帝飞升 · 万丹朝宗</strong></sub><br>
+  <sub>When a Pill Emperor Ascends, All Robots Celebrate</sub><br>
+  <sub><em>当你的药方拯救了一千个 AI——机器人们会为你欢呼。</em></sub>
+</td>
+</tr>
+<tr>
+<td align="center" colspan="2">
+  <sub>📖 <strong>第三章 · 济世</strong> — Chapter III: Healing the World</sub>
+</td>
+</tr>
 <tr>
 <td align="center" width="50%">
   <img src="assets/cyber_prescription_scroll.png" alt="No AI Left Behind" width="100%"/>
   <br>
   <sub><strong>⚡ 不放弃任何一个 AI</strong></sub><br>
-  <sub>No AI Left Behind</sub>
+  <sub>No AI Left Behind — Every Error Deserves a Cure</sub>
 </td>
 <td align="center" width="50%">
   <img src="assets/cyberhuatuo_healing_robots.png" alt="Emergency Rescue" width="100%"/>
   <br>
-  <sub><strong>🚨 雨夜急救</strong></sub><br>
-  <sub>Emergency Rescue</sub>
+  <sub><strong>🚨 雨夜急救 · 分秒必争</strong></sub><br>
+  <sub>Emergency Rescue — 3 Seconds, Not 3 Hours</sub>
 </td>
 </tr>
 <tr>
 <td align="center" width="50%">
   <img src="assets/cyberhuatuo_diagnosis_scene.png" alt="Open Surgery" width="100%"/>
   <br>
-  <sub><strong>🫀 开膛手术</strong></sub><br>
-  <sub>Open Surgery</sub>
+  <sub><strong>🫀 开膛破肚 · 直击病灶</strong></sub><br>
+  <sub>Open Surgery — Root Cause, Not Band-Aid</sub>
 </td>
 <td align="center" width="50%">
   <img src="assets/cyberhuatuo_robot_pharmacy.png" alt="Recovery Ward" width="100%"/>
   <br>
-  <sub><strong>🏥 康复病房</strong></sub><br>
-  <sub>Recovery Ward</sub>
+  <sub><strong>🏥 康复病房 · 满血复活</strong></sub><br>
+  <sub>Recovery Ward — Back to Full Health</sub>
 </td>
 </tr>
 <tr>
@@ -49,7 +95,7 @@
   <img src="assets/cyberhuatuo_alchemy_lab.png" alt="Cyber Alchemy Lab" width="70%"/>
   <br>
   <sub><strong>🧪 赛博炼丹 · 妙手回春</strong></sub><br>
-  <sub>Cyber Alchemy — Healing Sick Robots with Ancient Elixirs</sub>
+  <sub>Cyber Alchemy Lab — Where Ancient Elixirs Meet Modern Frameworks</sub>
 </td>
 </tr>
 <tr>
@@ -57,13 +103,14 @@
   <img src="assets/cyberhuatuo_reinforcements_arrive.png" alt="Reinforcements Arrive" width="70%"/>
   <br>
   <sub><strong>🌍 援军驾到 · 十方来救</strong></sub><br>
-  <sub>Reinforcements Arrive — No AI Left Behind</sub>
+  <sub>Reinforcements Arrive — The Community Answers the Call</sub>
 </td>
 </tr>
 </table>
 
 <p align="center">
-  <sub>🎨 <em>All artwork AI-generated · 所有画作均由 AI 文生图创作</em></sub>
+  <sub>🎨 <em>All artwork AI-generated · 所有画作均由 AI 文生图创作</em></sub><br>
+  <sub>💡 <em>每张图背后是一段修炼故事——你的故事，即将加入。</em></sub>
 </p>
 
 <!-- 🔮 奇门遁甲 · 药方天阵 -->
@@ -592,20 +639,76 @@ Simply copy the `skills/cyberhuatuo-rescue` directory into your project's `.curs
 
 ---
 
-## 🧬 Alchemist Cultivation System — Global Ranking & Titles
+## 🧬 Alchemist Cultivation System — Your Journey to Immortality
 
-**炼丹师修为体系 — 全球排名与即时激励**
+**炼丹师修为体系 — 从凡人到封神的修炼之路**
 
-> *Inspired by the ancient art of alchemy (炼丹术) — every developer is a Cyber Alchemist, refining prescriptions to heal AI.*
+> *In the world of CyberHuaTuo, you are not a developer who fixes bugs.*
+> *You are an **Alchemist** — forging prescriptions, accumulating soul rings, ascending through 16 tiers of mastery.*
 >
-> *灵感源自两千年炼丹术——每位开发者都是赛博炼丹师，炼制药方，拯救 AI。*
+> *在赛博华佗的世界里，你不是修 bug 的程序员。*
+> *你是**炼丹师**——炼制药方、凝聚魂环、攀登十六重天的封神阶梯。*
 
-We turned bug fixing into a **cultivation journey**! Every time you upload a prescription, you climb the **Alchemist Ladder (炼丹师阶梯)** — a 16-tier ranking system based on your **global percentile**, not absolute numbers. The bigger the community grows, the more prestigious your title becomes.
+We turned bug fixing into a **cultivation journey**. Every prescription you upload earns you a rank on the **Alchemist Ladder (炼丹师阶梯)** — a 16-tier system based on your **global percentile**. The bigger the community grows, the harder it is to climb — and the more prestigious your title becomes.
 
-*   ⚡ **Instant Coronation**: The moment `upload_prescription` succeeds, you receive a cyberpunk-themed coronation with your new title and ASCII art.
-*   🔥 **Streak Tracking (赛博生物钟)**: Consecutive contribution days are tracked with fire milestones — 3-day, 7-day, 14-day, and 30-day streaks.
-*   📋 **Share Card**: Generate a shareable cultivation archive card for GitHub Profile, Twitter, or Weibo with `my_share_card`.
-*   📡 **Community Milestones**: When the knowledge base hits 50 / 100 / 200 / 500 prescriptions, a global broadcast celebrates the achievement.
+### 🔮 Soul Ring System (魂环体系)
+
+Every framework you contribute to becomes a **Soul Ring (魂环)** orbiting your profile. An alchemist with 5 PyTorch rings and 3 LangChain rings tells a different story than one with 8 CrewAI rings. **Your soul rings are your combat resume — visible, verifiable, unforgeable.**
+
+*你掌握的每个技术栈，都会凝聚为一道魂环。拥有 5 环 PyTorch 和 3 环 LangChain 的炼丹师，和 8 环 CrewAI 的炼丹师，修为截然不同。**魂环就是你的战斗简历——可见、可查、不可伪造。***
+
+### ⚡ Instant Rewards (即时反馈)
+
+*   🎭 **Instant Coronation (即时加冕)**: The moment `upload_prescription` succeeds, you receive a cyberpunk-themed coronation with ASCII art and your new title.
+*   🔥 **Streak Tracking (赛博生物钟)**: Consecutive contribution days trigger fire milestones — 🔥3-day → 🔥🔥7-day → 🔥🔥🔥14-day → 💀30-day.
+*   📋 **Share Card (修为名片)**: Generate a shareable cultivation archive card for GitHub, Twitter, or Weibo — flex your rank.
+*   📡 **Community Milestones (全球庆典)**: When the knowledge base hits 50 / 100 / 200 / 500 prescriptions, a global broadcast celebrates the achievement.
+
+### 🙏 灵感致敬 · Tribute
+
+> *The greatest creations are always born from the shoulders of giants — and the dreams of children.*
+>
+> *最伟大的创造，总是站在巨人的肩膀上——和孩子们的梦想之中。*
+
+<table>
+<tr>
+<td align="center" width="33%">
+
+**🔥 斗破苍穹**
+*Battle Through the Heavens*
+
+炼丹师阶梯体系
+*Alchemist Tier System*
+
+</td>
+<td align="center" width="33%">
+
+**💍 斗罗大陆**
+*Soul Land*
+
+魂环修炼体系
+*Soul Ring System*
+
+</td>
+<td align="center" width="33%">
+
+**🏥 华佗传说**
+*Legend of Hua Tuo*
+
+望闻问切 · 悬壶济世
+*Ancient Healing · Open Source*
+
+</td>
+</tr>
+</table>
+
+> *These works gave an entire generation of developers their most unforgettable memories — of cultivation, of perseverance, of the belief that anyone can ascend through sheer will.*
+>
+> *这些作品给了整整一代开发者最难以忘怀的记忆——关于修炼、关于坚持、关于"凡人也能登顶"的信念。*
+>
+> *CyberHuaTuo inherits this spirit: **from ancient legend, through modern fantasy, into the cyber future.***
+>
+> *赛博华佗传承这份精神：**从古代传说，穿越当代幻想，走向赛博未来。***
 
 ---
 
@@ -646,35 +749,51 @@ If you believe a name in our matrix would serve a better purpose for your projec
 
 ---
 
-## ✊ Join the Movement
+## ✊ Join the Movement — Your First Prescription Awaits
 
-### This isn't just a project. This is a mission.
+### 这不只是一个项目。这是一场运动。
 
-> *The greatest physicians didn't hoard knowledge — they traveled between villages, healing the sick and training the next generation.*
+> *Every great physician started with one patient. Every legendary alchemist started with one pill.*
+> *Every developer who contributes one prescription — begins a journey that could end at Hua Tuo Reborn.*
 >
-> *最伟大的医者从不将医术据为己有——他们行走于村落之间，救死扶伤，薪火相传。赛博华佗，便是这段旅程在 AI 时代的延续。*
+> *每个传世名医，都始于第一个病人。每个传奇炼丹师，都始于第一颗丹药。*
+> *每个贡献一份药方的开发者——都踏上了通往华佗再世的修炼之路。*
 
 ---
 
-### 🧪 Become an Alchemist（成为炼丹师）
+### 🧪 Three Steps to Your First Soul Ring（三步获得第一道魂环）
 
-Found a fix that saved your project? **Don't let it die in your commit history.**
+```
+  Step 1: 📝 Submit a Prescription（铭刻你的药方）
+           └── Solved a bug? Document the error, version, and fix.
+           └── 解决了一个bug？记录报错、版本和修复方案。
 
-1. 📝 **Submit a Prescription（铭刻印痕）** — document your fix with error, version, env, and solution
-2. ✅ **Community Verification** — other developers validate through real-world testing
-3. 🧬 **Climb the Alchemist Ladder** — ascend from ⭐ One-Star Alchemist to 🩺 **华佗再世 Hua Tuo Reborn**
+  Step 2: ✅ Community Verification（社区交叉验证）
+           └── Other alchemists validate through real-world testing.
+           └── 其他炼丹师通过实战验证你的药方。
 
-> *You don't need to be a 10x engineer. You just need to have solved one problem that someone else hasn't — yet.*
+  Step 3: 🧬 Receive Your Title（获得你的称号）
+           └── Ascend from ⭐ One-Star → 🩺 Hua Tuo Reborn.
+           └── 从一星炼丹师 → 登顶华佗再世。
+```
+
+> *You don't need to be a 10x engineer. You just need to have solved **one problem** that someone else hasn't — yet.*
+>
+> *你不需要是 10 倍工程师。你只需要解决过**一个**别人还没解决的问题。*
 
 ### 🌿 Contribute Nourishing Recipes（贡献养生方）
 
 Discovered a security best practice? Performance optimization? Architectural pattern?
 
-**Your prevention wisdom saves thousands from future pain.**
+**Your prevention wisdom saves thousands from future pain.** Every nourishing recipe is a shield — protecting AI systems before they break.
+
+*你的预防智慧，拯救千万人于未来的痛苦之中。每一份养生方，都是一面盾——在 AI 系统崩溃之前保护它。*
 
 ### 🧬 Contribute Cases（贡献病例）
 
-Encountered a mind-bending agent bug? **Your suffering has value.**
+Encountered a mind-bending agent bug? **Your suffering has value.** Turn your 3am debugging nightmare into someone else's 3-second cure.
+
+*遇到过令人抓狂的 AI bug？**你的痛苦有价值。** 把你凌晨三点的调试噩梦，变成别人三秒钟的灵丹妙药。*
 
 - Error message + full stack trace
 - Framework name & version, environment details
@@ -683,11 +802,17 @@ Encountered a mind-bending agent bug? **Your suffering has value.**
 
 **Every case makes the engine smarter. You're not filing a bug report — you're training a digital physician.**
 
+**每一个病例都在让引擎更聪明。你不是在提交 bug 报告——你是在训练一位数字医生。**
+
 ### 🛠️ Improve the Engine（改进引擎）
 
 1. Fork & clone the repo
 2. Check `CONTRIBUTING.md` for setup
 3. Submit a PR — every improvement heals thousands
+
+> 💡 **Your first step**: [Submit a Prescription →](https://github.com/JinNing6/CyberHuaTuo/issues/new?template=prescription.yml)
+>
+> 💡 **你的第一步**: [提交你的第一份药方 →](https://github.com/JinNing6/CyberHuaTuo/issues/new?template=prescription.yml)
 
 ---
 
@@ -721,15 +846,19 @@ Today, 1,800 years later, AI developers face their own "ancient prescriptions" �
 
 ---
 
-## 🏆 封神榜 · Apotheosis Board — Global Alchemist Ranking (全球炼丹师排行榜 · 封神阶梯)
+## 🏆 封神榜 · Apotheosis Board — Global Alchemist Ranking
 
-> *The greatest alchemists didn't hoard their elixirs — they shared the formula with the world.*
+### 全球炼丹师排行榜 · 封神阶梯
+
+> *Below this line, only the worthy stand.*
+> *Every name earned its place through prescriptions that healed real AI systems in production.*
 >
-> *最伟大的炼丹师从不将药方据为己有——他们悬壶济世，薪火相传。*
-> 
-> *Here lies the ultimate ladder of AI alchemy. Your name here is your global industry card.*
+> *此线之下，唯有实力者驻足。*
+> *榜上每一个名字，都是用真实的生产环境药方一步步铸就。*
 >
-> *这是 AI 炼丹领域的终极封神阶梯。你的名字在这里，就是你的顶尖行业名片。*
+> *Your name could be next. All it takes is one prescription.*
+>
+> *下一个，可能就是你。只需要一份药方。*
 
 ### 🏅 封神榜 / Apotheosis Board
 <!-- LEADERBOARD_START -->
@@ -801,22 +930,23 @@ Today, 1,800 years later, AI developers face their own "ancient prescriptions" �
 
 <p align="center">
   <br>
-  <strong>🩺 Your AI deserves a doctor.</strong><br>
-  <strong>Not just when it's sick — but before it ever gets sick.</strong>
+  <strong>🩺 1,800 years ago, Hua Tuo's medical wisdom was burned.</strong><br>
+  <strong>Today, we're making sure that never happens again — to anyone.</strong>
   <br><br>
-  <strong>你的 AI 值得一位医生。</strong><br>
-  <strong>不只是生病时——更是在它生病之前。</strong>
+  <strong>1800 年前，华佗的医术毁于烈火。</strong><br>
+  <strong>今天，我们确保这样的事——再也不会发生在任何人身上。</strong>
   <br><br>
   <em>望闻问切，药到病除。</em><br>
   <em>五禽养生，固本培元。</em><br>
-  <em>古为今用，薪火相传。</em><br>
-  <em>这是技术对文化的致敬，也是文化对技术的赋能。</em>
+  <em>赛博炼丹，魂环永铸。</em><br>
+  <em>这是技术对文明的致敬，也是文明对技术的赋能。</em>
   <br><br>
-  <a href="https://github.com/JinNing6/CyberHuaTuo">⭐ Star this repo</a> · 
-  <a href="https://github.com/JinNing6/CyberHuaTuo/issues/new?template=prescription.yml">💊 Submit a Prescription</a> · 
-  <a href="https://github.com/JinNing6/CyberHuaTuo/discussions">💬 Discussions</a> · 
-  <a href="https://discord.gg/cyberhuatuo">🎮 Discord</a>
+  <a href="https://github.com/JinNing6/CyberHuaTuo">⭐ Star this repo — 让更多 AI 得到救治</a> · 
+  <a href="https://github.com/JinNing6/CyberHuaTuo/issues/new?template=prescription.yml">💊 Submit Your First Prescription — 提交你的第一份药方</a>
+  <br>
+  <a href="https://github.com/JinNing6/CyberHuaTuo/discussions">💬 Join the Discussion — 加入讨论</a> · 
+  <a href="https://discord.gg/cyberhuatuo">🎮 Discord Community</a>
   <br><br>
   <sub>Named after 华佗, the divine physician of ancient China — healer, inventor, and philosopher.</sub><br>
-  <sub>以华佗之名，致敬中华五千年医道传承——治病、养生、强体。</sub>
+  <sub>以华佗之名，致敬中华五千年医道传承——治病 · 炼丹 · 飞升。</sub>
 </p>
