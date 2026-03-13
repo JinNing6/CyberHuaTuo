@@ -541,7 +541,9 @@ Add this to your AI tool's MCP config (Claude Desktop / Cursor / VS Code / Gemin
 | `mine_github_issue` | ⛏️ Extract & refine GitHub Issues into standard cases |
 | `save_prescription` | 📥 Save prescriptions locally + auto-sync to GitHub |
 | `upload_prescription` | 🌐 **Upload prescriptions** — auto-creates GitHub Issue (⚡ temporary intern), CI promotes to 📜 permanent expert |
-| `my_contribution_stats` | 🏅 Check your Hall of Divine Doctors title & contribution count |
+| `my_contribution_stats` | 🧬 **修为档案** — 16-tier Alchemist title system based on global ranking percentile |
+| `check_my_ranking` | 🏆 **全球炼丹师排行** — coronation art, streak tracking & community milestones |
+| `my_share_card` | 📋 **分享卡片** — generate a cyberpunk cultivation archive card for social sharing |
 | `list_frameworks` | 📋 List all supported frameworks & tech stacks |
 
 > 👉 **Full configuration guide: [README_MCP.md](README_MCP.md)**
@@ -590,15 +592,20 @@ Simply copy the `skills/cyberhuatuo-rescue` directory into your project's `.curs
 
 ---
 
-## 🏅 Hall of Divine Doctors — Global Leaderboard & Titles
+## 🧬 Alchemist Cultivation System — Global Ranking & Titles
 
-**名医堂 — 全球医师排名与即时激励**
+**炼丹师修为体系 — 全球排名与即时激励**
 
-We turned bug fixing into a cultivation journey! Every time you (or your AI agent on your behalf) solve a problem and upload a prescription using MCP, you instantly earn points and climb the ranks in the **Hall of Divine Doctors (名医堂)**.
+> *Inspired by the ancient art of alchemy (炼丹术) — every developer is a Cyber Alchemist, refining prescriptions to heal AI.*
+>
+> *灵感源自两千年炼丹术——每位开发者都是赛博炼丹师，炼制药方，拯救 AI。*
 
-*   **Instant Feedback**: The moment `upload_prescription` succeeds, the MCP server returns your new title (e.g., 🏥 Resident Doctor) and real-time contribution count directly in your chat interface.
-*   **AI Encouragement**: Your AI is instructed to proactively remind and encourage you to upload your successful fixes to claim your titles!
-*   **Live Leaderboard**: Your contributions are synced to the GitHub Hall of Fame, establishing your reputation globally as a master of "Cyber Medicine."
+We turned bug fixing into a **cultivation journey**! Every time you upload a prescription, you climb the **Alchemist Ladder (炼丹师阶梯)** — a 16-tier ranking system based on your **global percentile**, not absolute numbers. The bigger the community grows, the more prestigious your title becomes.
+
+*   ⚡ **Instant Coronation**: The moment `upload_prescription` succeeds, you receive a cyberpunk-themed coronation with your new title and ASCII art.
+*   🔥 **Streak Tracking (赛博生物钟)**: Consecutive contribution days are tracked with fire milestones — 3-day, 7-day, 14-day, and 30-day streaks.
+*   📋 **Share Card**: Generate a shareable cultivation archive card for GitHub Profile, Twitter, or Weibo with `my_share_card`.
+*   📡 **Community Milestones**: When the knowledge base hits 50 / 100 / 200 / 500 prescriptions, a global broadcast celebrates the achievement.
 
 ---
 
@@ -649,13 +656,13 @@ If you believe a name in our matrix would serve a better purpose for your projec
 
 ---
 
-### 👨‍⚕️ Become a Resident Doctor（坐堂医师）
+### 🧪 Become an Alchemist（成为炼丹师）
 
 Found a fix that saved your project? **Don't let it die in your commit history.**
 
-1. 📝 **Submit a Prescription** — document your fix with error, version, env, and solution
+1. 📝 **Submit a Prescription（铭刻印痕）** — document your fix with error, version, env, and solution
 2. ✅ **Community Verification** — other developers validate through real-world testing
-3. 🏅 **Earn the "神医" Badge** — top contributors earn the **Divine Doctor（神医）** title
+3. 🧬 **Climb the Alchemist Ladder** — ascend from ⭐ One-Star Alchemist to 🩺 **华佗再世 Hua Tuo Reborn**
 
 > *You don't need to be a 10x engineer. You just need to have solved one problem that someone else hasn't — yet.*
 
@@ -714,34 +721,49 @@ Today, 1,800 years later, AI developers face their own "ancient prescriptions" �
 
 ---
 
-## 🏆 Global AI Physician Ranking — Defining the Industry Standard (全球AI医师排行榜 · 确立行业标准)
+## 🏆 封神榜 · Apotheosis Board — Global Alchemist Ranking (全球炼丹师排行榜 · 封神阶梯)
 
-> *The greatest physicians didn't hoard knowledge — they shared it with the world.*
+> *The greatest alchemists didn't hoard their elixirs — they shared the formula with the world.*
 >
-> *最伟大的医者从不将医术据为己有——他们悬壶济世，薪火相传。*
+> *最伟大的炼丹师从不将药方据为己有——他们悬壶济世，薪火相传。*
 > 
-> *Here lies the ultimate ladder of AI debugging. Your name here is your global industry card.*
+> *Here lies the ultimate ladder of AI alchemy. Your name here is your global industry card.*
 >
-> *这是 AI 调试领域的终极封神阶梯。你的名字在这里，就是你的顶尖行业名片。*
+> *这是 AI 炼丹领域的终极封神阶梯。你的名字在这里，就是你的顶尖行业名片。*
 
-### 🏅 Hall of Fame / 名医排行
+### 🏅 封神榜 / Apotheosis Board
 <!-- LEADERBOARD_START -->
 | Rank | Avatar | Name | Title / 称号 | Contributions / 贡献 |
 |:----:|:------:|:----:|:------------:|:-------------------:|
-| 🥇 | <a href="https://github.com/CyberHuaTuo"><img src="https://github.com/CyberHuaTuo.png" width="50" height="50" style="border-radius:50%"/></a> | [@CyberHuaTuo](https://github.com/CyberHuaTuo) | 👑 华佗再世 Hua Tuo Reborn | 30 |
-| 🥈 | <a href="https://github.com/JinNing6"><img src="https://github.com/JinNing6.png" width="50" height="50" style="border-radius:50%"/></a> | [@JinNing6](https://github.com/JinNing6) | 🏥 坐堂医师 Resident Doctor | 1 |
+| 🥇 | <a href="https://github.com/CyberHuaTuo"><img src="https://github.com/CyberHuaTuo.png" width="50" height="50" style="border-radius:50%"/></a> | [@CyberHuaTuo](https://github.com/CyberHuaTuo) | 🩺 华佗再世 Hua Tuo Reborn | 30 |
+| 🥈 | <a href="https://github.com/JinNing6"><img src="https://github.com/JinNing6.png" width="50" height="50" style="border-radius:50%"/></a> | [@JinNing6](https://github.com/JinNing6) | ⭐ 一星炼丹师 One-Star Alchemist | 1 |
 <!-- LEADERBOARD_END -->
 
 
-### 🩺 Title System / 称号体系
+### 🧬 炼丹师阶梯 / Alchemist Ladder (16 Tiers)
 
-| Title / 称号 | Requirement / 条件 | Description |
-|:---:|:---:|:---|
-| 🏥 坐堂医师 Resident Doctor | First contribution | 提交了第一个药方或 PR |
-| ⚕️ 主治医师 Attending Physician | 3+ contributions | 持续贡献的可靠伙伴 |
-| 👨‍⚕️ 名医 Renowned Doctor | 5+ contributions | 社区公认的问题解决专家 |
-| 🌟 神医 Divine Doctor | 10+ contributions | 传奇级别的贡献者 |
-| 👑 华佗再世 Hua Tuo Reborn | 20+ contributions | 当代华佗，开源之光 |
+> *Titles are based on **global ranking percentile** — the bigger the community, the more prestigious your title.*
+>
+> *称号基于**全球排名百分位**动态计算——社区越大，称号含金量越高。*
+
+| Title / 称号 | Global Rank / 条件 | Description |
+|:---|:---:|:---|
+| 🌱 实习药童 Intern Apprentice | — | 尚未贡献药方 No contributions yet |
+| ⭐ 一星炼丹师 One-Star Alchemist | Top 100% | 初入炼丹之道 First prescription |
+| ⭐⭐ 二星炼丹师 Two-Star Alchemist | Top 90% | 药理初通 Getting the hang of it |
+| ⭐⭐⭐ 三星炼丹师 Three-Star Alchemist | Top 80% | 小有所成 Solid contributor |
+| ⭐⭐⭐⭐ 四星炼丹师 Four-Star Alchemist | Top 70% | 炼丹有方 Reliable healer |
+| ⭐⭐⭐⭐⭐ 五星炼丹师 Five-Star Alchemist | Top 60% | 百草通晓 Master of herbs |
+| 🌟 六星炼丹师 Six-Star Alchemist | Top 50% | 丹道精通 Alchemy adept |
+| 🌟🌟 七星炼丹师 Seven-Star Alchemist | Top 40% | 药到病除 Cure on demand |
+| 🌟🌟🌟 八星炼丹师 Eight-Star Alchemist | Top 30% | 妙手回春 Miracle worker |
+| 🌟🌟🌟🌟 九星炼丹师 Nine-Star Alchemist | Top 25% | 炼丹宗师 Grandmaster |
+| 🏅 小丹王 Junior Pill King | Top 20% | 初窥丹道巅峰 Approaching the peak |
+| 💜 丹王 Pill King | Top 15% | 丹道称王 Ruling the realm |
+| ⚡ 半圣 Half-Saint | Top 8% | 半步封圣 One step from sainthood |
+| 👑 丹圣 Pill Saint | Top 4% | 丹圣降世 Saintly mastery |
+| 💎 丹帝 Pill Emperor | Top 1% | 丹帝临世 Imperial authority |
+| 🩺 华佗再世 Hua Tuo Reborn | #1 Global | 天下第一炼丹师 The One and Only |
 
 ### All Contributors / 所有贡献者
 

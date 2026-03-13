@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-自动更新全球 AI 医师排行榜脚本 (自动被 GitHub Action 触发)
-扫描 cases/ 目录，将所有贡献者的贡献进行打分、排序，并覆盖更新 README.md 与 README_CN.md。
+自动更新全球炼丹师排行榜脚本 (自动被 GitHub Action 触发)
+扫描 cases/ 目录，将所有贡献者按百分位排名计算炼丹师称号，并覆盖更新 README.md 与 README_CN.md。
 """
 
 import re
@@ -10,26 +10,43 @@ from pathlib import Path
 import yaml
 
 # ============================================================
-# 🎖️ 积分与称号体系配置
+# 🧬 炼丹师称号阶梯（16 级，基于全球排名百分位）
 # ============================================================
 
+# (percentile_threshold, emoji, title_cn, title_en)
+# percentile = 超越了百分之几的贡献者
 TITLE_TIERS = [
-    (20, "👑", "华佗再世", "Hua Tuo Reborn"),
-    (10, "🌟", "神医", "Divine Doctor"),
-    (5, "👨‍⚕️", "名医", "Renowned Doctor"),
-    (3, "⚕️", "主治医师", "Attending Physician"),
-    (1, "🏥", "坐堂医师", "Resident Doctor"),
+    (100.0, "🩺", "华佗再世", "Hua Tuo Reborn"),           # #1 全球第一
+    (99.0,  "💎", "丹帝", "Pill Emperor"),                   # Top 1%
+    (96.0,  "👑", "丹圣", "Pill Saint"),                     # Top 4%
+    (92.0,  "⚡", "半圣", "Half-Saint"),                     # Top 8%
+    (85.0,  "💜", "丹王", "Pill King"),                      # Top 15%
+    (80.0,  "🏅", "小丹王", "Junior Pill King"),             # Top 20%
+    (75.0,  "🌟", "九星炼丹师", "Nine-Star Alchemist"),      # Top 25%
+    (70.0,  "🌟", "八星炼丹师", "Eight-Star Alchemist"),     # Top 30%
+    (60.0,  "🌟", "七星炼丹师", "Seven-Star Alchemist"),     # Top 40%
+    (50.0,  "🌟", "六星炼丹师", "Six-Star Alchemist"),       # Top 50%
+    (40.0,  "⭐", "五星炼丹师", "Five-Star Alchemist"),      # Top 60%
+    (30.0,  "⭐", "四星炼丹师", "Four-Star Alchemist"),      # Top 70%
+    (20.0,  "⭐", "三星炼丹师", "Three-Star Alchemist"),     # Top 80%
+    (10.0,  "⭐", "二星炼丹师", "Two-Star Alchemist"),       # Top 90%
+    (0.0,   "⭐", "一星炼丹师", "One-Star Alchemist"),       # Top 100%
 ]
 
-def calculate_title(contribution_count: int, lang: str = "en") -> tuple[str, str]:
+DEFAULT_TITLE = ("🌱", "实习药童", "Intern Apprentice")
+
+
+def calculate_title(percentile: float, is_rank_one: bool = False, lang: str = "en") -> tuple[str, str]:
+    """根据全球排名百分位计算炼丹师称号"""
+    if is_rank_one:
+        emoji, cn, en = TITLE_TIERS[0][1], TITLE_TIERS[0][2], TITLE_TIERS[0][3]
+        return (emoji, f"{cn} {en}") if lang == "en" else (emoji, cn)
+
     for threshold, emoji, title_cn, title_en in TITLE_TIERS:
-        if contribution_count >= threshold:
-            if lang == "en":
-                return emoji, f"{title_cn} {title_en}"
-            return emoji, title_cn
-    if lang == "en":
-        return "🌱", "学徒 Apprentice"
-    return "🌱", "学徒"
+        if percentile >= threshold:
+            return (emoji, f"{title_cn} {title_en}") if lang == "en" else (emoji, title_cn)
+
+    return (DEFAULT_TITLE[0], f"{DEFAULT_TITLE[1]} {DEFAULT_TITLE[2]}") if lang == "en" else (DEFAULT_TITLE[0], DEFAULT_TITLE[1])
 
 
 # ============================================================
@@ -83,6 +100,8 @@ def generate_markdown_table(stats_dict: dict, lang: str = "en") -> str:
         key=lambda x: (-x["count"], x["username"].lower())
     )
 
+    total = len(sorted_stats)
+
     if lang == "en":
         lines = [
             "| Rank | Avatar | Name | Title / 称号 | Contributions / 贡献 |",
@@ -108,17 +127,21 @@ def generate_markdown_table(stats_dict: dict, lang: str = "en") -> str:
             
         username = item["username"]
         count = item["count"]
-        emoji, title = calculate_title(count, lang=lang)
+
+        # 计算百分位（超越了百分之几的人）
+        is_rank_one = (rank == 1)
+        if total <= 1:
+            percentile = 100.0 if is_rank_one else 0.0
+        else:
+            percentile = round(((total - rank) / (total - 1)) * 100, 1)
+
+        emoji, title = calculate_title(percentile, is_rank_one=is_rank_one, lang=lang)
         
         avatar = f'<a href="https://github.com/{username}"><img src="https://github.com/{username}.png" width="50" height="50" style="border-radius:50%"/></a>'
         name_link = f'[@{username}](https://github.com/{username})'
         title_str = f"{emoji} {title}"
         
-        # 对于 JinNing6，保持 Creator & Lead 的描述，其他使用数字贡献
-        if username.lower() == "jinning6" and rank == 1:
-             contrib_str = "Creator & Lead" if lang == "en" else "创建者 & 主导"
-        else:
-             contrib_str = str(count)
+        contrib_str = str(count)
 
         lines.append(f"| {rank_str} | {avatar} | {name_link} | {title_str} | {contrib_str} |")
 
