@@ -208,6 +208,7 @@ __marimo__/
 
 # CyberHuaTuo local search engine
 .chroma_db/
+.last_sync
 
 # Private methodology notes (NEVER commit)
 方法论/

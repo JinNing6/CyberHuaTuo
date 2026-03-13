@@ -20,6 +20,7 @@ from .doc_sources import (
 )
 from .indexer import build_index, scan_cases
 from .searcher import SearchResult, search_cases, search_ephemeral_issues
+from .case_sync import CaseSyncer
 from .contributor import CaseSubmission, save_case_file
 from .github_sync import (
     GitHubSyncer,
@@ -60,6 +61,11 @@ mcp = FastMCP(
 
 # ===== ChromaDB 懒加载 =====
 _chroma_client = None
+_force_rebuild = False  # 同步后需要强制重建索引
+
+# ===== 药方库自动同步器 =====
+_case_syncer = CaseSyncer()
+_case_syncer.start_background_sync()
 
 
 def _append_update_notice(result: str) -> str:
@@ -72,12 +78,26 @@ def _append_update_notice(result: str) -> str:
 
 def _get_chroma_client():
     """懒加载 ChromaDB 客户端，首次调用时构建索引"""
-    global _chroma_client
+    global _chroma_client, _force_rebuild
     if _chroma_client is None:
         logger.info("🩺 首次加载，构建知识库索引...")
-        _chroma_client, count = build_index()
+        _chroma_client, count = build_index(force_rebuild=_force_rebuild)
+        _force_rebuild = False
         logger.info(f"✅ 索引就绪，共 {count} 个病例")
     return _chroma_client
+
+
+def _maybe_sync_cases() -> None:
+    """检查是否需要从 GitHub 同步最新药方，有更新则使缓存失效"""
+    global _chroma_client, _force_rebuild
+    try:
+        updated = _case_syncer.check_and_sync()
+        if updated:
+            _chroma_client = None
+            _force_rebuild = True
+            logger.info("🔄 检测到新药方，已标记索引重建")
+    except Exception as e:
+        logger.debug(f"同步检查跳过: {e}")
 
 
 # ============================================================
@@ -107,6 +127,7 @@ async def diagnose(
         framework: 按框架过滤（如 langchain, crewai） / Filter by framework
         top_k: 返回的参考病例数量，默认 5 / Number of reference cases, default 5
     """
+    _maybe_sync_cases()
     client = _get_chroma_client()
 
     # 1. 常驻药方：向量搜索
@@ -164,6 +185,7 @@ async def search_knowledge_base(
         complexity: 按复杂度过滤 / Filter by complexity (simple / moderate / complex / extreme)
         top_k: 返回结果数量，默认 5 / Number of results, default 5
     """
+    _maybe_sync_cases()
     client = _get_chroma_client()
 
     # 常驻药方：ChromaDB 向量搜索

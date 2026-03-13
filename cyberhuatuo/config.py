@@ -148,6 +148,10 @@ class Config:
     # 瞬时药方搜索配置（GitHub Issues 双层架构）
     EPHEMERAL_SEARCH_ENABLED: bool = os.getenv("EPHEMERAL_SEARCH_ENABLED", "true").lower() == "true"
 
+    # 药方库自动同步配置（从 GitHub 增量拉取新晋升的常驻药方）
+    CASE_SYNC_ENABLED: bool = os.getenv("CASE_SYNC_ENABLED", "true").lower() == "true"
+    CASE_SYNC_INTERVAL_MINUTES: int = int(os.getenv("CASE_SYNC_INTERVAL_MINUTES", "5"))
+
     # 滋补药方配置
     NOURISHING_ENABLED: bool = os.getenv("NOURISHING_ENABLED", "true").lower() == "true"
 
