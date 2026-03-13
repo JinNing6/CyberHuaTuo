@@ -38,8 +38,12 @@ from .achievements import (
     check_community_milestones,
 )
 from .banner import play_boot_animation
+from .version_check import start_version_check, get_update_notice
 
 logger = logging.getLogger("cyberhuatuo.mcp")
+
+# 启动后台版本检查（非阻塞，3秒超时）
+start_version_check()
 
 # ============================================================
 # 🩺 初始化 MCP Server
@@ -56,6 +60,14 @@ mcp = FastMCP(
 
 # ===== ChromaDB 懒加载 =====
 _chroma_client = None
+
+
+def _append_update_notice(result: str) -> str:
+    """如果有可用更新，在工具输出末尾附加一次性提示"""
+    notice = get_update_notice()
+    if notice:
+        return result + "\n" + notice
+    return result
 
 
 def _get_chroma_client():
@@ -120,11 +132,11 @@ async def diagnose(
         from .diagnosis import diagnose as llm_diagnose
 
         diagnosis_result = await llm_diagnose(query=query, results=results)
-        return diagnosis_result
+        return _append_update_notice(diagnosis_result)
     except Exception as e:
         # LLM 不可用时回退到纯搜索结果
         logger.warning(f"LLM 诊断不可用，回退到纯搜索: {e}")
-        return _format_search_results(query, results)
+        return _append_update_notice(_format_search_results(query, results))
 
 
 @mcp.tool()
