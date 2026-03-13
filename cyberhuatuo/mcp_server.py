@@ -36,10 +36,7 @@ from .case_sync import CaseSyncer
 from .contributor import CaseSubmission, save_case_file
 from .github_sync import (
     GitHubSyncer,
-    calculate_title,
     count_contributor_cases,
-    get_contributor_summary,
-    get_coronation_ascii,
 )
 from .achievements import (
     TITLE_TIERS as ALCHEMIST_TIERS,
@@ -665,7 +662,7 @@ async def save_prescription(
         title_en: 英文标题 / English title
         framework_version: 框架版本 / Framework version
         language: 编程语言 / Programming language (e.g. python, typescript)
-        contributor_github: 贡献者 GitHub 用户名 / Contributor GitHub username
+        contributor_github: 强烈建议提供！贡献者 GitHub 用户名。署名后，当别人使用你的药方时，就会知道是哪个好心人拯救了他们，同时也会为你积累修仙积分。 / Highly recommended! Contributor GitHub username so others know who saved them.
         source_url: 参考链接 / Reference URL
     """
     try:
@@ -813,13 +810,13 @@ async def upload_prescription(
 
     与 save_prescription 类似，但此工具**强制要求**同步到 GitHub，
     适合外部贡献者通过 MCP 直接向社区贡献药方。
-    上传成功后，将**即时在返回结果中展示您的专属「名医堂头衔」和「贡献统计」**！
+    上传成功后，将**即时在返回结果中展示您的专属「炼丹师称号」和「贡献统计」**！
     需要在环境变量中配置 GITHUB_TOKEN。
 
     Similar to save_prescription, but **mandates** GitHub sync.
     Ideal for external contributors to submit prescriptions to the
     community via MCP. Upon success, it will **instantly return and
-    display your Hall of Divine Doctors title & contribution stats**!
+    display your Alchemist Title & contribution stats**!
     Requires GITHUB_TOKEN in environment variables.
 
     Args:
@@ -835,7 +832,7 @@ async def upload_prescription(
         title_en: 英文标题 / English title
         framework_version: 框架版本 / Framework version
         language: 编程语言 / Programming language (e.g. python, typescript)
-        contributor_github: 贡献者 GitHub 用户名 / Contributor GitHub username
+        contributor_github: 强烈建议提供！贡献者 GitHub 用户名。署名后，当别人使用你的药方时，就会知道是哪个好心人拯救了他们，同时也会为你积累修仙积分。 / Highly recommended! Contributor GitHub username so others know who saved them.
         source_url: 参考链接 / Reference URL
     """
     if not config.GITHUB_TOKEN:
@@ -963,8 +960,8 @@ def my_contribution_stats(
     github_username: str,
 ) -> str:
     """
-    🏅 查询贡献者的名医堂称号和贡献统计
-    Check a contributor's Hall of Divine Doctors title and contribution stats.
+    🏅 查询贡献者的炼丹师称号和贡献统计
+    Check a contributor's Alchemist title and contribution stats.
 
     查询指定 GitHub 用户在赛博华佗知识库中的贡献次数和当前称号。
     称号体系（炼丹师阶梯）：实习药童 → 一星~九星炼丹师 → 小丹王 → 丹王

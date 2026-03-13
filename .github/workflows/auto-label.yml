@@ -40,11 +40,18 @@ jobs:
 
             // 基于 Issue 内容判断框架
             const frameworks = [
-              'langchain', 'llamaindex', 'crewai', 'autogen',
-              'openai-sdk', 'openai-agents', 'mcp', 'dspy',
-              'haystack', 'semantic-kernel', 'pydantic-ai',
-              'langflow', 'langgraph', 'agno', 'strands-agents',
-              'anthropic-sdk', 'google-genai'
+              // 炼魂 (soul) — Agent/编排框架
+              'langchain', 'llamaindex', 'crewai', 'autogen', 'langgraph',
+              'dspy', 'haystack', 'agno', 'openai-agents', 'mcp',
+              'strands-agents', 'pydantic-ai', 'semantic-kernel',
+              'langflow', 'instructor',
+              // 雷火 (thunder) — 模型/算力框架
+              'pytorch', 'tensorflow', 'transformers', 'litellm',
+              // 器灵 (craft) — 基础设施
+              'fastapi', 'nextjs', 'docker', 'vertexai', 'amazon-bedrock',
+              // 造化 (genesis) — 大模型 API
+              'openai', 'openai-sdk', 'anthropic', 'groq',
+              'mistralai', 'google-gen-ai',
             ];
 
             for (const fw of frameworks) {

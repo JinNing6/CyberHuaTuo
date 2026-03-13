@@ -1,0 +1,212 @@
+Found 2 results.
+Result 1: contributor=CyberHuaTuo
+Result 2: contributor=CyberHuaTuo
+
+--- USER PROMPT ---
+## 用户提交的问题
+
+My agent is failing with timeout
+
+## 知识库检索结果（按相关度排序）
+
+### 病例 1（相关度 45.6%）
+- 标题: Agent 无法解析 LLM 输出导致 ValueError: Could not parse LLM output
+- 框架: langchain
+- 复杂度: moderate
+- 严重性: critical
+- 文件: cases\langchain\agent-behavior\parse-llm-output-012.md
+- 贡献者: 华佗再世 CyberHuaTuo 🩺
+
+---
+id: "langchain-agent-parse-error-012"
+title: "Agent 无法解析 LLM 输出导致 ValueError: Could not parse LLM output"
+title_en: "ValueError: Could not parse LLM output in Agent execution"
+framework: "langchain"
+framework_version: ">=0.0.200"
+language: "python"
+tags:
+  - "agent-behavior"
+  - "general"
+severity: "critical"
+complexity: "moderate"
+environment:
+  python_version: ">=3.9"
+  os: "any"
+created_at: "2026-03-11"
+updated_at: "2026-03-11"
+contributors:
+  - github: "CyberHuaTuo"
+source_url: "https://github.com/langchain-ai/langchain/issues/1358"
+related_cases: []
+---
+
+## 🏥 症状描述
+Symptom Description
+
+使用 `AgentExecutor` 或 `create_react_agent` 时，LLM 返回的文本无法被 Agent 的输出解析器正确解析，导致整个执行链崩溃。这是 LangChain 仓库中最高赞（82 条评论）的 Issue 之一，影响了大量使用 ReAct Agent 的开发者。
+
+## 🔍 错误信息
+Error Message
+
+```python
+ValueError: Could not parse LLM output: `I'll help you with that. Let me search for the information.`
+```
+
+或
+
+```python
+OutputParserException: Could not parse LLM output: 
+`Based on the information I found, here is the answer...`
+```
+
+## 🔬 根因分析
+Root Cause Analysis
+
+1. **LLM 不遵循 ReAct 格式**：Agent 期望 LLM 输出严格的 `Thought: / Action: / Action Input:` 格式，但 LLM 有时会直接给出最终答案而不遵循格式
+2. **Prompt 不够严格**：默认的 Agent prompt 对输出格式的约束不够明确
+3. **不同模型行为差异**：GPT-3.5 比 GPT-4 更容易偏离格式要求
+4. **非英文输入**：使用中文等非英文输入时，LLM 更容易偏离 ReAct 格式
+
+## 💊 药方
+Prescriptions
+
+### 药方 1：启用 handle_parsing_errors ✅ 推荐
+
+```python
+from langchain.agents import AgentExecutor
+
+agent_executor = AgentExecutor(
+    agent=agent,
+    tools=tools,
+    handle_parsing_errors=True,  # 自动处理解析错误
+    # 或者提供自定义错误处理函数
+    # handle_parsing_errors=lambda e: f"请重新格式化你的输出: {e}"
+)
+```
+
+### 药方 2：使用 OpenAI Functions Agent 代替 ReAct Agent
+
+OpenAI Functions Agent 使用结构化 function calling，完全避免输出解析问题：
+
+```python
+from langchain.agents import create_openai_functions_agent
+from langchain_openai import ChatOpenAI
+
+llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+agent = create_openai_functions_agent(llm, tools, prompt)
+agent_executor = AgentExecutor(agent=agent, tools=tools)
+```
+
+##
+
+---
+### 病例 2（相关度 45.5%）
+- 标题: CrewAI Agent 陷入无限循环，不断重复相同工具调用
+- 框架: crewai
+- 复杂度: complex
+- 严重性: high
+- 文件: cases\crewai\agent-behavior\agent-infinite-loop-001.md
+- 贡献者: 华佗再世 CyberHuaTuo 🩺
+
+---
+id: "crewai-agent-infinite-loop-001"
+title: "CrewAI Agent 陷入无限循环，不断重复相同工具调用"
+title_en: "CrewAI Agent stuck in infinite loop repeating the same tool call"
+framework: "crewai"
+framework_version: ">=0.28.0"
+language: "python"
+tags:
+  - "infinite-loop"
+  - "tool-calling"
+  - "agent-behavior"
+  - "llm-reasoning"
+severity: "high"
+complexity: "complex"
+environment:
+  python_version: ">=3.10"
+  os: "any"
+  dependencies:
+    - "openai>=1.0"
+    - "langchain-openai"
+created_at: "2026-03-10"
+updated_at: "2026-03-10"
+contributors:
+  - github: "CyberHuaTuo"
+source_url: ""
+related_cases:
+  - "autogen-agent-loop-001"
+---
+
+## 🏥 症状描述
+Symptom Description
+
+CrewAI Agent 在执行任务时，反复调用同一个工具（通常是搜索工具或网页抓取工具），进入无限循环。表现为：
+- Agent 不断输出相同的思考和行动
+- Token 消耗飙升，费用快速增长
+- 任务永远无法完成
+
+## 🔍 错误信息
+Error Message
+
+没有明确的错误消息，但日志中会出现类似以下的重复模式：
+
+```
+[Agent] Thinking: I need to search for more information about X
+[Agent] Action: search_tool
+[Agent] Input: "X related topic"
+[Agent] Observation: [搜索结果]
+[Agent] Thinking: I need to search for more information about X  ← 重复
+[Agent] Action: search_tool                                      ← 重复
+...（无限循环）
+```
+
+最终可能因 `max_iter` 或 Token 限制触发以下异常：
+
+```python
+CrewAIError: Agent exceeded maximum iterations (25)
+```
+
+## 🔬 根因分析
+Root Cause Analysis
+
+此问题通常由多个因素叠加导致：
+
+### 1. LLM 推理能力不足
+使用推理能力较弱的模型（如 GPT-3.5-turbo）时，Agent 难以判断何时「已收集到足够信息」，陷入不断搜索的循环。
+
+### 2. 任务描述模糊
+`Task.description` 缺乏明确的完成标准（Acceptance Criteria），导致 Agent 无法判断任务是否已完成。
+
+### 3. 工具返回结果不够结构化
+工具返回的是大段非结构化文本，Agent 难以从中提取关键信息，误认为需要继续搜索。
+
+### 4. 上下文窗口溢出
+当对话历史超过模型的上下文窗口后，Agent 丢失了之前的思考和行动记录。
+
+## 📋 复现步骤
+Steps to Reproduce
+
+```python
+from crewai import Agent, Task, Crew
+from crewai_tools import SerperDevTool
+
+search_tool = SerperDevTool()
+
+researcher = Agent(
+    role="Research Analyst",
+    goal="Research everything about topic X",      # ← 目标过于宽泛
+    backstory="You are a thorough researcher.",
+    tools=[search_tool],
+    llm="gpt-3.5-turbo",                          # ← 推理能力不足
+    verbose=True,
+)
+
+task = Task(
+    desc
+
+
+请根据以上信息，使用望闻问切的方式进行诊断，并给出具体的药方。如有引用官方文档，请标注出处。
+
+特别注意：
+1. 如果你的核心解法来自于有具体署名的贡献者病例，请在回答的末尾真诚地致谢他，并提及他的修仙称号/等级与徽章（例如：最后，特别感谢 丹王 zhangjinqian 💊 提供的绝妙灵丹）。
+2. 如果参考的全是匿名病例或没有任何署名的官方文档，请在最后附上一句："悬壶济世，普渡苍生。" 或类似体现赛博修仙医者仁心的文案。

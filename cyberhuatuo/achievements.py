@@ -503,6 +503,7 @@ _DIRECTION_FRAMEWORKS = {
         "dspy", "haystack", "agno", "beeai", "openai-agents",
         "strands-agents", "hugging-face-smolagents", "pydantic-ai",
         "prompt-flow", "langflow", "instructor", "guardrails-ai",
+        "semantic-kernel", "mcp",
     ],
     "thunder": [
         "pytorch", "tensorflow", "transformers", "huggingface",
@@ -510,6 +511,7 @@ _DIRECTION_FRAMEWORKS = {
     ],
     "shield": [
         "security", "guardrails", "sandbox",
+        "_nourishing", "nourishing",
     ],
     "detox": [
         "general", "debug", "python", "javascript", "typescript",
@@ -517,9 +519,11 @@ _DIRECTION_FRAMEWORKS = {
     "craft": [
         "fastapi", "docker", "kubernetes", "mlops", "vertexai",
         "amazon-bedrock", "vercel",
+        "nextjs", "react", "vue", "svelte", "flask", "django",
     ],
     "genesis": [
         "openai", "anthropic", "groq", "mistralai", "google-gen-ai",
+        "openai-sdk", "anthropic-sdk", "google-genai",
     ],
 }
 

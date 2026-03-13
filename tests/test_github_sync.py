@@ -29,47 +29,47 @@ from cyberhuatuo.github_sync import (
 
 
 class TestCalculateTitle:
-    """测试贡献次数 → 名医堂称号的映射"""
+    """测试贡献次数 → 炼丹师称号的映射"""
 
     def test_zero_contributions(self):
         emoji, title = calculate_title(0)
         assert emoji == "🌱"
-        assert "学徒" in title
+        assert "实习药童" in title
 
-    def test_one_contribution_resident(self):
+    def test_one_contribution_one_star(self):
         emoji, title = calculate_title(1)
-        assert emoji == "🏥"
-        assert "坐堂医师" in title
+        assert emoji == "⭐"
+        assert "一星炼丹师" in title
 
-    def test_two_contributions_still_resident(self):
+    def test_two_contributions_still_one_star(self):
         emoji, title = calculate_title(2)
-        assert emoji == "🏥"
-        assert "坐堂医师" in title
+        assert emoji == "⭐"
+        assert "一星炼丹师" in title
 
-    def test_three_contributions_attending(self):
+    def test_three_contributions_five_star(self):
         emoji, title = calculate_title(3)
-        assert emoji == "⚕️"
-        assert "主治医师" in title
+        assert emoji == "⭐"
+        assert "五星炼丹师" in title
 
-    def test_five_contributions_renowned(self):
+    def test_five_contributions_nine_star(self):
         emoji, title = calculate_title(5)
-        assert emoji == "👨‍⚕️"
-        assert "名医" in title
-
-    def test_ten_contributions_divine(self):
-        emoji, title = calculate_title(10)
         assert emoji == "🌟"
-        assert "神医" in title
+        assert "九星炼丹师" in title
 
-    def test_twenty_contributions_reborn(self):
+    def test_ten_contributions_pill_king(self):
+        emoji, title = calculate_title(10)
+        assert emoji == "💜"
+        assert "丹王" in title
+
+    def test_twenty_contributions_pill_saint(self):
         emoji, title = calculate_title(20)
         assert emoji == "👑"
-        assert "华佗再世" in title
+        assert "丹圣" in title
 
-    def test_hundred_contributions_still_reborn(self):
-        """超过 20 次应保持最高称号"""
-        emoji, title = calculate_title(100)
-        assert emoji == "👑"
+    def test_fifty_contributions_reborn(self):
+        """超过 50 次应达到最高称号"""
+        emoji, title = calculate_title(50)
+        assert emoji == "🩺"
         assert "华佗再世" in title
 
 

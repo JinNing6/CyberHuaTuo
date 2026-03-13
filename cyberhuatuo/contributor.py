@@ -62,8 +62,8 @@ async def smart_extract_contribution(
     """
     使用 LLM 自动提取诊断病例所需的详细信息
     """
-    prompt = f"""
-你是一个资深的主治医师和程序员专家，正在整理一份《赛博华佗》的 AI 技术纠错药方。
+    system_prompt = "你是一个资深的高星炼丹师和程序员专家，正在整理一份《赛博华佗》的 AI 技术纠错药方。"
+    user_prompt = f"""
 下面是用户提交的极简报错和修复记录，你需要推断并提取出所有必须的结构化字段。
 
 用户遇到的问题（症状/报错）：
@@ -97,7 +97,10 @@ async def smart_extract_contribution(
     try:
         kwargs = {
             "model": model_name,
-            "messages": [{"role": "user", "content": prompt}],
+            "messages": [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt}
+            ],
             "temperature": 0.2
         }
         if api_key:

@@ -157,6 +157,14 @@ def build_index(force_rebuild: bool = False) -> tuple[chromadb.ClientAPI, int]:
             "case_type": case["metadata"].get("case_type", "treatment"),
             "filepath": case["filepath"],
         }
+        
+        # 提取贡献者 Github 署名
+        contributors = case["metadata"].get("contributors", [])
+        if isinstance(contributors, list) and len(contributors) > 0 and isinstance(contributors[0], dict):
+            meta["contributor"] = contributors[0].get("github", "")
+        else:
+            meta["contributor"] = ""
+
         # 将 tags 列表转为逗号分隔字符串
         tags = case["metadata"].get("tags", [])
         if isinstance(tags, list):

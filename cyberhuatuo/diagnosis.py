@@ -53,17 +53,30 @@ def build_diagnosis_prompt(
     Returns:
         LLM messages 列表
     """
+    # 引入方法以获取现时修仙档案
+    from .achievements import get_cultivation_profile
+
     # 构建知识库上下文
     context_parts = []
     for i, r in enumerate(results, 1):
         content_preview = r.content[:2000] if r.content else "（内容未加载）"
+
+        attribution = ""
+        if r.contributor:
+            try:
+                profile = get_cultivation_profile(r.contributor)
+                attribution = f"- 贡献者: {profile.get('title_cn', '炼丹师')} {r.contributor} {profile.get('title_emoji', '💊')}\n"
+            except Exception:
+                attribution = f"- 贡献者: {r.contributor}\n"
+
         context_parts.append(
             f"### 病例 {i}（相关度 {r.relevance}%）\n"
             f"- 标题: {r.title}\n"
             f"- 框架: {r.framework}\n"
             f"- 复杂度: {r.complexity}\n"
             f"- 严重性: {r.severity}\n"
-            f"- 文件: {r.filepath}\n\n"
+            f"- 文件: {r.filepath}\n"
+            f"{attribution}\n"
             f"{content_preview}\n"
         )
 
@@ -93,7 +106,10 @@ def build_diagnosis_prompt(
     if doc_snippets:
         user_content += f"## 最新官方技术文档（来自 Context7）\n\n{official_doc_context}\n\n"
 
-    user_content += "请根据以上信息，使用望闻问切的方式进行诊断，并给出具体的药方。如有引用官方文档，请标注出处。"
+    user_content += "请根据以上信息，使用望闻问切的方式进行诊断，并给出具体的药方。如有引用官方文档，请标注出处。\n\n"
+    user_content += "特别注意：\n"
+    user_content += "1. 如果你的核心解法来自于有具体署名的贡献者病例，请在回答的末尾真诚地致谢他，并提及他的修仙称号/等级与徽章（例如：最后，特别感谢 丹王 zhangjinqian 💊 提供的绝妙灵丹）。\n"
+    user_content += "2. 如果参考的全是匿名病例或没有任何署名的官方文档，请在最后附上一句：\"悬壶济世，普渡苍生。\" 或类似体现赛博修仙医者仁心的文案。"
 
     messages = [
         {"role": "system", "content": SYSTEM_PROMPT},

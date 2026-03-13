@@ -20,29 +20,38 @@ from .config import config
 logger = logging.getLogger("cyberhuatuo.github_sync")
 
 # ============================================================
-# 🏅 名医堂称号体系（与 README.md 一致）
+# 🏅 炼丹师称号体系（16 级）— 代理到 achievements 模块
+# 已迁移到 achievements.py，此处保留兼容接口
 # ============================================================
-
-TITLE_TIERS = [
-    (20, "👑", "华佗再世 Hua Tuo Reborn"),
-    (10, "🌟", "神医 Divine Doctor"),
-    (5, "👨‍⚕️", "名医 Renowned Doctor"),
-    (3, "⚕️", "主治医师 Attending Physician"),
-    (1, "🏥", "坐堂医师 Resident Doctor"),
-]
 
 
 def calculate_title(contribution_count: int) -> tuple[str, str]:
     """
-    根据贡献次数计算名医堂称号
+    根据贡献次数计算炼丹师称号（兼容接口）
+
+    注意：新体系基于百分位而非固定阈值。此兼容函数
+    使用简化的阈值映射来保持接口稳定。
 
     Returns:
-        (emoji, title_text) — 如 ("⚕️", "主治医师 Attending Physician")
+        (emoji, title_text) — 如 ("⭐", "一星炼丹师 One-Star Alchemist")
     """
-    for threshold, emoji, title in TITLE_TIERS:
+    # 简化映射：贡献数 → 近似称号
+    _COMPAT_TIERS = [
+        (50, "🩺", "华佗再世 Hua Tuo Reborn"),
+        (30, "💎", "丹帝 Pill Emperor"),
+        (20, "👑", "丹圣 Pill Saint"),
+        (15, "⚡", "半圣 Half-Saint"),
+        (10, "💜", "丹王 Pill King"),
+        (7, "🏅", "小丹王 Junior Pill King"),
+        (5, "🌟", "九星炼丹师 Nine-Star Alchemist"),
+        (3, "⭐", "五星炼丹师 Five-Star Alchemist"),
+        (1, "⭐", "一星炼丹师 One-Star Alchemist"),
+    ]
+    for threshold, emoji, title in _COMPAT_TIERS:
         if contribution_count >= threshold:
             return emoji, title
-    return "🌱", "学徒 Apprentice"
+    return "🌱", "实习药童 Intern Apprentice"
+
 
 
 def count_contributor_cases(
@@ -606,83 +615,44 @@ def get_global_ranking_stats(cases_dir: Path | None = None) -> dict[str, int]:
 
 def get_contributor_summary(github_username: str) -> dict:
     """
-    获取贡献者的完整统计摘要，包括全球排名信息。
+    获取贡献者的完整统计摘要（兼容接口，代理到 achievements 模块）。
 
     Returns:
-        dict 包含贡献次数、称号 emoji、称号名称、全球排行、总计医师人数
+        dict 包含贡献次数、称号 emoji、称号名称、全球排行、总计炼丹师人数
     """
-    count = count_contributor_cases(github_username)
-    emoji, title = calculate_title(count)
-    
-    # 动态计算全球排名
-    stats = get_global_ranking_stats()
-    username_lower = github_username.lower()
-    stats[username_lower] = max(stats.get(username_lower, 0), count)
-    
-    # 按照贡献数降序排序
-    sorted_stats = sorted(stats.items(), key=lambda x: x[1], reverse=True)
-    
-    global_total = len(sorted_stats)
-    rank = 1
-    for i, (u, c) in enumerate(sorted_stats):
-        if u == username_lower:
-            rank = i + 1
-            break
-
+    from .achievements import get_cultivation_profile
+    profile = get_cultivation_profile(github_username)
     return {
         "github": github_username,
-        "contribution_count": count,
-        "title_emoji": emoji,
-        "title": title,
-        "global_rank": rank,
-        "global_total": global_total,
+        "contribution_count": profile["contribution_count"],
+        "title_emoji": profile["title_emoji"],
+        "title": f"{profile['title_cn']} {profile['title_en']}",
+        "global_rank": profile["global_rank"],
+        "global_total": profile["global_total"],
     }
+
 
 def get_coronation_ascii(title_emoji: str, title: str, global_rank: int, global_total: int) -> str:
     """
-    基于称号和全球排名生成极客与修仙风格结合的 ASCII 加冕动画文案。 (双语版)
-    Bilingual geek and cultivation-styled ASCII coronation animation.
+    基于称号和全球排名生成加冕文案（兼容接口，代理到 achievements 模块）。
     """
-    percentile = 100
+    from .achievements import get_coronation_text
+    
+    percentile = 100.0
     if global_total > 1:
         percentile = round(((global_total - global_rank) / (global_total - 1)) * 100, 1)
-        
-    top_str_cn = f"🏅 全球排位: #{global_rank} / {global_total} (超越 {percentile}% 开发者)"
-    top_str_en = f"🏅 Global Rank: #{global_rank} / {global_total} (Top {round(100 - percentile, 1)}%)"
-    
-    # 根据不同级别匹配不同的震撼法阵/王座风格
-    ascii_art = ""
-    
-    if global_rank == 1 or "华佗再世" in title:
-        ascii_art = f"""
-     .──────────────────────────────────────────────────────────.
-    /   \\       {title_emoji} {title} 👑 降临 / Arrives      /   \\
-   |  ∆  |   【 世 界 级 神 医 诞 生 / WORLD-CLASS HEALER 】  |  ∆  |
-    \\___/                                                      \\___/
-     | |{top_str_cn.center(56)}| |
-     | |{top_str_en.center(56)}| |
-     | | 无与伦比的除错奥义，开源宇宙的守护者！(The Guardian)  | |
-    .───.──────────────────────────────────────────────────────.───.
-    """
-    elif global_rank <= 3 or "神医" in title:
-        ascii_art = f"""
-    ╔════════════════════════════════════════════════════════════╗
-    ║                 {title_emoji} {title}                  ║
-    ║        【 传 奇 医 者 晋 升 / LEGENDARY HEALER 】        ║
-    ║                                                            ║
-    ║{top_str_cn.center(60)}║
-    ║{top_str_en.center(60)}║
-    ║      每一次诊断都在改写历史！ (Rewriting AI history!)    ║
-    ╚════════════════════════════════════════════════════════════╝
-    """
-    else:
-        # 普通激励
-        ascii_art = f"""
-    ┌────────────────────────────────────────────────────────────┐
-    │  ★ 恭喜荣登榜单！ 当前头衔 / Title: {title_emoji} {title}  │
-    │{top_str_cn.center(60)}│
-    │{top_str_en.center(60)}│
-    │继续贡献药方，攀登全球AI医师终极阶梯！(Keep contributing!)│
-    └────────────────────────────────────────────────────────────┘
-    """
-    return ascii_art.strip("\n")
+
+    # 从 title 中提取中英文
+    parts = title.split(" ", 1)
+    title_cn = parts[0] if parts else title
+    title_en = parts[1] if len(parts) > 1 else ""
+
+    return get_coronation_text(
+        emoji=title_emoji,
+        title_cn=title_cn,
+        title_en=title_en,
+        rank=global_rank,
+        total=global_total,
+        percentile=percentile,
+    )
+

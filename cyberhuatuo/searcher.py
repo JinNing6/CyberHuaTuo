@@ -36,6 +36,7 @@ class SearchResult:
     relevance: float       # 相关度得分（0-100，越高越相关）
     content: str | None    # 病例完整内容（可选加载）
     source: str = "常驻"    # 来源标识 / Source: "常驻" (permanent) or "瞬时" (ephemeral)
+    contributor: str = ""  # 贡献者 Github / Contributor Github
 
 
 def search_cases(
@@ -128,6 +129,7 @@ def search_cases(
             relevance=round(relevance, 1),
             content=content,
             source="常驻",
+            contributor=metadata.get("contributor", ""),
         ))
 
     return search_results
@@ -275,6 +277,7 @@ def _parse_issue_to_result(issue: dict) -> SearchResult | None:
         relevance=75.0,  # 瞬时药方给固定相关度（无向量距离可比较）
         content=content,
         source="瞬时",
+        contributor=issue.get("user", {}).get("login", ""),
     )
 
 
