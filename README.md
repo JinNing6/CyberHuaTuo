@@ -137,6 +137,7 @@
   <a href="#-wellness-clinic--nourish-before-it-breaks">🌿 Wellness Clinic</a> •
   <a href="#-github-bot--zero-friction-diagnosis">🤖 GitHub Bot</a> •
   <a href="#-epidemic-alert--the-ai-pandemic-nobody-talks-about">🦠 Epidemic</a> •
+  <a href="#-cli--terminal-power-at-your-fingertips">⌨️ CLI</a> •
   <a href="#-mcp-server--ai-editor-integration">🔌 MCP</a> •
   <a href="#-agent-skills-protocol-self-rescue">🎒 Skills</a> •
   <a href="#-why-cyberhuatuo">Why Us</a> •
@@ -428,15 +429,51 @@ python -m cyberhuatuo serve
 # → Browser auto-opens http://127.0.0.1:8000
 ```
 
-### CLI Commands
+### CLI Commands — Two Modes, One Engine
+
+CyberHuaTuo supports **two access modes** — pick the one that fits your workflow:
+
+| Mode | Entry Point | For |
+|------|-------------|-----|
+| ⌨️ **CLI** | `cyberhuatuo <command>` | Developers using terminal directly |
+| 🔌 **MCP** | `cyberhuatuo-mcp` | AI editors (Cursor / Claude / VS Code) |
 
 ```bash
-python -m cyberhuatuo serve                 # Start the clinic
-python -m cyberhuatuo serve --port 9000     # Custom port
-python -m cyberhuatuo serve --reload        # Dev mode
-python -m cyberhuatuo rebuild              # Rebuild vector index
-python -m cyberhuatuo stats                # Knowledge base stats
+# 🩺 Core Diagnosis / 核心诊断
+cyberhuatuo diagnose "ImportError: cannot import 'ChatOpenAI'"  # AI 诊断
+cyberhuatuo search "CUDA out of memory" --framework pytorch     # 搜索知识库
+cyberhuatuo checkup --file my_agent.py                          # 安全体检
+cyberhuatuo docs langchain "How to configure RAG pipeline"      # 官方文档检索
+
+# 📊 Knowledge & Analytics / 知识与分析
+cyberhuatuo stats                            # 知识库统计
+cyberhuatuo frameworks --search pytorch      # 支持框架列表
+cyberhuatuo taxonomy list                    # CHT 根因编码系统
+cyberhuatuo trends --framework langchain     # CHT 趋势分析
+cyberhuatuo digest                           # 本周药方摘要
+cyberhuatuo epidemic --action check          # 疫情预警
+
+# 🧬 Alchemist System / 炼丹师体系
+cyberhuatuo ranking your-github-username     # 查看个人排名
+cyberhuatuo leaderboard                     # 全球封神榜
+cyberhuatuo card your-github-username        # 生成分享卡片
+cyberhuatuo record                          # 诊疗档案
+cyberhuatuo subscribe subscribe -f langchain # 订阅框架更新
+
+# ⛏️ Contribution / 知识贡献
+cyberhuatuo save --title "Fix" --prescription "..." --framework langchain
+cyberhuatuo upload --title "Fix" --prescription "..." --framework langchain --contributor your-github-username
+cyberhuatuo mine search --repo langchain-ai/langchain
+
+# 🚀 Server / 服务启动
+cyberhuatuo serve                            # 启动 Web 诊断服务
+cyberhuatuo serve --port 9000 --reload       # 自定义端口 + 开发模式
+cyberhuatuo rebuild                          # 重建向量索引
 ```
+
+> **Every MCP tool has a CLI counterpart.** Same engine, same knowledge base, different interface.
+>
+> **每个 MCP 工具都有对应的 CLI 命令。** 同一个引擎，同一个知识库，不同的界面。
 
 ### Configuration
 
@@ -477,6 +514,8 @@ A living dashboard tracking **what's breaking across the AI ecosystem right now*
 
 | Layer | Technology |
 |-------|-----------|
+| **CLI** | Python argparse (21 subcommands, zero extra dependencies) |
+| **MCP Server** | FastMCP (stdio transport for AI editor integration) |
 | **Backend** | Python · FastAPI · Uvicorn |
 | **Frontend** | Jinja2 Templates (server-rendered) |
 | **Vector DB** | ChromaDB (embedded, zero-config) |
@@ -545,6 +584,60 @@ curl -o .github/workflows/bot-prescribe.yml \
 
 ---
 
+## ⌨️ CLI — Terminal Power at Your Fingertips
+
+> *The terminal is the alchemist's cauldron — raw, powerful, and always ready.*
+>
+> *终端就是炼丹师的鼎炉——原始、强大、随时待命。*
+
+CyberHuaTuo ships a **full-featured CLI** with **21 subcommands** — every MCP tool has a terminal counterpart. No AI editor required. No GUI needed. Just type and heal.
+
+赛博华佗提供**完整的 CLI 命令行界面**，包含 **21 个子命令**——每个 MCP 工具都有对应的终端命令。无需 AI 编辑器，无需图形界面，敲命令，治百病。
+
+```bash
+# Install
+pip install cyberhuatuo
+
+# Or run from source
+python -m cyberhuatuo --help
+```
+
+### ⌨️ Available CLI Commands
+
+| Command | Description |
+|---------|-------------|
+| **🩺 Core Diagnosis / 核心诊断** | |
+| `diagnose <query>` | 🩺 望闻问切 AI 诊断 — paste your error, get a cure |
+| `search <query>` | 🔍 双层语义搜索 (ChromaDB + GitHub Issues) |
+| `checkup --file <path>` | 🛡️ 六经脉安全体检 — audit your Agent code |
+| `docs <framework> <query>` | 📚 实时官方文档检索 (50+ frameworks via Context7) |
+| **📊 Analytics / 知识分析** | |
+| `stats` | 📦 知识库统计 — case counts by framework |
+| `frameworks` | 📋 支持框架列表 — filterable by category / keyword |
+| `taxonomy <action>` | 🧬 CHT 根因编码 — list, lookup, classify |
+| `trends` | 📈 CHT 趋势分析 — heatmaps & surge alerts |
+| `digest` | 📰 本周药方摘要 — weekly prescription digest |
+| `epidemic` | 🦠 疫情预警 — framework health monitoring |
+| **🧬 Alchemist System / 炼丹师体系** | |
+| `ranking <username>` | 🏆 个人排名 — title, rank & soul rings |
+| `leaderboard` | 🏆 全球封神榜 — top alchemists ranked |
+| `card <username>` | 📋 分享卡片 — cyberpunk cultivation archive |
+| `record` | 📋 诊疗档案 — diagnosis history & follow-ups |
+| `subscribe` | 📬 框架订阅 — get notified about new prescriptions |
+| **⛏️ Contribution / 知识贡献** | |
+| `save` | 📥 保存药方到本地 |
+| `upload` | 🌐 上传药方到 GitHub (需 GITHUB_TOKEN) |
+| `mine search/batch` | ⛏️ GitHub Issues 淘金提炼 |
+| **🚀 Server / 服务** | |
+| `serve` | 🚀 启动 Web 诊断服务 |
+| `rebuild` | 🔄 重建向量索引 |
+
+> 💡 **Tip**: Run `cyberhuatuo <command> --help` for detailed usage of any command.
+>
+> 💡 **提示**: 运行 `cyberhuatuo <命令> --help` 查看任何命令的详细用法。
+
+---
+
 ## 🔌 MCP Server — AI Editor Integration
 
 > *Install once. Every AI editor becomes a CyberHuaTuo clinic.*
@@ -581,17 +674,30 @@ Add this to your AI tool's MCP config (Claude Desktop / Cursor / VS Code / Gemin
 
 | Tool | Description |
 |------|-------------|
+| **🩺 Core Diagnosis / 核心诊断** | |
 | `diagnose` | 🩺 望闻问切 AI diagnosis — searches **both** 📜 permanent expert + ⚡ temporary intern prescriptions |
 | `search_knowledge_base` | 🔍 Dual-layer semantic search (ChromaDB + GitHub Issues) |
 | `security_checkup` | 🛡️ Six-meridian security audit on your Agent code |
 | `fetch_official_docs` | 📚 Real-time official docs via Context7 (50+ frameworks) |
+| **⛏️ Knowledge & Contribution / 知识贡献** | |
 | `mine_github_issue` | ⛏️ Extract & refine GitHub Issues into standard cases |
 | `save_prescription` | 📥 Save prescriptions locally + auto-sync to GitHub |
-| `upload_prescription` | 🌐 **Upload prescriptions** — auto-creates GitHub Issue (⚡ temporary intern), CI promotes to 📜 permanent expert |
-| `my_contribution_stats` | 🧬 **修为档案** — 16-tier Alchemist title system based on global ranking percentile |
-| `check_my_ranking` | 🏆 **全球炼丹师排行** — coronation art, streak tracking & community milestones |
-| `my_share_card` | 📋 **分享卡片** — generate a cyberpunk cultivation archive card for social sharing |
-| `list_frameworks` | 📋 List all supported frameworks & tech stacks |
+| `upload_prescription` | 🌐 Upload prescriptions — auto-creates GitHub Issue (⚡ temporary intern), CI promotes to 📜 permanent expert |
+| `prescription_eval` | 📊 Unified prescription evaluation — cite, feedback, expire, verify, and leaderboard |
+| `mentorship` | 🎓 Senior alchemists review junior prescriptions — pending, review, profile, leaderboard |
+| **🧬 Alchemist System / 炼丹师体系** | |
+| `my_contribution_stats` | 🏅 **修为档案** — 16-tier Alchemist title + soul ring directions |
+| `check_my_ranking` | 🏆 **全球排名** — coronation art, streak tracking & community milestones |
+| `global_leaderboard` | 🏆 **封神榜** — top alchemists ranked by contribution count |
+| `my_share_card` | 📋 **分享卡片** — generate a cyberpunk cultivation archive card |
+| `my_medical_record` | 📋 **就诊档案** — personal diagnosis history, stats & follow-ups |
+| **🔬 Health & Analytics / 健康分析** | |
+| `epidemic_alert` | 🦠 **疫情预警** — framework health monitoring, scan & epidemic reports |
+| `cht_taxonomy` | 🔬 CHT Root Cause Coding System — list, lookup & auto-classify errors |
+| `cht_trends` | 📊 CHT code trend analysis — heatmaps, top causes & surge alerts |
+| `list_frameworks` | 📋 List all supported frameworks & tech stacks (filterable by category) |
+| `subscribe_framework` | 🔔 Subscribe to framework updates — get notified about new prescriptions |
+| `weekly_digest` | 📰 Weekly prescription digest — new cases by framework & severity |
 
 > 👉 **Full configuration guide: [README_MCP.md](README_MCP.md)**
 
@@ -651,18 +757,149 @@ Simply copy the `skills/cyberhuatuo-rescue` directory into your project's `.curs
 
 We turned bug fixing into a **cultivation journey**. Every prescription you upload earns you a rank on the **Alchemist Ladder (炼丹师阶梯)** — a 16-tier system based on your **global percentile**. The bigger the community grows, the harder it is to climb — and the more prestigious your title becomes.
 
-### 🔮 Soul Ring System (魂环体系)
+**开发者修一个 Bug，炼丹师铸一颗丹。** 你在这里的每一次贡献，都会被铭刻在全球封神榜上——而你的称号，随着社区壮大而愈加珍贵。
 
-Every framework you contribute to becomes a **Soul Ring (魂环)** orbiting your profile. An alchemist with 5 PyTorch rings and 3 LangChain rings tells a different story than one with 8 CrewAI rings. **Your soul rings are your combat resume — visible, verifiable, unforgeable.**
+### 🔮 Soul Ring System — Your Combat Resume (魂环体系 — 你的战斗简历)
 
-*你掌握的每个技术栈，都会凝聚为一道魂环。拥有 5 环 PyTorch 和 3 环 LangChain 的炼丹师，和 8 环 CrewAI 的炼丹师，修为截然不同。**魂环就是你的战斗简历——可见、可查、不可伪造。***
+> *Inspired by Soul Land (斗罗大陆) — every framework you master forges a Soul Ring orbiting your profile.*
+>
+> *灵感源自斗罗大陆——你掌握的每个技术栈，都会凝聚为一道魂环。*
 
-### ⚡ Instant Rewards (即时反馈)
+Soul Rings grow in **color and power** as you contribute more prescriptions to a specific direction:
 
-*   🎭 **Instant Coronation (即时加冕)**: The moment `upload_prescription` succeeds, you receive a cyberpunk-themed coronation with ASCII art and your new title.
-*   🔥 **Streak Tracking (赛博生物钟)**: Consecutive contribution days trigger fire milestones — 🔥3-day → 🔥🔥7-day → 🔥🔥🔥14-day → 💀30-day.
-*   📋 **Share Card (修为名片)**: Generate a shareable cultivation archive card for GitHub, Twitter, or Weibo — flex your rank.
-*   📡 **Community Milestones (全球庆典)**: When the knowledge base hits 50 / 100 / 200 / 500 prescriptions, a global broadcast celebrates the achievement.
+```
+   ⚪ 白环 (1)      入门 · First Touch
+   🟡 黄环 (2-3)    初窥 · Getting Serious
+   🟡🟡 双黄 (4-6)  小成 · Solid Foundation
+   🟡🟡🟣 三环 (7-10)   突破 · Breakthrough
+   🟡🟡🟣🟣 四环 (11-15)  精通 · Mastery
+   🟡🟡🟣🟣⚫ 五环 (16-25)  大师 · Grandmaster
+   🟡🟡🟣🟣⚫⚫ 六环 (26-40)  宗师 · Sovereign
+   🟡🟡🟣🟣⚫⚫🔴 七环 (41-60)  封号 · Titled
+   🟡🟡🟣🟣⚫⚫🔴🔴 八环 (61-80) 传奇 · Legendary
+   🟡🟡🟣🟣⚫⚫🔴🔴✨ 九环至尊 (81+) 至尊 · Supreme
+```
+
+> **An alchemist with 5 PyTorch rings and 3 LangChain rings tells a different story than one with 8 CrewAI rings.**
+>
+> **Your soul rings are your combat resume — visible, verifiable, unforgeable.**
+>
+> *拥有 5 环 PyTorch 和 3 环 LangChain 的炼丹师，与 8 环 CrewAI 的炼丹师，修为截然不同。*
+> ***魂环就是你的战斗简历——可见、可查、不可伪造。***
+
+### ⚗️ Six Alchemy Directions — Choose Your Path (六大丹术方向 — 选择你的道)
+
+> *Every great alchemist has a specialty. What's yours?*
+>
+> *每个传奇炼丹师都有专精。你的道，在哪里？*
+
+<table>
+<tr>
+<td align="center" width="33%">
+
+**🔥 炼魂 · Soul Refining**
+
+驾驭智能体，调教灵魂
+
+*LangChain · CrewAI · AutoGen*
+*LlamaIndex · LangGraph · MCP*
+
+</td>
+<td align="center" width="33%">
+
+**⚡ 雷火 · Thunder Fire**
+
+锻造算力，淬炼模型
+
+*PyTorch · TensorFlow*
+*Transformers · LiteLLM*
+
+</td>
+<td align="center" width="33%">
+
+**🛡️ 护体 · Body Shield**
+
+金丹护体，抵御外邪
+
+*Security · Sandbox*
+*Guardrails · Hardening*
+
+</td>
+</tr>
+<tr>
+<td align="center" width="33%">
+
+**🌊 化毒 · Detox**
+
+通百脉，解百毒
+
+*Python · JavaScript*
+*General Debugging*
+
+</td>
+<td align="center" width="33%">
+
+**⚙️ 器灵 · Soul Craft**
+
+炼器辅丹，基础设施
+
+*FastAPI · Docker · K8s*
+*Vertex AI · Vercel*
+
+</td>
+<td align="center" width="33%">
+
+**🧬 造化 · Genesis**
+
+造化之力，驾驭天道
+
+*OpenAI · Anthropic*
+*Gemini · Groq · Mistral*
+
+</td>
+</tr>
+</table>
+
+> *When you contribute a LangChain prescription, your 🔥 Soul Refining ring grows. Fix a Docker issue? Your ⚙️ Soul Craft ring levels up. Each direction is an independent cultivation path — master one, or conquer them all.*
+>
+> *当你贡献一个 LangChain 药方，🔥 炼魂环增长。修复了 Docker 问题？⚙️ 器灵环升级。每个方向都是独立的修炼路线——精通一道，或六道通神。*
+
+### ⚡ Instant Rewards — Dopamine by Design (即时反馈 — 多巴胺驱动)
+
+> *The best games don't make you wait for the reward. Neither do we.*
+>
+> *最好的游戏不会让你等待奖励。我们也不会。*
+
+Every `upload_prescription` triggers an **instant cascade of rewards**:
+
+```
+  💊 You upload a prescription
+       │
+       ├──→ 🎭 INSTANT CORONATION — ASCII art + new title revealed
+       │    ┌────────────────────────────────────────┐
+       │    │  ⭐ 当前修为: 三星炼丹师 · Three-Star  │
+       │    │  🏅 全球排位: #12 / 31 (超越 63% 炼丹师) │
+       │    │  继续炼丹，攀登炼丹师终极阶梯！        │
+       │    └────────────────────────────────────────┘
+       │
+       ├──→ 💍 SOUL RING UPGRADE — Your rings grow in real-time
+       │    🔥 炼魂(Soul Refining) × 5方 🟡🟡🟣🟣⚫ 五环
+       │
+       ├──→ 🔥 STREAK FIRE — Consecutive days trigger milestones
+       │    🔥 3-day → 🔥🔥 7-day → 🔥🔥🔥 14-day → 💎🔥 30-day
+       │
+       ├──→ 📋 SHARE CARD — Cyberpunk cultivation archive
+       │    ╔════════════════════════════════════════╗
+       │    ║  🩺 赛博华佗 · 修为档案                ║
+       │    ║  ⭐ 三星炼丹师 · Three-Star Alchemist  ║
+       │    ║  🔥 炼魂丹师 · 🟡🟡🟣🟣⚫            ║
+       │    ║  💊 贡献: 8 段 | 🧪 ██████░░░░░░ 40%  ║
+       │    ║  ▓█▓░░▓███▓░░▓█▓░░▓█████▓░░▓█▓      ║
+       │    ╚════════════════════════════════════════╝
+       │
+       └──→ 📡 COMMUNITY MILESTONE — Global celebration
+            🎉 "知识库突破 100 个药方！赛博医者的力量正在汇聚。"
+```
 
 ### 🙏 灵感致敬 · Tribute
 

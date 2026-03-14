@@ -27,6 +27,7 @@ dependencies = [
 ]
 
 [project.scripts]
+cyberhuatuo = "cyberhuatuo.cli:main"
 cyberhuatuo-mcp = "cyberhuatuo.mcp_server:main"
 
 # ===== 包发现与数据文件 =====
