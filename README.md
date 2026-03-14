@@ -14,6 +14,10 @@
   <em>你的 AI 生病了？推门而入。别人诊断不了的，我们药到病除。</em>
 </p>
 
+<p align="center">
+  <img src="assets/prescription_universe.svg" alt="CyberHuaTuo Holographic Bagua Engine" width="100%"/>
+</p>
+
 <!-- 🎨 赛博华佗 · 修炼画卷 — The Cyber Alchemist Saga -->
 
 <p align="center">

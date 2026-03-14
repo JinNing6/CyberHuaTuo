@@ -14,6 +14,10 @@
   <em>不只是修 Bug —— 我们让你的 AI 百毒不侵。</em>
 </p>
 
+<p align="center">
+  <img src="assets/prescription_universe.svg" alt="赛博华佗全息八卦引擎" width="100%"/>
+</p>
+
 <!-- 🎨 AI 文生图画廊 · CyberHuaTuo Gallery -->
 <table align="center">
 <tr>
