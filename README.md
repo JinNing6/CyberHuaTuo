@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/banner.png" alt="CyberHuaTuo Banner" width="100%"/>
+  <img src="assets/banner_animated.svg" alt="CyberHuaTuo Banner" width="100%"/>
 </p>
 
 <h1 align="center">🩺 CyberHuaTuo / 赛博华佗</h1>

@@ -353,28 +353,46 @@ def cmd_upload(args):
 
 
 def cmd_ranking(args):
-    """🏆 查看个人排名"""
-    _print_header("全球炼丹师排名")
-
+    """🏆 查看个人排名（带科幻动画）"""
     from .achievements import (
         get_cultivation_profile, get_coronation_text,
         record_activity, get_streak_display,
         format_alchemy_directions, get_alchemy_profile,
     )
+    from .cli_effects import (
+        animate_ranking_scan, render_soul_rings,
+        render_alchemy_hud, _supports_color,
+    )
 
     record_activity(args.username)
     profile = get_cultivation_profile(args.username)
-
-    print(f"炼丹师: @{args.username}")
-    print(f"修  为: {profile['title_emoji']} {profile['title_cn']} · {profile['title_en']}")
-    print(f"印  痕: {profile['contribution_count']} 段药方")
-    print(f"全球排位: #{profile['global_rank']} / {profile['global_total']}")
-    print(f"超越百分比: {profile['percentile']:.0f}%")
-
     alchemy = get_alchemy_profile(args.username)
-    if alchemy["primary"]:
-        p = alchemy["primary"]
-        print(f"丹术方向: {p['emoji']} {p['name_cn']}丹师 · {p['rings']}")
+
+    has_color = _supports_color()
+
+    if has_color:
+        # ── 科幻动画模式 ──
+        # 1. 全息扫描 + 排名面板
+        animate_ranking_scan(args.username, profile)
+
+        # 2. 魂环全息投影
+        if alchemy["directions"]:
+            render_soul_rings(alchemy["directions"])
+
+        # 3. 丹术方向 HUD 面板
+        if alchemy["directions"]:
+            render_alchemy_hud(alchemy["directions"], username=args.username)
+    else:
+        # ── 纯文本模式 ──
+        _print_header("全球炼丹师排名")
+        print(f"炼丹师: @{args.username}")
+        print(f"修  为: {profile['title_emoji']} {profile['title_cn']} · {profile['title_en']}")
+        print(f"印  痕: {profile['contribution_count']} 段药方")
+        print(f"全球排位: #{profile['global_rank']} / {profile['global_total']}")
+        print(f"超越百分比: {profile['percentile']:.0f}%")
+        if alchemy["primary"]:
+            p = alchemy["primary"]
+            print(f"丹术方向: {p['emoji']} {p['name_cn']}丹师 · {p['rings']}")
 
     streak = get_streak_display(args.username)
     if streak:
@@ -382,14 +400,14 @@ def cmd_ranking(args):
 
 
 def cmd_leaderboard(args):
-    """🏆 全球封神榜"""
-    _print_header("全球封神榜")
-
+    """🏆 全球封神榜（带揭榜动画）"""
     from .github_sync import get_global_ranking_stats
     from .achievements import calculate_title_by_percentile
+    from .cli_effects import animate_leaderboard
 
     stats = get_global_ranking_stats()
     if not stats:
+        _print_header("全球封神榜")
         print("封神榜尚未开启，等待第一位炼丹师的降临！")
         return
 
@@ -397,28 +415,25 @@ def cmd_leaderboard(args):
     total = len(sorted_stats)
     display = min(args.top_n, total)
 
-    print(f"总注册医师: {total} 人\n")
-    print(f"{'排位':<6} {'炼丹师':<20} {'称号':<20} {'药方数':>6}")
-    print("-" * 55)
-
-    for i in range(display):
-        username, count = sorted_stats[i]
-        rank = i + 1
-        is_r1 = (rank == 1)
-        if total <= 1:
-            pct = 100.0 if is_r1 else 0.0
-        else:
-            pct = round(((total - rank) / (total - 1)) * 100, 1)
-        emoji, title_cn, _ = calculate_title_by_percentile(pct, is_r1)
-        medals = {1: "👑", 2: "🥈", 3: "🥉"}
-        medal = medals.get(rank, f"#{rank}")
-        print(f"{medal:<6} @{username:<18} {emoji} {title_cn:<14} {count:>6}")
+    # 使用科幻揭榜动画
+    animate_leaderboard(
+        sorted_stats=sorted_stats,
+        total=total,
+        display_count=display,
+        calculate_title_fn=calculate_title_by_percentile,
+    )
 
 
 def cmd_card(args):
-    """📋 生成分享卡片"""
+    """📋 生成分享卡片（带生成动画）"""
     from .achievements import generate_share_card, record_activity
+    from .cli_effects import animate_card_generation
+
     record_activity(args.username)
+
+    # 播放生成过程动画
+    animate_card_generation(args.username)
+
     card = generate_share_card(args.username)
     print("\n📋 修为档案卡片（可复制分享）：\n")
     print(card)
