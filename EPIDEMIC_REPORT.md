@@ -1,8 +1,8 @@
 # 🦠 Agent 生态疫情通报
 # Agent Ecosystem Epidemic Report
 
-> **报告日期**: 2026-03-13
-> **生成时间**: 2026-03-13T01:06:26.966341+00:00
+> **报告日期**: 2026-03-14
+> **生成时间**: 2026-03-14T01:06:05.185165+00:00
 > **监控框架**: 10 个主流 Agent 框架
 
 ---
@@ -12,10 +12,10 @@
 | 指标 Metric | 数值 Value |
 |:---|:---|
 | 📈 监控框架数 Frameworks | **10** |
-| 🔓 总开放 Issues Total Open | **2,390** |
-| 📥 本周新增 New (7d) | **113** |
-| ✅ 本周关闭 Closed (7d) | **91** |
-| 💚 平均健康分 Avg Score | **48.2/100** |
+| 🔓 总开放 Issues Total Open | **2,408** |
+| 📥 本周新增 New (7d) | **139** |
+| ✅ 本周关闭 Closed (7d) | **103** |
+| 💚 平均健康分 Avg Score | **48.1/100** |
 
 ### 🏆 健康度排行 / Health Ranking
 
@@ -26,42 +26,42 @@
 ### ⚠️ 需要关注 / Needs Attention
 
 - 🔴 **langchain**
+- 🔴 **crewai**
 - 🔴 **openai-sdk**
 - 🔴 **dspy**
-- 🔴 **mcp**
 - 🔴 **langgraph**
 
 ### 🚨 异常告警 / Anomaly Alerts
 
 - [langchain] 🔴 存在 5 个高影响 Bug Issues
-- [langchain] 🐛 Bug 类 Issue 占比达 50%
+- [langchain] 🐛 Bug 类 Issue 占比达 49%
 - [crewai] 🔴 存在 5 个高影响 Bug Issues
-- [crewai] 🐛 Bug 类 Issue 占比达 44%
+- [crewai] 🐛 Bug 类 Issue 占比达 41%
 - [llamaindex] 🔴 存在 5 个高影响 Bug Issues
-- [llamaindex] 🐛 Bug 类 Issue 占比达 40%
+- [llamaindex] 🐛 Bug 类 Issue 占比达 41%
 - [openai-sdk] 🔴 存在 5 个高影响 Bug Issues
 - [openai-sdk] 🐛 Bug 类 Issue 占比达 65%
 - [dspy] 🔴 存在 5 个高影响 Bug Issues
 - [mcp] 🔴 存在 5 个高影响 Bug Issues
-- [pydantic-ai] ⚠️ 关闭率偏低：本周新增 17，仅关闭 5
+- [pydantic-ai] ⚠️ 关闭率偏低：本周新增 17，仅关闭 4
 - [pydantic-ai] 🔴 存在 5 个高影响 Bug Issues
-- [langgraph] ⚠️ 关闭率偏低：本周新增 11，仅关闭 3
+- [langgraph] ⚠️ 关闭率偏低：本周新增 12，仅关闭 3
 - [langgraph] 🔴 存在 5 个高影响 Bug Issues
-- [langgraph] 🐛 Bug 类 Issue 占比达 55%
+- [langgraph] 🐛 Bug 类 Issue 占比达 54%
 
 ---
 
 ## 📋 各框架详情 / Framework Details
 
 ### 🟢 deepset-ai/haystack
-**框架**: `haystack` | **健康分数 Health Score**: **85.0/100** | **趋势 Trend**: ↑ improving
+**框架**: `haystack` | **健康分数 Health Score**: **82.5/100** | **趋势 Trend**: → stable
 
 | 指标 | 数值 |
 |:---|:---|
-| 开放 Issues Open | 90 |
+| 开放 Issues Open | 89 |
 | 本周新增 New (7d) | 6 |
-| 本月新增 New (30d) | 37 |
-| 本周关闭 Closed (7d) | 12 |
+| 本月新增 New (30d) | 36 |
+| 本周关闭 Closed (7d) | 11 |
 | 本月关闭 Closed (30d) | 46 |
 | Bug 类 Issues | 0 |
 
@@ -72,13 +72,13 @@
 ---
 
 ### 🟡 microsoft/autogen
-**框架**: `autogen` | **健康分数 Health Score**: **62.0/100** | **趋势 Trend**: ↑ improving
+**框架**: `autogen` | **健康分数 Health Score**: **63.0/100** | **趋势 Trend**: → stable
 
 | 指标 | 数值 |
 |:---|:---|
-| 开放 Issues Open | 448 |
-| 本周新增 New (7d) | 3 |
-| 本月新增 New (30d) | 19 |
+| 开放 Issues Open | 451 |
+| 本周新增 New (7d) | 5 |
+| 本月新增 New (30d) | 22 |
 | 本周关闭 Closed (7d) | 2 |
 | 本月关闭 Closed (30d) | 3 |
 | Bug 类 Issues | 0 |
@@ -90,21 +90,21 @@
 
 ---
 
-### 🟡 run-llama/llama_index
-**框架**: `llamaindex` | **健康分数 Health Score**: **60.0/100** | **趋势 Trend**: → stable
+### 🟠 run-llama/llama_index
+**框架**: `llamaindex` | **健康分数 Health Score**: **59.5/100** | **趋势 Trend**: → stable
 
 | 指标 | 数值 |
 |:---|:---|
-| 开放 Issues Open | 202 |
-| 本周新增 New (7d) | 11 |
-| 本月新增 New (30d) | 56 |
-| 本周关闭 Closed (7d) | 26 |
-| 本月关闭 Closed (30d) | 104 |
+| 开放 Issues Open | 198 |
+| 本周新增 New (7d) | 14 |
+| 本月新增 New (30d) | 57 |
+| 本周关闭 Closed (7d) | 33 |
+| 本月关闭 Closed (30d) | 112 |
 | Bug 类 Issues | 81 |
 
 **异常告警 Anomalies**:
 - 🔴 存在 5 个高影响 Bug Issues
-- 🐛 Bug 类 Issue 占比达 40%
+- 🐛 Bug 类 Issue 占比达 41%
 
 **🔥 热门 Issues / Hot Issues**:
 - [[Bug]: Structured Outputs sometimes return string instead of Pydantic Model](https://github.com/run-llama/llama_index/issues/16604) (👍 14 / 💬 12)
@@ -118,68 +118,17 @@
 
 ---
 
-### 🟠 crewAIInc/crewAI
-**框架**: `crewai` | **健康分数 Health Score**: **54.8/100** | **趋势 Trend**: ↑ improving
-
-| 指标 | 数值 |
-|:---|:---|
-| 开放 Issues Open | 71 |
-| 本周新增 New (7d) | 9 |
-| 本月新增 New (30d) | 68 |
-| 本周关闭 Closed (7d) | 16 |
-| 本月关闭 Closed (30d) | 42 |
-| Bug 类 Issues | 31 |
-
-**异常告警 Anomalies**:
-- 🔴 存在 5 个高影响 Bug Issues
-- 🐛 Bug 类 Issue 占比达 44%
-
-**🚨 高危 Issues / Critical Issues**:
-- [[BUG] TaskOutput.pydantic is None on first guardrail attempt but parsed on retri](https://github.com/crewAIInc/crewAI/issues/4369) (👍 1)
-- [[BUG] Bedrock LLM Claude Sonnet returning empty Input Params on Tools calling wi](https://github.com/crewAIInc/crewAI/issues/4470) (👍 0)
-- [[BUG] AWS Bedrock tool calls extract empty arguments - uses wrong field name](https://github.com/crewAIInc/crewAI/issues/4748) (👍 0)
-
----
-
-### 🟠 pydantic/pydantic-ai
-**框架**: `pydantic-ai` | **健康分数 Health Score**: **51.0/100** | **趋势 Trend**: ↑ improving
-
-| 指标 | 数值 |
-|:---|:---|
-| 开放 Issues Open | 414 |
-| 本周新增 New (7d) | 17 |
-| 本月新增 New (30d) | 123 |
-| 本周关闭 Closed (7d) | 5 |
-| 本月关闭 Closed (30d) | 97 |
-| Bug 类 Issues | 70 |
-
-**异常告警 Anomalies**:
-- ⚠️ 关闭率偏低：本周新增 17，仅关闭 5
-- 🔴 存在 5 个高影响 Bug Issues
-
-**🔥 热门 Issues / Hot Issues**:
-- [support batch processing](https://github.com/pydantic/pydantic-ai/issues/1771) (👍 25 / 💬 2)
-- [Support for OpenAI Realtime API and equivalents (AWS Nova Sonic, etc)](https://github.com/pydantic/pydantic-ai/issues/1447) (👍 21 / 💬 7)
-- [Prompt management, versioning, and optimization](https://github.com/pydantic/pydantic-ai/issues/921) (👍 19 / 💬 8)
-
-**🚨 高危 Issues / Critical Issues**:
-- [OTel attributes are incomplete when using `Agent.run_stream_sync`](https://github.com/pydantic/pydantic-ai/issues/3714) (👍 7)
-- [Parallel MCP servers: `RuntimeError: Attempted to exit cancel scope in a differe](https://github.com/pydantic/pydantic-ai/issues/2818) (👍 5)
-- [RuntimeError: Event loop is closed when using GoogleModel with asyncio.run()](https://github.com/pydantic/pydantic-ai/issues/3762) (👍 3)
-
----
-
 ### 🟠 modelcontextprotocol/python-sdk
-**框架**: `mcp` | **健康分数 Health Score**: **47.8/100** | **趋势 Trend**: ↑ improving
+**框架**: `mcp` | **健康分数 Health Score**: **50.1/100** | **趋势 Trend**: ↑ improving
 
 | 指标 | 数值 |
 |:---|:---|
-| 开放 Issues Open | 246 |
+| 开放 Issues Open | 245 |
 | 本周新增 New (7d) | 7 |
 | 本月新增 New (30d) | 49 |
-| 本周关闭 Closed (7d) | 8 |
+| 本周关闭 Closed (7d) | 9 |
 | 本月关闭 Closed (30d) | 49 |
-| Bug 类 Issues | 95 |
+| Bug 类 Issues | 94 |
 
 **异常告警 Anomalies**:
 - 🔴 存在 5 个高影响 Bug Issues
@@ -196,17 +145,68 @@
 
 ---
 
-### 🔴 stanfordnlp/dspy
-**框架**: `dspy` | **健康分数 Health Score**: **39.6/100** | **趋势 Trend**: ↓ declining
+### 🟠 pydantic/pydantic-ai
+**框架**: `pydantic-ai` | **健康分数 Health Score**: **50.0/100** | **趋势 Trend**: ↑ improving
 
 | 指标 | 数值 |
 |:---|:---|
-| 开放 Issues Open | 283 |
+| 开放 Issues Open | 416 |
+| 本周新增 New (7d) | 17 |
+| 本月新增 New (30d) | 125 |
+| 本周关闭 Closed (7d) | 4 |
+| 本月关闭 Closed (30d) | 94 |
+| Bug 类 Issues | 71 |
+
+**异常告警 Anomalies**:
+- ⚠️ 关闭率偏低：本周新增 17，仅关闭 4
+- 🔴 存在 5 个高影响 Bug Issues
+
+**🔥 热门 Issues / Hot Issues**:
+- [support batch processing](https://github.com/pydantic/pydantic-ai/issues/1771) (👍 25 / 💬 2)
+- [Support for OpenAI Realtime API and equivalents (AWS Nova Sonic, etc)](https://github.com/pydantic/pydantic-ai/issues/1447) (👍 21 / 💬 7)
+- [Prompt management, versioning, and optimization](https://github.com/pydantic/pydantic-ai/issues/921) (👍 19 / 💬 8)
+
+**🚨 高危 Issues / Critical Issues**:
+- [OTel attributes are incomplete when using `Agent.run_stream_sync`](https://github.com/pydantic/pydantic-ai/issues/3714) (👍 7)
+- [Parallel MCP servers: `RuntimeError: Attempted to exit cancel scope in a differe](https://github.com/pydantic/pydantic-ai/issues/2818) (👍 5)
+- [RuntimeError: Event loop is closed when using GoogleModel with asyncio.run()](https://github.com/pydantic/pydantic-ai/issues/3762) (👍 3)
+
+---
+
+### 🟠 crewAIInc/crewAI
+**框架**: `crewai` | **健康分数 Health Score**: **47.6/100** | **趋势 Trend**: → stable
+
+| 指标 | 数值 |
+|:---|:---|
+| 开放 Issues Open | 76 |
+| 本周新增 New (7d) | 15 |
+| 本月新增 New (30d) | 75 |
+| 本周关闭 Closed (7d) | 18 |
+| 本月关闭 Closed (30d) | 43 |
+| Bug 类 Issues | 31 |
+
+**异常告警 Anomalies**:
+- 🔴 存在 5 个高影响 Bug Issues
+- 🐛 Bug 类 Issue 占比达 41%
+
+**🚨 高危 Issues / Critical Issues**:
+- [[BUG] TaskOutput.pydantic is None on first guardrail attempt but parsed on retri](https://github.com/crewAIInc/crewAI/issues/4369) (👍 1)
+- [[BUG] Bedrock LLM Claude Sonnet returning empty Input Params on Tools calling wi](https://github.com/crewAIInc/crewAI/issues/4470) (👍 0)
+- [[BUG] When supports_function_calling() is True, only the output_pydantic model i](https://github.com/crewAIInc/crewAI/issues/4697) (👍 0)
+
+---
+
+### 🟠 stanfordnlp/dspy
+**框架**: `dspy` | **健康分数 Health Score**: **43.5/100** | **趋势 Trend**: ↓ declining
+
+| 指标 | 数值 |
+|:---|:---|
+| 开放 Issues Open | 281 |
 | 本周新增 New (7d) | 12 |
-| 本月新增 New (30d) | 23 |
-| 本周关闭 Closed (7d) | 5 |
-| 本月关闭 Closed (30d) | 33 |
-| Bug 类 Issues | 77 |
+| 本月新增 New (30d) | 24 |
+| 本周关闭 Closed (7d) | 8 |
+| 本月关闭 Closed (30d) | 36 |
+| Bug 类 Issues | 76 |
 
 **异常告警 Anomalies**:
 - 🔴 存在 5 个高影响 Bug Issues
@@ -224,20 +224,20 @@
 ---
 
 ### 🔴 langchain-ai/langchain
-**框架**: `langchain` | **健康分数 Health Score**: **33.4/100** | **趋势 Trend**: → stable
+**框架**: `langchain` | **健康分数 Health Score**: **37.2/100** | **趋势 Trend**: ↓ declining
 
 | 指标 | 数值 |
 |:---|:---|
-| 开放 Issues Open | 263 |
-| 本周新增 New (7d) | 31 |
-| 本月新增 New (30d) | 102 |
-| 本周关闭 Closed (7d) | 13 |
-| 本月关闭 Closed (30d) | 91 |
-| Bug 类 Issues | 131 |
+| 开放 Issues Open | 277 |
+| 本周新增 New (7d) | 44 |
+| 本月新增 New (30d) | 117 |
+| 本周关闭 Closed (7d) | 14 |
+| 本月关闭 Closed (30d) | 73 |
+| Bug 类 Issues | 136 |
 
 **异常告警 Anomalies**:
 - 🔴 存在 5 个高影响 Bug Issues
-- 🐛 Bug 类 Issue 占比达 50%
+- 🐛 Bug 类 Issue 占比达 49%
 
 **🔥 热门 Issues / Hot Issues**:
 - [The batch method from ChatModels and all the Runnables does not really support t](https://github.com/langchain-ai/langchain/issues/28508) (👍 37 / 💬 12)
@@ -252,13 +252,13 @@
 ---
 
 ### 🔴 openai/openai-python
-**框架**: `openai-sdk` | **健康分数 Health Score**: **24.5/100** | **趋势 Trend**: → stable
+**框架**: `openai-sdk` | **健康分数 Health Score**: **24.1/100** | **趋势 Trend**: → stable
 
 | 指标 | 数值 |
 |:---|:---|
-| 开放 Issues Open | 168 |
-| 本周新增 New (7d) | 6 |
-| 本月新增 New (30d) | 29 |
+| 开放 Issues Open | 169 |
+| 本周新增 New (7d) | 7 |
+| 本月新增 New (30d) | 30 |
 | 本周关闭 Closed (7d) | 1 |
 | 本月关闭 Closed (30d) | 8 |
 | Bug 类 Issues | 110 |
@@ -280,21 +280,21 @@
 ---
 
 ### 🔴 langchain-ai/langgraph
-**框架**: `langgraph` | **健康分数 Health Score**: **24.1/100** | **趋势 Trend**: → stable
+**框架**: `langgraph` | **健康分数 Health Score**: **23.8/100** | **趋势 Trend**: → stable
 
 | 指标 | 数值 |
 |:---|:---|
-| 开放 Issues Open | 205 |
-| 本周新增 New (7d) | 11 |
-| 本月新增 New (30d) | 53 |
+| 开放 Issues Open | 206 |
+| 本周新增 New (7d) | 12 |
+| 本月新增 New (30d) | 51 |
 | 本周关闭 Closed (7d) | 3 |
-| 本月关闭 Closed (30d) | 19 |
+| 本月关闭 Closed (30d) | 17 |
 | Bug 类 Issues | 112 |
 
 **异常告警 Anomalies**:
-- ⚠️ 关闭率偏低：本周新增 11，仅关闭 3
+- ⚠️ 关闭率偏低：本周新增 12，仅关闭 3
 - 🔴 存在 5 个高影响 Bug Issues
-- 🐛 Bug 类 Issue 占比达 55%
+- 🐛 Bug 类 Issue 占比达 54%
 
 **🔥 热门 Issues / Hot Issues**:
 - [langgraph-checkpoint-postgres (psycopg.OperationalError: sending query and param](https://github.com/langchain-ai/langgraph/issues/3716) (👍 11 / 💬 47)
