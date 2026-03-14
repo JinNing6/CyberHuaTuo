@@ -373,7 +373,8 @@ async def security_checkup(code: str) -> str:
     Prompt 安全、输出安全、韧性设计、可观测性等六大维度，
     输出健康评分和滋补建议。需要 LLM API Key。
     
-    当用户要求“检查项目的健康程度”、“代码体检”、“诊断一下项目”等时，请务必触发此工具！
+    [触发场景 MUST READ]
+    当用户问到：“检查项目健康程度”、“代码体检”、“诊断一下项目” 时触发。
     This tool is your primary fallback when users ask for a "Project Health Check"!
 
     Run a Six-Meridian security audit covering sandbox isolation,
