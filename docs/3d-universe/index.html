@@ -561,6 +561,7 @@
     import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
     import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
     import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+    import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 
     // ─── 数据注入 ───
     const DATA = {
@@ -1538,6 +1539,61 @@
     );
     composer.addPass(bloomPass);
 
+    // ─── 🎬 电影级后处理: 胶片颗粒 + 色差 + 暗角 ───
+    const filmGrainShader = {
+      uniforms: {
+        tDiffuse: { value: null },
+        time: { value: 0 },
+        grainIntensity: { value: 0.06 },
+        aberrationAmount: { value: 0.0012 },
+      },
+      vertexShader: `
+        varying vec2 vUv;
+        void main() {
+          vUv = uv;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+      `,
+      fragmentShader: `
+        uniform sampler2D tDiffuse;
+        uniform float time;
+        uniform float grainIntensity;
+        uniform float aberrationAmount;
+        varying vec2 vUv;
+
+        // 噪声函数
+        float rand(vec2 co) {
+          return fract(sin(dot(co, vec2(12.9898, 78.233))) * 43758.5453);
+        }
+
+        void main() {
+          vec2 uv = vUv;
+
+          // 色差 — 边缘RGB偏移
+          vec2 center = uv - 0.5;
+          float dist = length(center);
+          float aberration = aberrationAmount * dist * dist;
+          float r = texture2D(tDiffuse, uv + vec2(aberration, 0.0)).r;
+          float g = texture2D(tDiffuse, uv).g;
+          float b = texture2D(tDiffuse, uv - vec2(aberration, 0.0)).b;
+          vec3 color = vec3(r, g, b);
+
+          // 胶片颗粒
+          float grain = rand(uv * time) * grainIntensity;
+          color += grain - grainIntensity * 0.5;
+
+          // 暗角增强
+          float vignette = 1.0 - dist * 0.8;
+          vignette = smoothstep(0.2, 1.0, vignette);
+          color *= vignette;
+
+          gl_FragColor = vec4(color, 1.0);
+        }
+      `
+    };
+    const filmPass = new ShaderPass(filmGrainShader);
+    composer.addPass(filmPass);
+
     // 控制器
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
@@ -1771,6 +1827,94 @@
     dashRing.rotation.x = Math.PI / 2;
     dashRing.name = 'dashRing';
     scene.add(dashRing);
+
+    // ─── 🌌 星云雾气 (Nebula Clouds) ───
+    function createNebulaSprites() {
+      const nebulaGroup = new THREE.Group();
+      nebulaGroup.name = 'nebulaClouds';
+
+      const nebulaColors = [
+        [0, 180, 255],   // cyan
+        [0, 100, 200],   // deep blue
+        [0, 208, 156],   // green
+        [80, 60, 180],   // purple
+      ];
+
+      for (let i = 0; i < 12; i++) {
+        const canvas = document.createElement('canvas');
+        canvas.width = 128;
+        canvas.height = 128;
+        const ctx = canvas.getContext('2d');
+
+        const c = nebulaColors[i % nebulaColors.length];
+        const grad = ctx.createRadialGradient(64, 64, 0, 64, 64, 64);
+        grad.addColorStop(0, `rgba(${c[0]},${c[1]},${c[2]},0.12)`);
+        grad.addColorStop(0.4, `rgba(${c[0]},${c[1]},${c[2]},0.04)`);
+        grad.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, 128, 128);
+
+        const tex = new THREE.CanvasTexture(canvas);
+        const sprite = new THREE.Sprite(
+          new THREE.SpriteMaterial({
+            map: tex,
+            transparent: true,
+            blending: THREE.AdditiveBlending,
+            depthWrite: false,
+          })
+        );
+
+        const angle = (Math.PI * 2 / 12) * i;
+        const dist = 12 + Math.random() * 20;
+        sprite.position.set(
+          dist * Math.cos(angle),
+          (Math.random() - 0.5) * 8,
+          dist * Math.sin(angle)
+        );
+        sprite.scale.setScalar(6 + Math.random() * 10);
+        nebulaGroup.add(sprite);
+      }
+
+      scene.add(nebulaGroup);
+      return nebulaGroup;
+    }
+
+    // ─── ✨ 浮动尘粒 (Ambient Dust Motes) ───
+    function createAmbientDust() {
+      const dustGeom = new THREE.BufferGeometry();
+      const dustCount = 800;
+      const dPos = new Float32Array(dustCount * 3);
+      const dSpeeds = new Float32Array(dustCount);
+
+      for (let i = 0; i < dustCount; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const dist = 3 + Math.random() * 25;
+        dPos[i*3]     = dist * Math.cos(angle);
+        dPos[i*3 + 1] = (Math.random() - 0.5) * 12;
+        dPos[i*3 + 2] = dist * Math.sin(angle);
+        dSpeeds[i] = 0.1 + Math.random() * 0.3;
+      }
+
+      dustGeom.setAttribute('position', new THREE.BufferAttribute(dPos, 3));
+      const dustMat = new THREE.PointsMaterial({
+        color: 0x88ccff,
+        size: 0.04,
+        transparent: true,
+        opacity: 0.4,
+        sizeAttenuation: true,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+      });
+
+      const dust = new THREE.Points(dustGeom, dustMat);
+      dust.name = 'ambientDust';
+      dust.userData.speeds = dSpeeds;
+      scene.add(dust);
+      return dust;
+    }
+
+    const nebulaClouds = createNebulaSprites();
+    const ambientDust = createAmbientDust();
 
     // ─── 节点存储 ───
     const nodeObjects = [];
@@ -2505,6 +2649,37 @@
       // Dash ring 旋转
       const dr = scene.getObjectByName('dashRing');
       if (dr) dr.rotation.z = t * 0.2;
+
+      // 胶片颗粒时间更新
+      if (filmPass) filmPass.uniforms.time.value = t;
+
+      // 星云雾气缓旋
+      const nc = scene.getObjectByName('nebulaClouds');
+      if (nc) nc.rotation.y = t * 0.008;
+
+      // 浮动尘粒轨道运动
+      if (ambientDust) {
+        const dustPos = ambientDust.geometry.attributes.position;
+        const speeds = ambientDust.userData.speeds;
+        for (let i = 0; i < dustPos.count; i++) {
+          const x = dustPos.getX(i);
+          const z = dustPos.getZ(i);
+          const dist = Math.sqrt(x * x + z * z);
+          const currentAngle = Math.atan2(z, x);
+          const newAngle = currentAngle + speeds[i] * 0.001;
+          dustPos.setX(i, dist * Math.cos(newAngle));
+          dustPos.setZ(i, dist * Math.sin(newAngle));
+          // 微弱上下浮动
+          dustPos.setY(i, dustPos.getY(i) + Math.sin(t * speeds[i] + i) * 0.002);
+        }
+        dustPos.needsUpdate = true;
+      }
+
+      // 节点晶体自转
+      frameworkGroups.forEach((group, fw) => {
+        const i = fwKeys.indexOf(fw);
+        group.rotation.y = t * (0.1 + i * 0.03);
+      });
 
       // 卷轴展开/收起动画
       if (scrollAnimState) {
