@@ -90,9 +90,7 @@ HEARTBEAT_FRAMES = [
 
 def _supports_color() -> bool:
     """检测终端是否支持彩色输出"""
-    if not hasattr(sys.stdout, "isatty") or not sys.stdout.isatty():
-        return False
-    return True
+    return not (not hasattr(sys.stdout, "isatty") or not sys.stdout.isatty())
 
 
 def _get_term_width() -> int:
@@ -137,7 +135,7 @@ def _matrix_rain(lines: int = 4, duration: float = 0.8) -> None:
 
     for _ in range(steps):
         line = ""
-        for col in range(width):
+        for _col in range(width):
             if random.random() < 0.15:
                 c = random.choice(chars)
                 brightness = random.choice([CYAN_DIM, CYAN, CYAN_BRIGHT, GOLD_DIM])
@@ -156,7 +154,7 @@ def _heartbeat_pulse(beats: int = 3) -> None:
     ]
     for _ in range(beats):
         line = "  "
-        for i, p in enumerate(ecg_patterns):
+        for _i, p in enumerate(ecg_patterns):
             if p in ("▲", "█"):
                 line += f"{RED}{BOLD}{p}{RESET}"
             elif p in ("▼",):

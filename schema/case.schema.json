@@ -47,6 +47,7 @@
         "pytorch",
         "transformers",
         "tensorflow",
+        "nextjs",
         "custom-agent",
         "platform-agent",
         "ml-ops",

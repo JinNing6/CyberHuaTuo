@@ -49,7 +49,7 @@ def generate_weekly_digest() -> str:
     if not recent_cases:
         return (
             "# Weekly Digest\n\n"
-            f"**Period**: Last 7 days\n\n"
+            "**Period**: Last 7 days\n\n"
             "No new prescriptions this week.\n\n"
             "> Be the first to contribute! Use `save_prescription` to add a case."
         )
@@ -287,10 +287,7 @@ def _recalculate_score(entry: dict) -> None:
 
     # Citation component (30 pts, logarithmic)
     citations = entry.get("citation_count", 0)
-    if citations > 0:
-        cite_score = min(30, math.log2(citations + 1) * 10)
-    else:
-        cite_score = 0
+    cite_score = min(30, math.log2(citations + 1) * 10) if citations > 0 else 0
 
     # Feedback volume (20 pts)
     total_fb = entry.get("resolved_count", 0) + entry.get("unresolved_count", 0)

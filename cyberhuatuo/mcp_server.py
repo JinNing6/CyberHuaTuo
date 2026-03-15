@@ -24,68 +24,26 @@ if sys.platform == "win32":
 
 from mcp.server.fastmcp import FastMCP
 
+from .achievements import (
+    check_community_milestones,
+    format_alchemy_directions,
+    get_alchemy_profile,
+    get_coronation_text,
+    get_cultivation_profile,
+    get_streak_display,
+    record_activity,
+)
+from .achievements import (
+    generate_share_card as _generate_share_card,
+)
+from .banner import play_boot_animation
+from .case_sync import CaseSyncer
 from .config import config
+from .contributor import CaseSubmission, save_case_file
 from .doc_sources import (
     ALL_FRAMEWORKS,
     get_frameworks_by_category,
     search_frameworks,
-)
-from .indexer import build_index, scan_cases
-from .searcher import SearchResult, search_cases, search_ephemeral_issues
-from .case_sync import CaseSyncer
-from .contributor import CaseSubmission, save_case_file
-from .github_sync import (
-    GitHubSyncer,
-    count_contributor_cases,
-)
-from .achievements import (
-    TITLE_TIERS as ALCHEMIST_TIERS,
-    get_cultivation_profile,
-    get_coronation_text,
-    generate_share_card as _generate_share_card,
-    record_activity,
-    get_streak_display,
-    check_community_milestones,
-    format_alchemy_directions,
-    get_alchemy_profile,
-)
-from .banner import play_boot_animation
-from .version_check import start_version_check, get_update_notice
-from .taxonomy import (
-    classify_root_cause,
-    classify_multi,
-    format_cht_code,
-    get_taxonomy_table,
-    CODE_MAP,
-    CATEGORY_NAMES,
-)
-from .report import (
-    format_standard_report,
-    calculate_confidence,
-    _generate_report_id,
-)
-from .medical_record import (
-    save_diagnosis_record,
-    mark_resolved,
-    get_follow_up_candidates,
-    get_profile_summary,
-    subscribe_framework_for_user,
-    unsubscribe_framework_for_user,
-    get_subscriptions,
-    check_new_prescriptions,
-)
-from .social import (
-    generate_weekly_digest,
-    cite_prescription,
-    get_prescription_eval,
-    register_prescription_contributor,
-    submit_feedback,
-    mark_expired,
-    mark_verified,
-    submit_review,
-    get_mentor_profile,
-    get_mentor_leaderboard,
-    get_pending_reviews,
 )
 from .epidemic_monitor import (
     EpidemicMonitor,
@@ -93,7 +51,48 @@ from .epidemic_monitor import (
     load_latest_report,
     save_report,
 )
-from .taxonomy import analyze_trends
+from .github_sync import (
+    GitHubSyncer,
+)
+from .indexer import build_index, scan_cases
+from .medical_record import (
+    check_new_prescriptions,
+    get_follow_up_candidates,
+    get_profile_summary,
+    get_subscriptions,
+    mark_resolved,
+    save_diagnosis_record,
+    subscribe_framework_for_user,
+    unsubscribe_framework_for_user,
+)
+from .report import (
+    _generate_report_id,
+    calculate_confidence,
+    format_standard_report,
+)
+from .searcher import SearchResult, search_cases, search_ephemeral_issues
+from .social import (
+    cite_prescription,
+    generate_weekly_digest,
+    get_mentor_leaderboard,
+    get_mentor_profile,
+    get_pending_reviews,
+    get_prescription_eval,
+    mark_expired,
+    mark_verified,
+    submit_feedback,
+    submit_review,
+)
+from .taxonomy import (
+    CATEGORY_NAMES,
+    CODE_MAP,
+    analyze_trends,
+    classify_multi,
+    classify_root_cause,
+    format_cht_code,
+    get_taxonomy_table,
+)
+from .version_check import get_update_notice, start_version_check
 
 logger = logging.getLogger("cyberhuatuo.mcp")
 
@@ -225,7 +224,7 @@ async def diagnose(
     Paste your error message or problem description. CyberHuaTuo will
     diagnose it using its knowledge base of real-world cases and the
     latest official docs, then prescribe a targeted fix.
-    Always trigger this when encountering bugs, unresolvable errors, or 
+    Always trigger this when encountering bugs, unresolvable errors, or
     continuous failures in your code generation!
 
     ▶️ 触发词示例 (Trigger Examples):
@@ -322,7 +321,7 @@ async def search_knowledge_base(
 
     Perform semantic vector search across the case library (no LLM API Key required).
     Returns case title, framework, severity, relevance score, and full content.
-    Highly recommended to search here FIRST before hallucinating answers for 
+    Highly recommended to search here FIRST before hallucinating answers for
     "how to", "how to configure", or "how to fix this error" queries.
 
     ▶️ 触发词示例 (Trigger Examples):
@@ -372,7 +371,7 @@ async def security_checkup(code: str) -> str:
     对 AI Agent 代码进行六经脉安全体检，检测沙箱隔离、密钥安全、
     Prompt 安全、输出安全、韧性设计、可观测性等六大维度，
     输出健康评分和滋补建议。需要 LLM API Key。
-    
+
     [触发场景 MUST READ]
     当用户问到：“检查项目健康程度”、“代码体检”、“诊断一下项目” 时触发。
     This tool is your primary fallback when users ask for a "Project Health Check"!
@@ -1028,7 +1027,7 @@ def my_contribution_stats(
         github_username: GitHub 用户名 / GitHub username
     """
     # 记录活动（连击追踪）
-    streak_info = record_activity(github_username)
+    record_activity(github_username)
 
     # 获取修为档案
     profile = get_cultivation_profile(github_username)
@@ -1066,10 +1065,7 @@ def my_contribution_stats(
     ]
 
     for threshold, tier_name, rank_req in tiers_display:
-        if profile['percentile'] >= threshold or (threshold == 100.0 and profile['is_rank_one']):
-            status = "✅"
-        else:
-            status = "🔒"
+        status = "✅" if profile['percentile'] >= threshold or threshold == 100.0 and profile['is_rank_one'] else "🔒"
         output_parts.append(f"| {tier_name} | {rank_req} | {status} |")
 
     # 下一级提示
@@ -1085,8 +1081,8 @@ def my_contribution_stats(
         output_parts.append(f"\n{streak_display}")
 
     output_parts.append(
-        f"\n> 💊 通过 `save_prescription` 或 `upload_prescription` 贡献药方来提升修为！\n"
-        f"> 💊 Contribute prescriptions to climb the Alchemist Ladder!"
+        "\n> 💊 通过 `save_prescription` 或 `upload_prescription` 贡献药方来提升修为！\n"
+        "> 💊 Contribute prescriptions to climb the Alchemist Ladder!"
     )
 
     return "\n".join(output_parts)
@@ -1172,45 +1168,45 @@ def global_leaderboard(
     当用户问到："现在成就最高的AI医生是谁"、"看看全球炼丹师排行榜"、"封神榜前十名是谁" 时触发。
 
     获取当前贡献药方数量最多的顶级 AI 医生（炼丹师）排行。
-    
-    Get the ranking of the top AI doctors (Alchemists) with the most 
+
+    Get the ranking of the top AI doctors (Alchemists) with the most
     contributed prescriptions.
 
     Args:
         top_n: 显示前N名，默认 10 / Number of top alchemists to display, default 10
     """
-    from .github_sync import get_global_ranking_stats
     from .achievements import calculate_title_by_percentile
-    
+    from .github_sync import get_global_ranking_stats
+
     stats = get_global_ranking_stats()
     if not stats:
         return _append_brand_footer("封神榜尚未开启，等待第一位炼丹师的降临！")
-    
+
     # 按照贡献数降序排序
     sorted_stats = sorted(stats.items(), key=lambda x: x[1], reverse=True)
     global_total = len(sorted_stats)
-    
+
     output_parts = [
-        f"### 🏆 赛博华佗 · 全球封神榜 / Global Apotheosis Board\n",
+        "### 🏆 赛博华佗 · 全球封神榜 / Global Apotheosis Board\n",
         f"**总注册医师 / Total Alchemists**: {global_total} 人\n",
         "| 排位 | 炼丹师 (GitHub) | 称号 / Title | 药方数 / Engrams |",
         "|:---:|:---|:---|:---:|"
     ]
-    
+
     display_count = min(top_n, global_total)
-    
+
     for i in range(display_count):
         username, count = sorted_stats[i]
         rank = i + 1
         is_rank_one = (rank == 1)
-        
+
         if global_total <= 1:
             percentile = 100.0 if is_rank_one else 0.0
         else:
             percentile = round(((global_total - rank) / (global_total - 1)) * 100, 1)
-            
+
         emoji, title_cn, title_en = calculate_title_by_percentile(percentile, is_rank_one)
-        
+
         medal = ""
         if rank == 1:
             medal = "👑"
@@ -1220,16 +1216,16 @@ def global_leaderboard(
             medal = "🥉"
         else:
             medal = f"#{rank}"
-            
+
         output_parts.append(
             f"| {medal} | @{username} | {emoji} {title_cn} | {count} |"
         )
-        
+
     output_parts.append(
-        f"\n> 💊 通过 `save_prescription` 或 `upload_prescription` 贡献药方来提升你的全球排名！\n"
-        f"> 🔗 [查看官方完整封神榜](https://github.com/JinNing6/CyberHuaTuo#%E5%90%8D%E5%8C%BB%E6%8E%92%E8%A1%8C)"
+        "\n> 💊 通过 `save_prescription` 或 `upload_prescription` 贡献药方来提升你的全球排名！\n"
+        "> 🔗 [查看官方完整封神榜](https://github.com/JinNing6/CyberHuaTuo#%E5%90%8D%E5%8C%BB%E6%8E%92%E8%A1%8C)"
     )
-    
+
     return _append_brand_footer("\n".join(output_parts))
 
 
@@ -1717,7 +1713,7 @@ async def epidemic_alert(
         if not latest:
             return "No epidemic report available. Use `epidemic_alert(action='generate')` to create one."
         parts = [
-            f"# Latest Epidemic Report\n",
+            "# Latest Epidemic Report\n",
             f"**Date**: {latest.get('report_date', '?')}\n"
             f"**Frameworks**: {latest.get('framework_count', 0)}\n"
             f"**Avg Health Score**: {latest.get('avg_health_score', 0)}/100\n"

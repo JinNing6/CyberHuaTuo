@@ -15,8 +15,7 @@ import time
 from dataclasses import dataclass
 
 from .searcher import SearchResult
-from .taxonomy import CHTCode, classify_root_cause, format_cht_code
-
+from .taxonomy import classify_root_cause, format_cht_code
 
 # ============================================================
 # Report ID Generation

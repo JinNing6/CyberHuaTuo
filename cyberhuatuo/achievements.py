@@ -14,7 +14,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from .config import config
-from .github_sync import count_contributor_cases, get_global_ranking_stats, count_contributor_cases_by_framework
+from .github_sync import count_contributor_cases, count_contributor_cases_by_framework, get_global_ranking_stats
 
 logger = logging.getLogger("cyberhuatuo.achievements")
 
@@ -628,10 +628,7 @@ def get_alchemy_profile(github_username: str) -> dict:
 
     # 主修方向
     primary = directions[0] if directions else None
-    if primary:
-        primary_display = f"{primary['emoji']} {primary['name_cn']}丹师 · {primary['rings']}"
-    else:
-        primary_display = "尚未炼丹"
+    primary_display = f"{primary['emoji']} {primary['name_cn']}丹师 · {primary['rings']}" if primary else "尚未炼丹"
 
     return {
         "directions": directions,
@@ -713,8 +710,8 @@ def generate_share_card(github_username: str) -> str:
 
     # 各方向魂环展示
     if len(alchemy["directions"]) > 1:
-        card += f"║                                              ║\n"
-        card += f"║  ── 丹术方向 · ALCHEMY ──                    ║\n"
+        card += "║                                              ║\n"
+        card += "║  ── 丹术方向 · ALCHEMY ──                    ║\n"
         for d in alchemy["directions"][:4]:  # 最多展示4个方向
             card += f"║  {d['emoji']} {d['name_cn']} ×{d['count']} {d['rings']}\n"
 

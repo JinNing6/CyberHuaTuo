@@ -1,5 +1,7 @@
 <p align="center">
-  <img src="assets/banner_animated.svg" alt="CyberHuaTuo Banner" width="100%"/>
+  <a href="#-quick-start">
+    <img src="assets/banner_animated.svg" alt="CyberHuaTuo Banner" width="100%"/>
+  </a>
 </p>
 
 <h1 align="center">🩺 CyberHuaTuo / 赛博华佗</h1>
@@ -15,7 +17,9 @@
 </p>
 
 <p align="center">
-  <img src="assets/prescription_universe.svg" alt="CyberHuaTuo Holographic Bagua Engine" width="100%"/>
+  <a href="#-quick-start">
+    <img src="assets/prescription_universe.svg" alt="CyberHuaTuo Holographic Bagua Engine" width="100%"/>
+  </a>
 </p>
 
 <!-- 🎨 赛博华佗 · 修炼画卷 — The Cyber Alchemist Saga -->

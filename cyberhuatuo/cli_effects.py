@@ -11,22 +11,31 @@ CyberHuaTuo CLI Cinematic Sci-Fi Effects Engine
 
 import math
 import random
-import shutil
-import sys
 import time
 
 # ============================================================
 # 🎨 复用 banner.py 的色彩常量与辅助函数
 # ============================================================
-
 from .banner import (
-    CYAN, CYAN_DIM, CYAN_BRIGHT,
-    PURPLE, PURPLE_DIM,
-    GOLD, GOLD_DIM,
-    RED, RED_DIM,
-    WHITE, GRAY, DARK_GRAY,
-    BOLD, DIM, RESET, CLEAR_LINE,
-    _supports_color, _get_term_width, _write,
+    BOLD,
+    CLEAR_LINE,
+    CYAN,
+    CYAN_BRIGHT,
+    CYAN_DIM,
+    DARK_GRAY,
+    DIM,
+    GOLD,
+    GOLD_DIM,
+    GRAY,
+    PURPLE,
+    PURPLE_DIM,
+    RED,
+    RED_DIM,
+    RESET,
+    WHITE,
+    _get_term_width,
+    _supports_color,
+    _write,
 )
 
 # ============================================================
@@ -145,7 +154,7 @@ def _gradient_text(text: str, gradient: list[str]) -> str:
 
 def _holographic_flicker(text: str, color: str, flickers: int = 3) -> None:
     """全息投影文字闪烁效果"""
-    for i in range(flickers):
+    for _i in range(flickers):
         _write(f"{CLEAR_LINE}  {DIM}{color}{text}{RESET}")
         time.sleep(0.04)
         _write(f"{CLEAR_LINE}  {BOLD}{color}{text}{RESET}")
@@ -191,7 +200,7 @@ def _matrix_rain_short(width: int = 50, lines: int = 3) -> None:
     chars = "01アイウエオカキ華佗望聞問切脈氣血藥方診炼丹魂环"
     for _ in range(lines):
         line = ""
-        for col in range(width):
+        for _col in range(width):
             if random.random() < 0.12:
                 c = random.choice(chars)
                 brightness = random.choice([
@@ -210,7 +219,7 @@ def _radar_sweep(width: int = 40, sweeps: int = 1) -> None:
     center = width // 2
     radius = width // 2 - 2
 
-    for sweep in range(sweeps):
+    for _sweep in range(sweeps):
         for angle_deg in range(0, 360, 15):
             angle = math.radians(angle_deg)
             line_chars = [" "] * width
@@ -443,7 +452,7 @@ def render_soul_rings(
         # ── 充能动画 → 魂环绘制 ──
         if animate:
             _energy_charge_bar(
-                label=f"魂环投影充能 · Ring Projection",
+                label="魂环投影充能 · Ring Projection",
                 color=dir_bright,
                 gradient=dir_grad,
                 width=28,
@@ -454,7 +463,7 @@ def render_soul_rings(
 
         # ── 绘制魂环 ASCII Art ──
         ring_art = _build_cinematic_ring_art(ring_count, rings_emoji)
-        for color, line in ring_art:
+        for _color, line in ring_art:
             if animate:
                 time.sleep(0.008)
             _write(f"  {line}\n")
@@ -654,11 +663,11 @@ def animate_ranking_scan(
 
     # 数据行（带微动画）
     data_rows = [
-        (f"炼丹师", f"{CYAN_BRIGHT}@{username}{RESET}"),
-        (f"修  为", f"{GOLD}{title_emoji} {title_cn} · {title_en}{RESET}"),
-        (f"印  痕", f"{CYAN_BRIGHT}{contribution_count}{WHITE} 段药方{RESET}"),
-        (f"排  位", f"{GOLD}#{rank}{WHITE} / {total}{RESET}"),
-        (f"超  越", f"{GREEN_BRIGHT}{percentile:.0f}%{WHITE} 炼丹师{RESET}"),
+        ("炼丹师", f"{CYAN_BRIGHT}@{username}{RESET}"),
+        ("修  为", f"{GOLD}{title_emoji} {title_cn} · {title_en}{RESET}"),
+        ("印  痕", f"{CYAN_BRIGHT}{contribution_count}{WHITE} 段药方{RESET}"),
+        ("排  位", f"{GOLD}#{rank}{WHITE} / {total}{RESET}"),
+        ("超  越", f"{GREEN_BRIGHT}{percentile:.0f}%{WHITE} 炼丹师{RESET}"),
     ]
 
     for label, value in data_rows:
@@ -701,7 +710,7 @@ def animate_leaderboard(
         _write(f"\n  {GOLD}{BOLD}{summon_text}{RESET}\n\n")
 
         # 闪电暴风
-        for burst in range(3):
+        for _burst in range(3):
             bolt = "".join(random.choice("⚡✦✧") + " " * random.randint(0, 3)
                           for _ in range(random.randint(4, 10)))
             _write(f"  {GOLD}{BOLD}{bolt}{RESET}")
@@ -739,23 +748,20 @@ def animate_leaderboard(
         rank = i + 1
         is_r1 = (rank == 1)
 
-        if total <= 1:
-            pct = 100.0 if is_r1 else 0.0
-        else:
-            pct = round(((total - rank) / (total - 1)) * 100, 1)
+        pct = (100.0 if is_r1 else 0.0) if total <= 1 else round((total - rank) / (total - 1) * 100, 1)
 
         emoji, title_cn, _ = calculate_title_fn(pct, is_r1)
         medal = medals.get(rank, f"#{rank}")
 
         # 行色彩方案
         if rank == 1:
-            row_color, row_grad = GOLD, GOLD_GRADIENT
+            row_color, _row_grad = GOLD, GOLD_GRADIENT
         elif rank == 2:
-            row_color, row_grad = WHITE, CYAN_GRADIENT
+            row_color, _row_grad = WHITE, CYAN_GRADIENT
         elif rank == 3:
-            row_color, row_grad = ORANGE, GOLD_GRADIENT
+            row_color, _row_grad = ORANGE, GOLD_GRADIENT
         else:
-            row_color, row_grad = GRAY, CYAN_GRADIENT
+            row_color, _row_grad = GRAY, CYAN_GRADIENT
 
         if animate:
             delay = 0.4 if rank <= 3 else 0.06
@@ -779,7 +785,7 @@ def animate_leaderboard(
 
 def _print_leaderboard_plain(sorted_stats, total, display_count, calculate_title_fn):
     """非 TTY 环境的纯文本封神榜"""
-    print(f"\n🏆 赛博华佗 · 全球封神榜")
+    print("\n🏆 赛博华佗 · 全球封神榜")
     print(f"总注册医师: {total} 人\n")
     print(f"{'排位':<6} {'炼丹师':<20} {'称号':<20} {'药方':>6}")
     print("-" * 55)
@@ -789,10 +795,7 @@ def _print_leaderboard_plain(sorted_stats, total, display_count, calculate_title
         username, count = sorted_stats[i]
         rank = i + 1
         is_r1 = (rank == 1)
-        if total <= 1:
-            pct = 100.0 if is_r1 else 0.0
-        else:
-            pct = round(((total - rank) / (total - 1)) * 100, 1)
+        pct = (100.0 if is_r1 else 0.0) if total <= 1 else round((total - rank) / (total - 1) * 100, 1)
         emoji, title_cn, _ = calculate_title_fn(pct, is_r1)
         medal = medals.get(rank, f"#{rank}")
         print(f"{medal:<6} @{username:<18} {emoji} {title_cn:<14} {count:>6}")
@@ -838,7 +841,7 @@ def animate_card_generation(
         )
 
     # DNA 螺旋展示
-    _write(f"\n")
+    _write("\n")
     dna_frames = [
         f"  {CYAN}╔═══╗{RESET}   {PURPLE}╔═══╗{RESET}   {GOLD}╔═══╗{RESET}",
         f"  {CYAN}║╲ ╱║{RESET}   {PURPLE}║╲ ╱║{RESET}   {GOLD}║╲ ╱║{RESET}",

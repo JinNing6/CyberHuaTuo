@@ -15,7 +15,7 @@ from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
 from .config import config
-from .taxonomy import CHTCode, classify_root_cause
+from .taxonomy import CHTCode
 
 logger = logging.getLogger("cyberhuatuo.medical_record")
 

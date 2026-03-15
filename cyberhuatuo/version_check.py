@@ -21,8 +21,8 @@ def _do_check(current_version: str) -> None:
     """后台线程：查询 PyPI 最新版本并对比"""
     global _update_notice, _check_done
     try:
-        import urllib.request
         import json
+        import urllib.request
 
         url = "https://pypi.org/pypi/cyberhuatuo/json"
         req = urllib.request.Request(url, headers={"Accept": "application/json"})
@@ -38,7 +38,7 @@ def _do_check(current_version: str) -> None:
         from packaging.version import Version
         try:
             if Version(latest) > Version(current_version):
-                summary = data.get("info", {}).get("summary", "")
+                data.get("info", {}).get("summary", "")
                 _update_notice = (
                     f"\n⚡ **赛博华佗有新版本可用！**\n"
                     f"   当前版本 Current: `v{current_version}` → 最新版本 Latest: `v{latest}`\n"
@@ -55,8 +55,8 @@ def _do_check(current_version: str) -> None:
     except ImportError:
         # packaging 库不可用时的简化处理
         try:
-            import urllib.request
             import json
+            import urllib.request
 
             url = "https://pypi.org/pypi/cyberhuatuo/json"
             req = urllib.request.Request(url, headers={"Accept": "application/json"})

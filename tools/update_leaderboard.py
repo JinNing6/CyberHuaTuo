@@ -7,6 +7,7 @@
 import re
 import sys
 from pathlib import Path
+
 import yaml
 
 # ============================================================
@@ -69,7 +70,7 @@ def scan_cases_dir(cases_dir: Path) -> dict[str, int]:
             meta = yaml.safe_load(match.group(1))
             if not isinstance(meta, dict):
                 continue
-            
+
             contributors = meta.get("contributors", [])
             if isinstance(contributors, list):
                 for c in contributors:
@@ -89,14 +90,14 @@ def scan_cases_dir(cases_dir: Path) -> dict[str, int]:
                             stats[gh_lower]["count"] += 1
         except Exception as e:
             print(f"Warning: Failed to parse {md_file}: {e}")
-            
+
     return stats
 
 
 def generate_markdown_table(stats_dict: dict, lang: str = "en") -> str:
     # 按照贡献数降序排列，同分再按照用户名排序
     sorted_stats = sorted(
-        stats_dict.values(), 
+        stats_dict.values(),
         key=lambda x: (-x["count"], x["username"].lower())
     )
 
@@ -124,23 +125,20 @@ def generate_markdown_table(stats_dict: dict, lang: str = "en") -> str:
             rank_str = "🥉"
         else:
             rank_str = f"{rank}"
-            
+
         username = item["username"]
         count = item["count"]
 
         # 计算百分位（超越了百分之几的人）
         is_rank_one = (rank == 1)
-        if total <= 1:
-            percentile = 100.0 if is_rank_one else 0.0
-        else:
-            percentile = round(((total - rank) / (total - 1)) * 100, 1)
+        percentile = (100.0 if is_rank_one else 0.0) if total <= 1 else round((total - rank) / (total - 1) * 100, 1)
 
         emoji, title = calculate_title(percentile, is_rank_one=is_rank_one, lang=lang)
-        
+
         avatar = f'<a href="https://github.com/{username}"><img src="https://github.com/{username}.png" width="50" height="50" style="border-radius:50%"/></a>'
         name_link = f'[@{username}](https://github.com/{username})'
         title_str = f"{emoji} {title}"
-        
+
         contrib_str = str(count)
 
         lines.append(f"| {rank_str} | {avatar} | {name_link} | {title_str} | {contrib_str} |")
@@ -156,23 +154,23 @@ def update_readme(file_path: Path, new_table: str):
     if not file_path.exists():
         print(f"Error: {file_path} does not exist.")
         return False
-        
+
     content = file_path.read_text(encoding="utf-8")
-    
+
     # 查找替换标志位
     pattern = r"(<!-- LEADERBOARD_START -->\n)(.*?)(\n<!-- LEADERBOARD_END -->)"
-    
+
     if not re.search(pattern, content, flags=re.DOTALL):
          print(f"Error: Could not find LEADERBOARD flags in {file_path}")
          return False
-         
+
     new_content = re.sub(
-        pattern, 
-        rf"\g<1>{new_table}\g<3>", 
-        content, 
+        pattern,
+        rf"\g<1>{new_table}\g<3>",
+        content,
         flags=re.DOTALL
     )
-    
+
     file_path.write_text(new_content, encoding="utf-8")
     print(f"✅ Successfully updated leaderboard in {file_path}")
     return True
@@ -181,25 +179,25 @@ def update_readme(file_path: Path, new_table: str):
 if __name__ == "__main__":
     project_root = Path(__file__).resolve().parent.parent
     cases_dir = project_root / "cases"
-    
+
     print("Scanning cases directory...")
     stats = scan_cases_dir(cases_dir)
     print(f"Found {len(stats)} contributors.")
-    
+
     if not stats:
         print("No cases found, exiting.")
         sys.exit(0)
-        
+
     print("\nGenerating English markdown table...")
     table_en = generate_markdown_table(stats, lang="en")
     print("\nGenerating Chinese markdown table...")
     table_cn = generate_markdown_table(stats, lang="cn")
-    
+
     readme_en = project_root / "README.md"
     readme_cn = project_root / "README_CN.md"
-    
+
     success_en = update_readme(readme_en, table_en)
     success_cn = update_readme(readme_cn, table_cn)
-    
+
     if not (success_en and success_cn):
         sys.exit(1)

@@ -93,8 +93,8 @@ def cmd_diagnose(args):
     _print_header("望闻问切 · AI 诊断")
     client = _get_chroma()
 
+    from .report import _generate_report_id, calculate_confidence, format_standard_report
     from .searcher import search_cases
-    from .report import format_standard_report, calculate_confidence, _generate_report_id
     from .taxonomy import classify_root_cause
 
     results = search_cases(
@@ -116,9 +116,9 @@ def cmd_diagnose(args):
         pass
 
     # LLM 诊断
-    report_id = _generate_report_id()
-    root_cause = classify_root_cause(args.query)
-    confidence = calculate_confidence(results)
+    _generate_report_id()
+    classify_root_cause(args.query)
+    calculate_confidence(results)
 
     try:
         from .diagnosis import diagnose as llm_diagnose
@@ -185,7 +185,7 @@ def cmd_checkup(args):
     code = args.code
     if args.file:
         try:
-            with open(args.file, "r", encoding="utf-8") as f:
+            with open(args.file, encoding="utf-8") as f:
                 code = f.read()
         except Exception as e:
             print(f"❌ 无法读取文件: {e}")
@@ -260,7 +260,7 @@ def cmd_save(args):
 
     try:
         result = save_case_file(submission)
-        print(f"✅ 药方保存成功！")
+        print("✅ 药方保存成功！")
         print(f"  病例 ID: {result['case_id']}")
         print(f"  保存路径: {result['filepath']}")
     except Exception as e:
@@ -342,7 +342,7 @@ def cmd_upload(args):
             from .achievements import get_cultivation_profile, record_activity
             record_activity(contributor)
             profile = get_cultivation_profile(contributor)
-            print(f"\n🧬 修为结算:")
+            print("\n🧬 修为结算:")
             print(f"  炼丹师: @{contributor}")
             print(f"  称号: {profile['title_emoji']} {profile['title_cn']}")
             print(f"  累计药方: {profile['contribution_count']} 段")
@@ -355,13 +355,16 @@ def cmd_upload(args):
 def cmd_ranking(args):
     """🏆 查看个人排名（带科幻动画）"""
     from .achievements import (
-        get_cultivation_profile, get_coronation_text,
-        record_activity, get_streak_display,
-        format_alchemy_directions, get_alchemy_profile,
+        get_alchemy_profile,
+        get_cultivation_profile,
+        get_streak_display,
+        record_activity,
     )
     from .cli_effects import (
-        animate_ranking_scan, render_soul_rings,
-        render_alchemy_hud, _supports_color,
+        _supports_color,
+        animate_ranking_scan,
+        render_alchemy_hud,
+        render_soul_rings,
     )
 
     record_activity(args.username)
@@ -401,9 +404,9 @@ def cmd_ranking(args):
 
 def cmd_leaderboard(args):
     """🏆 全球封神榜（带揭榜动画）"""
-    from .github_sync import get_global_ranking_stats
     from .achievements import calculate_title_by_percentile
     from .cli_effects import animate_leaderboard
+    from .github_sync import get_global_ranking_stats
 
     stats = get_global_ranking_stats()
     if not stats:
@@ -476,8 +479,10 @@ def cmd_frameworks(args):
 def cmd_taxonomy(args):
     """🧬 CHT 编码系统"""
     from .taxonomy import (
-        get_taxonomy_table, classify_multi, format_cht_code,
-        CODE_MAP, CATEGORY_NAMES,
+        CATEGORY_NAMES,
+        CODE_MAP,
+        classify_multi,
+        get_taxonomy_table,
     )
 
     if args.action == "list":
@@ -528,7 +533,7 @@ def cmd_trends(args):
 
 def cmd_record(args):
     """📋 诊疗档案"""
-    from .medical_record import get_profile_summary, mark_resolved, get_follow_up_candidates
+    from .medical_record import get_follow_up_candidates, get_profile_summary, mark_resolved
 
     user = args.username or os.getenv("GITHUB_USERNAME", os.getenv("USER", "anonymous"))
 
@@ -554,8 +559,10 @@ def cmd_record(args):
 def cmd_subscribe(args):
     """📬 框架订阅"""
     from .medical_record import (
-        subscribe_framework_for_user, unsubscribe_framework_for_user,
-        get_subscriptions, check_new_prescriptions,
+        check_new_prescriptions,
+        get_subscriptions,
+        subscribe_framework_for_user,
+        unsubscribe_framework_for_user,
     )
 
     user = args.username or os.getenv("GITHUB_USERNAME", os.getenv("USER", "anonymous"))
@@ -594,7 +601,7 @@ def cmd_digest(args):
 
 def cmd_epidemic(args):
     """🦠 疫情预警"""
-    from .epidemic_monitor import EpidemicMonitor, load_latest_report, save_report, generate_markdown_report
+    from .epidemic_monitor import EpidemicMonitor, generate_markdown_report, load_latest_report, save_report
 
     if args.action == "check":
         latest = load_latest_report()
@@ -641,6 +648,7 @@ def cmd_epidemic(args):
 def cmd_serve(args):
     """🚀 启动 Web 服务"""
     import uvicorn
+
     from .config import config
 
     host = args.host or config.HOST

@@ -157,7 +157,7 @@ def build_index(force_rebuild: bool = False) -> tuple[chromadb.ClientAPI, int]:
             "case_type": case["metadata"].get("case_type", "treatment"),
             "filepath": case["filepath"],
         }
-        
+
         # 提取贡献者 Github 署名
         contributors = case["metadata"].get("contributors", [])
         if isinstance(contributors, list) and len(contributors) > 0 and isinstance(contributors[0], dict):

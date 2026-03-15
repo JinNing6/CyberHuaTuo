@@ -231,7 +231,7 @@ def _parse_issue_to_result(issue: dict) -> SearchResult | None:
     structured_data = _extract_structured_data(body)
 
     # 从标签中提取元数据
-    labels = [l.get("name", "") for l in issue.get("labels", [])]
+    labels = [lbl.get("name", "") for lbl in issue.get("labels", [])]
     framework = "unknown"
     severity = "medium"
     for label in labels:

@@ -13,7 +13,10 @@ This module provides:
 
 from __future__ import annotations
 
+import json
+import time
 from dataclasses import dataclass
+from pathlib import Path
 
 # ============================================================
 # CHT Root Cause Code Definitions
@@ -440,9 +443,7 @@ def get_taxonomy_table() -> str:
 # Trend Analysis — CHT 编码趋势分析
 # ============================================================
 
-import json
-import time
-from pathlib import Path
+
 
 
 def _collect_cht_data_from_cases() -> list[dict]:

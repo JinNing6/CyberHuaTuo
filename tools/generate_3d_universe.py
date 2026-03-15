@@ -1,11 +1,12 @@
 import math
 
+
 def generate_cinematic_svg():
     width = 1600
     height = 900
     cx = width / 2
     cy = height / 2 + 100
-    
+
     # SVG Header
     svg = f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {width} {height}" width="100%" height="100%" style="background-color:#02050e; font-family:'Courier New', monospace;">
     <defs>
@@ -15,7 +16,7 @@ def generate_cinematic_svg():
             <stop offset="40%" stop-color="#020712" />
             <stop offset="100%" stop-color="#010205" />
         </radialGradient>
-        
+
         <!-- Clean precise bloom without ugly anti-aliasing artifacts -->
         <filter id="precise-bloom" x="-50%" y="-50%" width="200%" height="200%">
             <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="glow1" />
@@ -51,7 +52,7 @@ def generate_cinematic_svg():
             <stop offset="80%" stop-color="#0055ff" stop-opacity="0.1" />
             <stop offset="100%" stop-color="#00ffff" stop-opacity="0" />
         </linearGradient>
-        
+
         <radialGradient id="floor-fade" cx="50%" cy="50%" r="50%">
             <stop offset="20%" stop-color="#ffffff" stop-opacity="1" />
             <stop offset="80%" stop-color="#ffffff" stop-opacity="0" />
@@ -62,7 +63,7 @@ def generate_cinematic_svg():
     </defs>
 
     <rect width="100%" height="100%" fill="url(#bg-glow)" />
-    
+
     <!-- Stars/Dust overlay -->
     <g opacity="0.3">
 '''
@@ -144,11 +145,11 @@ def generate_cinematic_svg():
     # Level 3: The Holographic Cylinder (Stacking circles to create depth in 3D)
     svg += '            <!-- 3D Hollow Cylinder Effect -->\n'
     svg += '            <g stroke="#00ffff" fill="none" opacity="0.3">\n'
-    for dy in range(0, 50, 10):
+    for _dy in range(0, 50, 10):
         # We offset dy in the unscaled Y, but we want it to look vertical in the scaled world.
         # Wait, if we are inside scale(1, 0.4), translating Y by dy means it goes along the floor.
         # To make it go "up", we must do it outside the scale().
-        pass 
+        pass
     svg += '            </g>\n'
 
     # Let's add Bagua Symbols on a Ring
@@ -196,7 +197,7 @@ def generate_cinematic_svg():
                 <circle cx="300" cy="0" r="8" fill="#ffffff" filter="url(#precise-bloom)"/>
                 <circle cx="-300" cy="0" r="6" fill="#ff0055" filter="url(#precise-bloom)"/>
             </g>
-            
+
             <!-- Central Tai Chi Reactor -->
             <circle cx="0" cy="0" r="160" fill="#00ffff" opacity="0.05" filter="url(#core-bloom)"/>
             <circle cx="0" cy="0" r="150" fill="none" stroke="#ffffff" stroke-width="4" stroke-dasharray="2 10" opacity="0.8"/>
@@ -216,7 +217,7 @@ def generate_cinematic_svg():
             <!-- Back glow -->
             <ellipse cx="0" cy="0" rx="400" ry="80" fill="#00ffff" opacity="0.1" filter="url(#core-bloom)" />
             <ellipse cx="0" cy="0" rx="150" ry="30" fill="#ffffff" opacity="0.4" filter="url(#core-bloom)" />
-            
+
             <!-- The Beam -->
             <rect x="-250" y="-1200" width="500" height="1200" fill="url(#beam-grad)" opacity="0.7">
                 <animate attributeName="opacity" values="0.6;0.8;0.7;0.9;0.6" dur="0.2s" repeatCount="indefinite" />
@@ -224,7 +225,7 @@ def generate_cinematic_svg():
             <!-- Solid Core -->
             <rect x="-5" y="-1200" width="10" height="1200" fill="#ffffff" filter="url(#precise-bloom)" />
             <rect x="-2" y="-1200" width="4" height="1200" fill="#ffffff" />
-            
+
             <!-- Floating Ascending Code/Particles inside the beam -->
             <g font-size="12" fill="#00ffff" opacity="0.8">
 '''
@@ -239,11 +240,11 @@ def generate_cinematic_svg():
         svg += f'                    <animate attributeName="cy" values="0;-1100" dur="{dur}s" begin="{delay}s" repeatCount="indefinite" />\n'
         svg += f'                    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.8;1" dur="{dur}s" begin="{delay}s" repeatCount="indefinite" />\n'
         svg += '                </circle>\n'
-        
+
     svg += '''
             </g>
         </g>
-        
+
         <!-- UI Targeting Rings overlayed on the 3D center -->
         <circle cx="0" cy="0" r="160" fill="none" stroke="#ffffff" stroke-width="1" opacity="0.3" stroke-dasharray="4 8"/>
         <path d="M -150 -150 L -170 -170 M 150 150 L 170 170 M -150 150 L -170 170 M 150 -150 L 170 -170" fill="none" stroke="#00f3ff" stroke-width="2" opacity="0.6" />
@@ -265,14 +266,14 @@ def generate_cinematic_svg():
             <animate attributeName="opacity" values="0.1;1;0.1" dur="1s" repeatCount="indefinite" />
         </rect>
         <text x="50" y="-5" font-weight="bold" letter-spacing="2">SYS.OP.MODE: NOMINAL</text>
-        
+
         <g transform="translate(0, 40)" opacity="0.8">
             <text x="0" y="0">MODULE 1 [CORE_ENG]: <tspan fill="#ffffff">STABLE</tspan></text>
             <text x="0" y="25">MODULE 2 [QIMEN_DB]: <tspan fill="#ffffff">SYNC 100%</tspan></text>
             <text x="0" y="50">MODULE 3 [LLM_EXEC]: <tspan fill="#00ff00">ACTIVE</tspan></text>
             <text x="0" y="75">MODULE 4 [SEC_WRAP]: <tspan fill="#ffffff">LOCKED</tspan></text>
         </g>
-        
+
         <!-- Hexagon graph -->
         <g transform="translate(60, 180)" stroke="#00f3ff" fill="none" opacity="0.6">
             <polygon points="0,-40 34,-20 34,20 0,40 -34,20 -34,-20" stroke-width="1"/>
@@ -293,7 +294,7 @@ def generate_cinematic_svg():
         <text x="0" y="-5" font-weight="bold" letter-spacing="2" fill="#ff0055">CYBERHUATUO_V9.3</text>
         <text x="0" y="40" opacity="0.7">TARGET: <tspan fill="#ffffff">GLOBAL_AI_AGENT</tspan></text>
         <text x="0" y="65" opacity="0.7">THREAT_LEVEL: <tspan fill="#ff0055">NULL</tspan></text>
-        
+
         <!-- Audio waveform style graph -->
         <g transform="translate(0, 100)">
 '''
@@ -306,8 +307,8 @@ def generate_cinematic_svg():
         svg += f'            <rect x="{-i * 6}" y="{-h}" width="4" height="{h*2}" fill="#00f3ff" opacity="0.6">\n'
         svg += f'                <animate attributeName="height" values="{h*2};{random.randint(5,15)*2};{h*2}" dur="{dur}s" repeatCount="indefinite" />\n'
         svg += f'                <animate attributeName="y" values="{-h};{-random.randint(5,15)};{-h}" dur="{dur}s" repeatCount="indefinite" />\n'
-        svg += f'            </rect>\n'
-        
+        svg += '            </rect>\n'
+
     svg += '''
         </g>
     </g>
@@ -325,9 +326,9 @@ def generate_cinematic_svg():
         <circle cx="0" cy="0" r="60" fill="none" stroke="#00f3ff" stroke-width="1" opacity="0.4" />
         <circle cx="0" cy="0" r="40" fill="none" stroke="#00f3ff" stroke-width="2" stroke-dasharray="2 6" opacity="0.8" />
         <circle cx="0" cy="0" r="20" fill="none" stroke="#ff0055" stroke-width="1.5" stroke-dasharray="10 20" />
-        
+
         <path d="M -80 -80 L -60 -80 L -80 -60 M 80 80 L 60 80 L 80 60 M -80 80 L -60 80 L -80 60 M 80 -80 L 60 -80 L 80 -60" fill="none" stroke="#00f3ff" stroke-width="3" opacity="0.7"/>
-        
+
         <g>
             <animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="4s" repeatCount="indefinite" />
             <line x1="-50" y1="0" x2="-75" y2="0" stroke="#00f3ff" stroke-width="2" />

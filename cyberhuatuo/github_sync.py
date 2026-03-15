@@ -36,7 +36,7 @@ def calculate_title(contribution_count: int) -> tuple[str, str]:
         (emoji, title_text) — 如 ("⭐", "一星炼丹师 One-Star Alchemist")
     """
     # 简化映射：贡献数 → 近似称号
-    _COMPAT_TIERS = [
+    _compat_tiers = [
         (50, "🩺", "华佗再世 Hua Tuo Reborn"),
         (30, "💎", "丹帝 Pill Emperor"),
         (20, "👑", "丹圣 Pill Saint"),
@@ -47,7 +47,7 @@ def calculate_title(contribution_count: int) -> tuple[str, str]:
         (3, "⭐", "五星炼丹师 Five-Star Alchemist"),
         (1, "⭐", "一星炼丹师 One-Star Alchemist"),
     ]
-    for threshold, emoji, title in _COMPAT_TIERS:
+    for threshold, emoji, title in _compat_tiers:
         if contribution_count >= threshold:
             return emoji, title
     return "🌱", "实习药童 Intern Apprentice"
@@ -146,10 +146,7 @@ def count_contributor_cases_by_framework(
 
             if is_contributor:
                 fw = meta.get("framework", "general")
-                if isinstance(fw, str) and fw:
-                    fw = fw.lower().strip()
-                else:
-                    fw = "general"
+                fw = fw.lower().strip() if isinstance(fw, str) and fw else "general"
                 framework_counts[fw] = framework_counts.get(fw, 0) + 1
         except Exception:
             continue
@@ -435,7 +432,7 @@ class GitHubSyncer:
 
         # Issue body = 人类可读摘要 + 隐藏 JSON 块（供 CI 解析）
         body_parts = [
-            f"## 💊 瞬时药方 Ephemeral Prescription\n",
+            "## 💊 瞬时药方 Ephemeral Prescription\n",
             f"- **贡献者 Contributor**: @{contributor_github}",
             f"- **框架 Framework**: `{framework}`",
             f"- **严重性 Severity**: `{severity}`",
@@ -584,7 +581,7 @@ def get_global_ranking_stats(cases_dir: Path | None = None) -> dict[str, int]:
         return {}
 
     stats = {}
-    
+
     for md_file in cases_dir.rglob("*.md"):
         if md_file.name.startswith("_"):
             continue
@@ -609,7 +606,7 @@ def get_global_ranking_stats(cases_dir: Path | None = None) -> dict[str, int]:
                         stats[gh_lower] = stats.get(gh_lower, 0) + 1
         except Exception:
             continue
-            
+
     return stats
 
 
@@ -637,7 +634,7 @@ def get_coronation_ascii(title_emoji: str, title: str, global_rank: int, global_
     基于称号和全球排名生成加冕文案（兼容接口，代理到 achievements 模块）。
     """
     from .achievements import get_coronation_text
-    
+
     percentile = 100.0
     if global_total > 1:
         percentile = round(((global_total - global_rank) / (global_total - 1)) * 100, 1)

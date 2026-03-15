@@ -1,5 +1,7 @@
 <p align="center">
-  <img src="assets/banner_animated.svg" alt="赛博华佗 Banner" width="100%"/>
+  <a href="#-快速开始">
+    <img src="assets/banner_animated.svg" alt="赛博华佗 Banner" width="100%"/>
+  </a>
 </p>
 
 <h1 align="center">🩺 赛博华佗 / CyberHuaTuo</h1>
@@ -15,7 +17,9 @@
 </p>
 
 <p align="center">
-  <img src="assets/prescription_universe.svg" alt="赛博华佗全息八卦引擎" width="100%"/>
+  <a href="#-快速开始">
+    <img src="assets/prescription_universe.svg" alt="赛博华佗全息八卦引擎" width="100%"/>
+  </a>
 </p>
 
 <!-- 🎨 AI 文生图画廊 · CyberHuaTuo Gallery -->
