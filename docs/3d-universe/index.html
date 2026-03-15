@@ -354,6 +354,83 @@
       opacity: 0.6;
     }
 
+    /* ─── CRT 扫描线覆盖层 ─── */
+    .crt-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 90;
+      pointer-events: none;
+      background:
+        repeating-linear-gradient(
+          0deg,
+          transparent,
+          transparent 2px,
+          rgba(0,0,0,0.06) 2px,
+          rgba(0,0,0,0.06) 4px
+        );
+    }
+    .crt-overlay::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.45) 100%);
+    }
+
+    /* ─── HUD 四角面板 ─── */
+    .hud-panel {
+      position: fixed;
+      z-index: 95;
+      font-family: 'JetBrains Mono', monospace;
+      padding: 10px 14px;
+      pointer-events: none;
+      animation: hudFadeIn 2s ease 1s both;
+    }
+    @keyframes hudFadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+    .hud-tl { top: 80px; left: 16px; }
+    .hud-tr { top: 80px; right: 16px; text-align: right; }
+    .hud-bl { bottom: 80px; left: 16px; }
+    .hud-br { bottom: 80px; right: 16px; text-align: right; }
+    .hud-label {
+      font-size: 0.5rem;
+      color: #4A5070;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 2px;
+    }
+    .hud-value {
+      font-size: 0.58rem;
+      color: #00D09C;
+      letter-spacing: 0.08em;
+      text-shadow: 0 0 8px rgba(0,208,156,0.4);
+    }
+    .hud-blink { animation: hudBlink 3s step-end infinite, hudFadeIn 2s ease 1s both; }
+    @keyframes hudBlink { 0%,90% { opacity: 1; } 91%,95% { opacity: 0; } 96%,100% { opacity: 1; } }
+
+    /* ─── 入口按钮 ─── */
+    .launch-btn {
+      padding: 7px 18px;
+      border-radius: 4px;
+      border: 1px solid rgba(0,208,156,0.5);
+      background: rgba(0,208,156,0.08);
+      color: #00D09C;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.68rem;
+      letter-spacing: 0.08em;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      text-shadow: 0 0 8px rgba(0,208,156,0.3);
+    }
+    .launch-btn:hover {
+      background: rgba(0,208,156,0.18);
+      border-color: #00D09C;
+      box-shadow: 0 0 20px rgba(0,208,156,0.2), inset 0 0 15px rgba(0,208,156,0.05);
+      transform: translateY(-1px);
+    }
+
     /* ─── 加载动画 ─── */
     .loader {
       position: fixed;
@@ -398,6 +475,10 @@
     @keyframes spin-load {
       to { transform: rotate(360deg); }
     }
+
+    @media (max-width: 768px) {
+      .hud-panel { display: none; }
+    }
   </style>
 </head>
 <body>
@@ -409,6 +490,25 @@
 
   <!-- 3D 画布 -->
   <div id="canvas-container"></div>
+  <div class="crt-overlay"></div>
+
+  <!-- HUD 四角面板 -->
+  <div class="hud-panel hud-tl">
+    <div class="hud-label">UNIVERSE_STATUS</div>
+    <div class="hud-value hud-blink">ACTIVE</div>
+  </div>
+  <div class="hud-panel hud-tr">
+    <div class="hud-label">RENDER_ENGINE</div>
+    <div class="hud-value">THREE.JS r170</div>
+  </div>
+  <div class="hud-panel hud-bl">
+    <div class="hud-label">KNOWLEDGE_NODES</div>
+    <div class="hud-value">30 INDEXED</div>
+  </div>
+  <div class="hud-panel hud-br">
+    <div class="hud-label">BAGUA_COMPASS</div>
+    <div class="hud-value hud-blink">ROTATING</div>
+  </div>
 
   <!-- 顶部导航 -->
   <div class="top-bar">
@@ -422,6 +522,7 @@
     <div class="stats-bar">
       <span>💊 <span class="stat-value" id="stat-total">30</span> prescriptions</span>
       <span>🔧 <span class="stat-value" id="stat-fw">6</span> frameworks</span>
+      <a href="https://github.com/JinNing6/CyberHuaTuo#-quick-start" target="_blank" class="launch-btn">🏥 LAUNCH TERMINAL<br><span style="font-size:0.55rem;color:#4A5070;">进入诊所</span></a>
     </div>
   </div>
 
@@ -1433,7 +1534,7 @@
     composer.addPass(new RenderPass(scene, camera));
     const bloomPass = new UnrealBloomPass(
       new THREE.Vector2(window.innerWidth, window.innerHeight),
-      1.2, 0.3, 0.75
+      1.8, 0.2, 0.55
     );
     composer.addPass(bloomPass);
 
@@ -1479,19 +1580,18 @@
     function createCore() {
       const group = new THREE.Group();
 
-      // 半球: Cyan (Tech)
-      const half1Geom = new THREE.SphereGeometry(2.0, 32, 32, 0, Math.PI);
+      // 缩小的核心球 — 更精致
+      const half1Geom = new THREE.SphereGeometry(1.2, 48, 48, 0, Math.PI);
       const half1Mat = new THREE.MeshStandardMaterial({
-        color: 0x00FFFF, emissive: 0x00FFFF, emissiveIntensity: 0.6,
-        transparent: true, opacity: 0.9, roughness: 0.1, metalness: 0.9,
+        color: 0x00FFFF, emissive: 0x00FFFF, emissiveIntensity: 0.8,
+        transparent: true, opacity: 0.7, roughness: 0.05, metalness: 0.95,
       });
       const half1 = new THREE.Mesh(half1Geom, half1Mat);
       
-      // 半球: Green (TCM)
-      const half2Geom = new THREE.SphereGeometry(2.0, 32, 32, Math.PI, Math.PI);
+      const half2Geom = new THREE.SphereGeometry(1.2, 48, 48, Math.PI, Math.PI);
       const half2Mat = new THREE.MeshStandardMaterial({
-        color: 0x00D09C, emissive: 0x00D09C, emissiveIntensity: 0.6,
-        transparent: true, opacity: 0.9, roughness: 0.1, metalness: 0.9,
+        color: 0x00D09C, emissive: 0x00D09C, emissiveIntensity: 0.8,
+        transparent: true, opacity: 0.7, roughness: 0.05, metalness: 0.95,
       });
       const half2 = new THREE.Mesh(half2Geom, half2Mat);
 
@@ -1500,20 +1600,46 @@
       coreSphere.name = 'taiChiCore';
       group.add(coreSphere);
 
-      // 八角形符文阵列占位 (Octagonal Rings)
-      const ringGeom = new THREE.RingGeometry(3.2, 3.25, 8);
-      const ringMat = new THREE.MeshBasicMaterial({
-        color: 0x00D09C, transparent: true, opacity: 0.5, side: THREE.DoubleSide
-      });
-      const ring = new THREE.Mesh(ringGeom, ringMat);
-      ring.rotation.x = Math.PI / 2;
-      group.add(ring);
+      // 外部光晕层 — 多重呼吸光环
+      for (let i = 0; i < 3; i++) {
+        const glowGeom = new THREE.SphereGeometry(1.5 + i * 0.4, 32, 32);
+        const glowMat = new THREE.MeshBasicMaterial({
+          color: i === 0 ? 0x00FFFF : 0x00D09C,
+          transparent: true,
+          opacity: 0.06 - i * 0.015,
+          side: THREE.BackSide,
+        });
+        group.add(new THREE.Mesh(glowGeom, glowMat));
+      }
 
-      const ring2Geom = new THREE.RingGeometry(4.0, 4.02, 8);
-      const ring2 = new THREE.Mesh(ring2Geom, ringMat);
-      ring2.rotation.x = Math.PI / 2;
-      ring2.rotation.z = Math.PI / 8; // 交错
-      group.add(ring2);
+      // 精细八角形阵列 — 三层交错
+      [2.8, 3.5, 4.2].forEach((r, i) => {
+        const ringGeom = new THREE.RingGeometry(r, r + 0.03, 8);
+        const ringMat = new THREE.MeshBasicMaterial({
+          color: i % 2 === 0 ? 0x00D09C : 0x00FFFF,
+          transparent: true,
+          opacity: 0.35 - i * 0.08,
+          side: THREE.DoubleSide
+        });
+        const ring = new THREE.Mesh(ringGeom, ringMat);
+        ring.rotation.x = Math.PI / 2;
+        ring.rotation.z = (Math.PI / 16) * i; // 微交错
+        ring.name = `coreRing${i}`;
+        group.add(ring);
+      });
+
+      // 八方向刻度标记
+      for (let i = 0; i < 8; i++) {
+        const angle = (Math.PI / 4) * i;
+        const innerR = 2.6, outerR = 2.85;
+        const pts = [
+          new THREE.Vector3(innerR * Math.cos(angle), 0, innerR * Math.sin(angle)),
+          new THREE.Vector3(outerR * Math.cos(angle), 0, outerR * Math.sin(angle))
+        ];
+        const geom = new THREE.BufferGeometry().setFromPoints(pts);
+        const mat = new THREE.LineBasicMaterial({ color: 0x00D09C, transparent: true, opacity: 0.3 });
+        group.add(new THREE.Line(geom, mat));
+      }
 
       scene.add(group);
       return group;
@@ -1527,29 +1653,41 @@
       const cases = DATA.tree[fw] || {};
       const caseCount = Object.values(cases).reduce((s, arr) => s + arr.length, 0);
 
-      // 等角水平环形分布 — 避免聚集
+      // 等角水平环形分布 — 紧凑
       const angle = (2 * Math.PI / totalFw) * index;
-      const radius = 10 + caseCount * 0.2;
+      const radius = 7 + caseCount * 0.1;
 
       const x = radius * Math.cos(angle);
-      const y = (Math.sin(index * 1.2) * 2.5);  // 微小 Y 偏移增加层次
+      const y = (Math.sin(index * 1.2) * 1.5);
       const z = radius * Math.sin(angle);
 
       group.position.set(x, y, z);
 
-      // 节点球体 — 放大尺寸
-      const size = 1.0 + caseCount * 0.12;
-      const geom = new THREE.SphereGeometry(Math.min(size, 2.5), 32, 32);
+      // 节点晶体 — 精致小巧
+      const size = 0.4 + caseCount * 0.04;
+      const cappedSize = Math.min(size, 1.0);
+      const geom = new THREE.IcosahedronGeometry(cappedSize, 1);
       const mat = new THREE.MeshStandardMaterial({
         color: color,
         emissive: color,
-        emissiveIntensity: 0.5,
+        emissiveIntensity: 0.6,
         transparent: true,
-        opacity: 0.9,
-        roughness: 0.3,
-        metalness: 0.6,
+        opacity: 0.45,
+        roughness: 0.1,
+        metalness: 0.85,
       });
       const mesh = new THREE.Mesh(geom, mat);
+
+      // 线框叠加 — 赛博晶格效果
+      const wireframeMat = new THREE.MeshBasicMaterial({
+        color: color,
+        wireframe: true,
+        transparent: true,
+        opacity: 0.2,
+      });
+      const wireframeMesh = new THREE.Mesh(geom.clone(), wireframeMat);
+      wireframeMesh.scale.setScalar(1.02);
+      group.add(wireframeMesh);
       group.add(mesh);
 
       // 节点数据
@@ -1564,17 +1702,29 @@
         categories: cases,
       });
 
-      // 光环 — 放大
-      const haloGeom = new THREE.RingGeometry(size + 0.4, size + 0.65, 32);
+      // 精致光环 — 双层
+      const haloGeom = new THREE.RingGeometry(cappedSize + 0.2, cappedSize + 0.3, 32);
       const haloMat = new THREE.MeshBasicMaterial({
         color: color,
         transparent: true,
-        opacity: 0.15,
+        opacity: 0.12,
         side: THREE.DoubleSide,
       });
       const halo = new THREE.Mesh(haloGeom, haloMat);
       halo.lookAt(camera.position);
       group.add(halo);
+
+      // 外层脉冲环
+      const pulseGeom = new THREE.RingGeometry(cappedSize + 0.4, cappedSize + 0.42, 32);
+      const pulseMat = new THREE.MeshBasicMaterial({
+        color: color,
+        transparent: true,
+        opacity: 0.06,
+        side: THREE.DoubleSide,
+      });
+      const pulseRing = new THREE.Mesh(pulseGeom, pulseMat);
+      pulseRing.lookAt(camera.position);
+      group.add(pulseRing);
 
       // 赛博经络连线到中心 (Cyber Meridian Lines)
       const midRadius = radius * 0.4;
@@ -1599,12 +1749,12 @@
       catKeys.forEach((cat, catIdx) => {
         const catCases = cases[cat];
         const catAngle = (2 * Math.PI / catKeys.length) * catIdx;
-        const catRadius = 3.0 + catCases.length * 0.4;
+        const catRadius = 2.0 + catCases.length * 0.25;
         const cx = catRadius * Math.cos(catAngle);
         const cy = (Math.sin(catIdx * 2.1) - 0.5) * 2.0;
         const cz = catRadius * Math.sin(catAngle);
 
-        const catGeom = new THREE.SphereGeometry(0.35 + catCases.length * 0.08, 16, 16);
+        const catGeom = new THREE.IcosahedronGeometry(0.2 + catCases.length * 0.05, 1);
         const catMat = new THREE.MeshStandardMaterial({
           color: color,
           emissive: color,
@@ -2093,24 +2243,37 @@
       requestAnimationFrame(animate);
       const t = clock.getElapsedTime();
 
-      // 粒子缓旋
+      // 粒子缓旋 — 更生动
       if (particles) {
-        particles.rotation.y = t * 0.02;
-        particles.rotation.x = Math.sin(t * 0.1) * 0.05;
+        particles.rotation.y = t * 0.03;
+        particles.rotation.x = Math.sin(t * 0.15) * 0.08;
       }
 
-      // 太极核心与八阵轨道缓旋 (Cyber TCM Dynamics)
+      // 太极核心旋转
       const taiChi = scene.getObjectByName('taiChiCore');
-      if (taiChi) taiChi.rotation.y = t * 0.3;
-      
-      const compass = scene.getObjectByName('baguaCompass');
-      if (compass) compass.rotation.y = t * -0.05;
+      if (taiChi) taiChi.rotation.y = t * 0.35;
 
-      // 框架节点微浮
+      // 核心八角环独立旋转 — 不同速度/方向
+      ['coreRing0', 'coreRing1', 'coreRing2'].forEach((name, i) => {
+        const ring = scene.getObjectByName(name);
+        if (ring) {
+          const speed = 0.12 + i * 0.08;
+          const dir = i % 2 === 0 ? 1 : -1;
+          ring.rotation.z = t * speed * dir + (Math.PI / 16) * i;
+        }
+      });
+      
+      // 八卦罗盘缓旋
+      const compass = scene.getObjectByName('baguaCompass');
+      if (compass) compass.rotation.y = t * -0.08;
+
+      // 框架节点微浮 — 平滑
       frameworkGroups.forEach((group, fw) => {
         const i = fwKeys.indexOf(fw);
-        const offset = i * 0.7;
-        group.position.y += Math.sin(t * 0.5 + offset) * 0.001;
+        const offset = i * 0.9;
+        const baseY = group.userData.baseY ?? group.position.y;
+        if (!group.userData.baseY) group.userData.baseY = baseY;
+        group.position.y = baseY + Math.sin(t * 0.4 + offset) * 0.15;
       });
 
       // 卷轴展开/收起动画
