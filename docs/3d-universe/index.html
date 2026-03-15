@@ -1548,27 +1548,229 @@
     controls.maxDistance = 50;
     controls.maxPolarAngle = Math.PI * 0.85;
 
-    // ─── 背景星空 ───
+    // ─── 背景星空 + 闪烁 ───
     const starGeom = new THREE.BufferGeometry();
-    const starCount = 4000;
+    const starCount = 6000;
     const starPos = new Float32Array(starCount * 3);
-    const starSizes = new Float32Array(starCount);
+    const starColors = new Float32Array(starCount * 3);
     for (let i = 0; i < starCount; i++) {
-      starPos[i * 3]     = (Math.random() - 0.5) * 200;
-      starPos[i * 3 + 1] = (Math.random() - 0.5) * 200;
-      starPos[i * 3 + 2] = (Math.random() - 0.5) * 200;
-      starSizes[i] = Math.random() * 1.5 + 0.3;
+      starPos[i * 3]     = (Math.random() - 0.5) * 300;
+      starPos[i * 3 + 1] = (Math.random() - 0.5) * 300;
+      starPos[i * 3 + 2] = (Math.random() - 0.5) * 300;
+      // 星星颜色: 白/青/淡蓝混合
+      const r = Math.random();
+      if (r > 0.7) {
+        starColors[i*3] = 0.3; starColors[i*3+1] = 0.9; starColors[i*3+2] = 1.0; // cyan
+      } else if (r > 0.4) {
+        starColors[i*3] = 0.6; starColors[i*3+1] = 0.7; starColors[i*3+2] = 1.0; // light blue
+      } else {
+        starColors[i*3] = 1.0; starColors[i*3+1] = 1.0; starColors[i*3+2] = 1.0; // white
+      }
     }
     starGeom.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
-    starGeom.setAttribute('size', new THREE.BufferAttribute(starSizes, 1));
+    starGeom.setAttribute('color', new THREE.BufferAttribute(starColors, 3));
     const starMat = new THREE.PointsMaterial({
-      color: 0xffffff,
-      size: 0.15,
+      size: 0.12,
       transparent: true,
-      opacity: 0.7,
+      opacity: 0.6,
       sizeAttenuation: true,
+      vertexColors: true,
     });
     scene.add(new THREE.Points(starGeom, starMat));
+
+    // ─── 🔥 中央能量光柱 (来自封面 SVG 的核心元素) ───
+    function createEnergyBeam() {
+      const beamGroup = new THREE.Group();
+      beamGroup.name = 'energyBeam';
+
+      // 主光柱 — 细长圆柱
+      const beamGeom = new THREE.CylinderGeometry(0.15, 0.15, 60, 16, 1, true);
+      const beamMat = new THREE.MeshBasicMaterial({
+        color: 0x66ffff,
+        transparent: true,
+        opacity: 0.35,
+        side: THREE.DoubleSide,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+      });
+      const beam = new THREE.Mesh(beamGeom, beamMat);
+      beamGroup.add(beam);
+
+      // 内核心 — 更亮更细
+      const innerGeom = new THREE.CylinderGeometry(0.04, 0.04, 60, 8, 1, true);
+      const innerMat = new THREE.MeshBasicMaterial({
+        color: 0xffffff,
+        transparent: true,
+        opacity: 0.7,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+      });
+      beamGroup.add(new THREE.Mesh(innerGeom, innerMat));
+
+      // 外辉光 — 宽散
+      const outerGeom = new THREE.CylinderGeometry(0.6, 0.6, 60, 16, 1, true);
+      const outerMat = new THREE.MeshBasicMaterial({
+        color: 0x0055ff,
+        transparent: true,
+        opacity: 0.08,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+      });
+      beamGroup.add(new THREE.Mesh(outerGeom, outerMat));
+
+      scene.add(beamGroup);
+      return beamGroup;
+    }
+
+    // ─── 🔥 透视地面网格 (来自封面 SVG 的地板) ───
+    function createFloorGrid() {
+      const gridGroup = new THREE.Group();
+      gridGroup.name = 'floorGrid';
+
+      // 同心圆环 — 多层
+      for (let r = 2; r <= 30; r += 2) {
+        const circleGeom = new THREE.RingGeometry(r - 0.02, r + 0.02, r <= 10 ? 8 : 64);
+        const opacity = r % 8 === 0 ? 0.18 : 0.06;
+        const color = r % 8 === 0 ? 0x0088ff : 0x003366;
+        const circleMat = new THREE.MeshBasicMaterial({
+          color: color,
+          transparent: true,
+          opacity: opacity,
+          side: THREE.DoubleSide,
+          blending: THREE.AdditiveBlending,
+          depthWrite: false,
+        });
+        const circle = new THREE.Mesh(circleGeom, circleMat);
+        circle.rotation.x = -Math.PI / 2;
+        circle.position.y = -3;
+        gridGroup.add(circle);
+      }
+
+      // 径向线 — 24 条
+      for (let i = 0; i < 24; i++) {
+        const angle = (Math.PI * 2 / 24) * i;
+        const pts = [
+          new THREE.Vector3(2 * Math.cos(angle), -3, 2 * Math.sin(angle)),
+          new THREE.Vector3(30 * Math.cos(angle), -3, 30 * Math.sin(angle))
+        ];
+        const geom = new THREE.BufferGeometry().setFromPoints(pts);
+        const mat = new THREE.LineBasicMaterial({
+          color: i % 6 === 0 ? 0x0088ff : 0x003366,
+          transparent: true,
+          opacity: i % 6 === 0 ? 0.15 : 0.04,
+          blending: THREE.AdditiveBlending,
+          depthWrite: false,
+        });
+        gridGroup.add(new THREE.Line(geom, mat));
+      }
+
+      scene.add(gridGroup);
+      return gridGroup;
+    }
+
+    // ─── 🔥 360° 刻度环 (来自封面 SVG 的 hash ring) ───
+    function createHashRing(radius, tickCount, color, opacity) {
+      const ringGroup = new THREE.Group();
+      const innerR = radius;
+      const outerR = radius + 0.15;
+
+      for (let i = 0; i < tickCount; i++) {
+        const angle = (Math.PI * 2 / tickCount) * i;
+        const pts = [
+          new THREE.Vector3(innerR * Math.cos(angle), 0, innerR * Math.sin(angle)),
+          new THREE.Vector3(outerR * Math.cos(angle), 0, outerR * Math.sin(angle))
+        ];
+        const geom = new THREE.BufferGeometry().setFromPoints(pts);
+        const mat = new THREE.LineBasicMaterial({
+          color: color,
+          transparent: true,
+          opacity: i % 10 === 0 ? opacity * 1.5 : opacity,
+        });
+        ringGroup.add(new THREE.Line(geom, mat));
+      }
+
+      // 连续细环
+      const ringLineGeom = new THREE.RingGeometry(radius - 0.01, radius + 0.01, 128);
+      const ringLineMat = new THREE.MeshBasicMaterial({
+        color: color,
+        transparent: true,
+        opacity: opacity * 0.5,
+        side: THREE.DoubleSide,
+      });
+      const ringLine = new THREE.Mesh(ringLineGeom, ringLineMat);
+      ringLine.rotation.x = Math.PI / 2;
+      ringGroup.add(ringLine);
+
+      return ringGroup;
+    }
+
+    // ─── 🔥 菲涅尔辉光 Shader (让节点边缘发光) ───
+    const fresnelVertexShader = `
+      varying vec3 vNormal;
+      varying vec3 vPosition;
+      void main() {
+        vNormal = normalize(normalMatrix * normal);
+        vPosition = (modelViewMatrix * vec4(position, 1.0)).xyz;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }
+    `;
+    const fresnelFragmentShader = `
+      uniform vec3 glowColor;
+      uniform float intensity;
+      varying vec3 vNormal;
+      varying vec3 vPosition;
+      void main() {
+        vec3 viewDir = normalize(-vPosition);
+        float fresnel = 1.0 - dot(viewDir, vNormal);
+        fresnel = pow(fresnel, 2.5);
+        gl_FragColor = vec4(glowColor, fresnel * intensity);
+      }
+    `;
+
+    function createFresnelGlow(geometry, color, size) {
+      const glowMat = new THREE.ShaderMaterial({
+        vertexShader: fresnelVertexShader,
+        fragmentShader: fresnelFragmentShader,
+        uniforms: {
+          glowColor: { value: color },
+          intensity: { value: 0.9 },
+        },
+        transparent: true,
+        blending: THREE.AdditiveBlending,
+        side: THREE.FrontSide,
+        depthWrite: false,
+      });
+      const glowMesh = new THREE.Mesh(
+        new THREE.IcosahedronGeometry(size * 1.35, 2),
+        glowMat
+      );
+      return glowMesh;
+    }
+
+    // ─── 构建影院级场景元素 ───
+    const energyBeam = createEnergyBeam();
+    const floorGrid = createFloorGrid();
+
+    // 外层 hash ring —— 两层不同速度
+    const hashRing1 = createHashRing(18, 180, 0x0088ff, 0.12);
+    hashRing1.name = 'hashRing1';
+    scene.add(hashRing1);
+
+    const hashRing2 = createHashRing(20, 120, 0x00ffff, 0.08);
+    hashRing2.name = 'hashRing2';
+    scene.add(hashRing2);
+
+    // 内层装饰 dash 环
+    const dashRingGeom = new THREE.TorusGeometry(6, 0.02, 8, 128);
+    const dashRingMat = new THREE.MeshBasicMaterial({
+      color: 0x00D09C,
+      transparent: true,
+      opacity: 0.2,
+    });
+    const dashRing = new THREE.Mesh(dashRingGeom, dashRingMat);
+    dashRing.rotation.x = Math.PI / 2;
+    dashRing.name = 'dashRing';
+    scene.add(dashRing);
 
     // ─── 节点存储 ───
     const nodeObjects = [];
@@ -1689,6 +1891,10 @@
       wireframeMesh.scale.setScalar(1.02);
       group.add(wireframeMesh);
       group.add(mesh);
+
+      // 菲涅尔辉光壳 — 电影级边缘发光
+      const fresnelGlow = createFresnelGlow(geom, color, cappedSize);
+      group.add(fresnelGlow);
 
       // 节点数据
       nodeObjects.push(mesh);
@@ -2275,6 +2481,30 @@
         if (!group.userData.baseY) group.userData.baseY = baseY;
         group.position.y = baseY + Math.sin(t * 0.4 + offset) * 0.15;
       });
+
+      // ─── 影院级动画 ───
+      // Hash ring 旋转 — 不同速度/方向
+      const hr1 = scene.getObjectByName('hashRing1');
+      if (hr1) hr1.rotation.y = t * 0.015;
+      const hr2 = scene.getObjectByName('hashRing2');
+      if (hr2) hr2.rotation.y = t * -0.01;
+
+      // 地面网格缓旋
+      const fg = scene.getObjectByName('floorGrid');
+      if (fg) fg.rotation.y = t * 0.005;
+
+      // 能量光柱脉冲
+      const eb = scene.getObjectByName('energyBeam');
+      if (eb) {
+        const pulse = 0.3 + Math.sin(t * 0.8) * 0.12;
+        eb.children.forEach(c => {
+          if (c.material) c.material.opacity = pulse * (c.material === eb.children[0].material ? 1 : 0.5);
+        });
+      }
+
+      // Dash ring 旋转
+      const dr = scene.getObjectByName('dashRing');
+      if (dr) dr.rotation.z = t * 0.2;
 
       // 卷轴展开/收起动画
       if (scrollAnimState) {
