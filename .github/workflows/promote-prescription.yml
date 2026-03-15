@@ -21,6 +21,11 @@ permissions:
   contents: write
   issues: write
 
+# 防止同一工作流并行运行（多个 Issue 同时触发时排队）
+concurrency:
+  group: promote-prescription
+  cancel-in-progress: false
+
 jobs:
   promote:
     name: 🩺 审核晋升 · Auto Promote
@@ -32,6 +37,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
 
       - name: 🐍 安装 Python
         uses: actions/setup-python@v5
@@ -241,7 +247,12 @@ References
           git config --local user.name "CyberHuaTuo Bot"
           git add "${{ steps.promote.outputs.filepath }}"
           git commit -m "💊 晋升瞬时药方: ${{ steps.promote.outputs.case_id }} (from #${{ github.event.issue.number }})"
-          git push
+          # 拉取远端最新（解决并发推送冲突）+ 重试
+          for i in 1 2 3; do
+            git pull --rebase origin main && git push && break
+            echo "⚠️ Push failed (attempt $i/3), retrying in 5s..."
+            sleep 5
+          done
 
       - name: ✨ 标记晋升成功
         if: steps.promote.outputs.status == 'promoted'

@@ -12,6 +12,11 @@ on:
 permissions:
   contents: write
 
+# 防止同一工作流并行运行，后触发的排队等待
+concurrency:
+  group: epidemic-report-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   update-report:
     name: 生成疫情通报
@@ -22,6 +27,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0  # 完整历史，rebase 需要
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -39,5 +45,12 @@ jobs:
           git config user.name "CyberHuaTuo Bot"
           git config user.email "bot@cyberhuatuo.dev"
           git add EPIDEMIC_REPORT.md
-          git diff --cached --quiet || git commit -m "📊 Update epidemic report [skip ci]"
-          git push
+          # 无变更则跳过
+          git diff --cached --quiet && echo "No changes to commit" && exit 0
+          git commit -m "📊 Update epidemic report [skip ci]"
+          # 拉取远端最新（解决并发推送冲突）+ 重试
+          for i in 1 2 3; do
+            git pull --rebase origin main && git push && break
+            echo "⚠️ Push failed (attempt $i/3), retrying in 5s..."
+            sleep 5
+          done

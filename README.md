@@ -610,6 +610,22 @@ pip install cyberhuatuo
 python -m cyberhuatuo --help
 ```
 
+### 🎬 Terminal Animations — 终端动画特效
+
+<p align="center">
+  <img src="assets/cli_boot_animation.gif" alt="CyberHuaTuo Boot Animation — Matrix Rain + ASCII Banner + Heartbeat + System Online" width="100%"/>
+  <br>
+  <sub><strong>🚀 启动序列 · Boot Sequence</strong></sub><br>
+  <sub>Matrix 数字雨 → ASCII Banner → 心电图脉冲 → 子系统上线 → 知识库加载</sub>
+</p>
+
+<p align="center">
+  <img src="assets/cli_cinematic_effects.gif" alt="CyberHuaTuo Cinematic Effects — Soul Ring + HUD + Ranking + Leaderboard" width="100%"/>
+  <br>
+  <sub><strong>🔮 电影级特效 · Cinematic Effects</strong></sub><br>
+  <sub>魂环全息投影 → 丹术 HUD 面板 → 排名全息扫描 → 封神榜揭榜 → 分享卡片锻造</sub>
+</p>
+
 ### ⌨️ Available CLI Commands
 
 | Command | Description |
@@ -772,6 +788,13 @@ We turned bug fixing into a **cultivation journey**. Every prescription you uplo
 > *Inspired by Soul Land (斗罗大陆) — every framework you master forges a Soul Ring orbiting your profile.*
 >
 > *灵感源自斗罗大陆——你掌握的每个技术栈，都会凝聚为一道魂环。*
+
+<p align="center">
+  <img src="assets/cli_soul_ring.gif" alt="CyberHuaTuo Soul Ring Hologram — Five-Ring Soul Refining + Ranking Scan" width="100%"/>
+  <br>
+  <sub><strong>🔮 魂环全息投影 · Soul Ring Hologram</strong></sub><br>
+  <sub>五环炼魂丹师 → 同心环 ASCII Art → 排名全息扫描 → 丹王称号揭示</sub>
+</p>
 
 Soul Rings grow in **color and power** as you contribute more prescriptions to a specific direction:
 
