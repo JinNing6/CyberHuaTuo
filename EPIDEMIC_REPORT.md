@@ -1,8 +1,8 @@
 # 🦠 Agent 生态疫情通报
 # Agent Ecosystem Epidemic Report
 
-> **报告日期**: 2026-03-14
-> **生成时间**: 2026-03-14T01:06:05.185165+00:00
+> **报告日期**: 2026-03-15
+> **生成时间**: 2026-03-15T01:16:57.873087+00:00
 > **监控框架**: 10 个主流 Agent 框架
 
 ---
@@ -12,16 +12,16 @@
 | 指标 Metric | 数值 Value |
 |:---|:---|
 | 📈 监控框架数 Frameworks | **10** |
-| 🔓 总开放 Issues Total Open | **2,408** |
-| 📥 本周新增 New (7d) | **139** |
-| ✅ 本周关闭 Closed (7d) | **103** |
-| 💚 平均健康分 Avg Score | **48.1/100** |
+| 🔓 总开放 Issues Total Open | **2,426** |
+| 📥 本周新增 New (7d) | **149** |
+| ✅ 本周关闭 Closed (7d) | **94** |
+| 💚 平均健康分 Avg Score | **47.0/100** |
 
 ### 🏆 健康度排行 / Health Ranking
 
 🥇 **haystack**
-🥈 **autogen**
-🥉 **llamaindex**
+🥈 **llamaindex**
+🥉 **autogen**
 
 ### ⚠️ 需要关注 / Needs Attention
 
@@ -29,21 +29,21 @@
 - 🔴 **crewai**
 - 🔴 **openai-sdk**
 - 🔴 **dspy**
+- 🔴 **pydantic-ai**
 - 🔴 **langgraph**
 
 ### 🚨 异常告警 / Anomaly Alerts
 
+- [langchain] ⚠️ 关闭率偏低：本周新增 45，仅关闭 10
 - [langchain] 🔴 存在 5 个高影响 Bug Issues
-- [langchain] 🐛 Bug 类 Issue 占比达 49%
+- [langchain] 🐛 Bug 类 Issue 占比达 48%
 - [crewai] 🔴 存在 5 个高影响 Bug Issues
-- [crewai] 🐛 Bug 类 Issue 占比达 41%
 - [llamaindex] 🔴 存在 5 个高影响 Bug Issues
-- [llamaindex] 🐛 Bug 类 Issue 占比达 41%
 - [openai-sdk] 🔴 存在 5 个高影响 Bug Issues
 - [openai-sdk] 🐛 Bug 类 Issue 占比达 65%
 - [dspy] 🔴 存在 5 个高影响 Bug Issues
 - [mcp] 🔴 存在 5 个高影响 Bug Issues
-- [pydantic-ai] ⚠️ 关闭率偏低：本周新增 17，仅关闭 4
+- [pydantic-ai] ⚠️ 关闭率偏低：本周新增 16，仅关闭 2
 - [pydantic-ai] 🔴 存在 5 个高影响 Bug Issues
 - [langgraph] ⚠️ 关闭率偏低：本周新增 12，仅关闭 3
 - [langgraph] 🔴 存在 5 个高影响 Bug Issues
@@ -54,15 +54,15 @@
 ## 📋 各框架详情 / Framework Details
 
 ### 🟢 deepset-ai/haystack
-**框架**: `haystack` | **健康分数 Health Score**: **82.5/100** | **趋势 Trend**: → stable
+**框架**: `haystack` | **健康分数 Health Score**: **85.0/100** | **趋势 Trend**: ↑ improving
 
 | 指标 | 数值 |
 |:---|:---|
-| 开放 Issues Open | 89 |
-| 本周新增 New (7d) | 6 |
-| 本月新增 New (30d) | 36 |
-| 本周关闭 Closed (7d) | 11 |
-| 本月关闭 Closed (30d) | 46 |
+| 开放 Issues Open | 90 |
+| 本周新增 New (7d) | 5 |
+| 本月新增 New (30d) | 35 |
+| 本周关闭 Closed (7d) | 10 |
+| 本月关闭 Closed (30d) | 45 |
 | Bug 类 Issues | 0 |
 
 **🔥 热门 Issues / Hot Issues**:
@@ -71,40 +71,20 @@
 
 ---
 
-### 🟡 microsoft/autogen
-**框架**: `autogen` | **健康分数 Health Score**: **63.0/100** | **趋势 Trend**: → stable
+### 🟡 run-llama/llama_index
+**框架**: `llamaindex` | **健康分数 Health Score**: **64.3/100** | **趋势 Trend**: → stable
 
 | 指标 | 数值 |
 |:---|:---|
-| 开放 Issues Open | 451 |
-| 本周新增 New (7d) | 5 |
-| 本月新增 New (30d) | 22 |
-| 本周关闭 Closed (7d) | 2 |
-| 本月关闭 Closed (30d) | 3 |
-| Bug 类 Issues | 0 |
-
-**🔥 热门 Issues / Hot Issues**:
-- [[Feature Request]: Golang/Rust implementation](https://github.com/microsoft/autogen/issues/1700) (👍 34 / 💬 4)
-- [autogen-magentic-one ModuleNotFoundError: No module named 'autogen_core'](https://github.com/microsoft/autogen/issues/4079) (👍 6 / 💬 27)
-- [MCP tool JSON serialization lacks ensure_ascii=False, degrades LLM performance f](https://github.com/microsoft/autogen/issues/6995) (👍 5 / 💬 0)
-
----
-
-### 🟠 run-llama/llama_index
-**框架**: `llamaindex` | **健康分数 Health Score**: **59.5/100** | **趋势 Trend**: → stable
-
-| 指标 | 数值 |
-|:---|:---|
-| 开放 Issues Open | 198 |
-| 本周新增 New (7d) | 14 |
-| 本月新增 New (30d) | 57 |
-| 本周关闭 Closed (7d) | 33 |
-| 本月关闭 Closed (30d) | 112 |
-| Bug 类 Issues | 81 |
+| 开放 Issues Open | 199 |
+| 本周新增 New (7d) | 18 |
+| 本月新增 New (30d) | 62 |
+| 本周关闭 Closed (7d) | 35 |
+| 本月关闭 Closed (30d) | 115 |
+| Bug 类 Issues | 79 |
 
 **异常告警 Anomalies**:
 - 🔴 存在 5 个高影响 Bug Issues
-- 🐛 Bug 类 Issue 占比达 41%
 
 **🔥 热门 Issues / Hot Issues**:
 - [[Bug]: Structured Outputs sometimes return string instead of Pydantic Model](https://github.com/run-llama/llama_index/issues/16604) (👍 14 / 💬 12)
@@ -118,6 +98,25 @@
 
 ---
 
+### 🟠 microsoft/autogen
+**框架**: `autogen` | **健康分数 Health Score**: **59.5/100** | **趋势 Trend**: → stable
+
+| 指标 | 数值 |
+|:---|:---|
+| 开放 Issues Open | 453 |
+| 本周新增 New (7d) | 6 |
+| 本月新增 New (30d) | 23 |
+| 本周关闭 Closed (7d) | 1 |
+| 本月关闭 Closed (30d) | 3 |
+| Bug 类 Issues | 0 |
+
+**🔥 热门 Issues / Hot Issues**:
+- [[Feature Request]: Golang/Rust implementation](https://github.com/microsoft/autogen/issues/1700) (👍 34 / 💬 4)
+- [autogen-magentic-one ModuleNotFoundError: No module named 'autogen_core'](https://github.com/microsoft/autogen/issues/4079) (👍 6 / 💬 27)
+- [MCP tool JSON serialization lacks ensure_ascii=False, degrades LLM performance f](https://github.com/microsoft/autogen/issues/6995) (👍 5 / 💬 0)
+
+---
+
 ### 🟠 modelcontextprotocol/python-sdk
 **框架**: `mcp` | **健康分数 Health Score**: **50.1/100** | **趋势 Trend**: ↑ improving
 
@@ -125,7 +124,7 @@
 |:---|:---|
 | 开放 Issues Open | 245 |
 | 本周新增 New (7d) | 7 |
-| 本月新增 New (30d) | 49 |
+| 本月新增 New (30d) | 45 |
 | 本周关闭 Closed (7d) | 9 |
 | 本月关闭 Closed (30d) | 49 |
 | Bug 类 Issues | 94 |
@@ -146,19 +145,19 @@
 ---
 
 ### 🟠 pydantic/pydantic-ai
-**框架**: `pydantic-ai` | **健康分数 Health Score**: **50.0/100** | **趋势 Trend**: ↑ improving
+**框架**: `pydantic-ai` | **健康分数 Health Score**: **43.3/100** | **趋势 Trend**: ↑ improving
 
 | 指标 | 数值 |
 |:---|:---|
-| 开放 Issues Open | 416 |
-| 本周新增 New (7d) | 17 |
-| 本月新增 New (30d) | 125 |
-| 本周关闭 Closed (7d) | 4 |
-| 本月关闭 Closed (30d) | 94 |
-| Bug 类 Issues | 71 |
+| 开放 Issues Open | 418 |
+| 本周新增 New (7d) | 16 |
+| 本月新增 New (30d) | 124 |
+| 本周关闭 Closed (7d) | 2 |
+| 本月关闭 Closed (30d) | 93 |
+| Bug 类 Issues | 72 |
 
 **异常告警 Anomalies**:
-- ⚠️ 关闭率偏低：本周新增 17，仅关闭 4
+- ⚠️ 关闭率偏低：本周新增 16，仅关闭 2
 - 🔴 存在 5 个高影响 Bug Issues
 
 **🔥 热门 Issues / Hot Issues**:
@@ -174,37 +173,36 @@
 ---
 
 ### 🟠 crewAIInc/crewAI
-**框架**: `crewai` | **健康分数 Health Score**: **47.6/100** | **趋势 Trend**: → stable
+**框架**: `crewai` | **健康分数 Health Score**: **43.0/100** | **趋势 Trend**: → stable
 
 | 指标 | 数值 |
 |:---|:---|
-| 开放 Issues Open | 76 |
-| 本周新增 New (7d) | 15 |
-| 本月新增 New (30d) | 75 |
-| 本周关闭 Closed (7d) | 18 |
+| 开放 Issues Open | 81 |
+| 本周新增 New (7d) | 21 |
+| 本月新增 New (30d) | 77 |
+| 本周关闭 Closed (7d) | 17 |
 | 本月关闭 Closed (30d) | 43 |
 | Bug 类 Issues | 31 |
 
 **异常告警 Anomalies**:
 - 🔴 存在 5 个高影响 Bug Issues
-- 🐛 Bug 类 Issue 占比达 41%
 
 **🚨 高危 Issues / Critical Issues**:
 - [[BUG] TaskOutput.pydantic is None on first guardrail attempt but parsed on retri](https://github.com/crewAIInc/crewAI/issues/4369) (👍 1)
 - [[BUG] Bedrock LLM Claude Sonnet returning empty Input Params on Tools calling wi](https://github.com/crewAIInc/crewAI/issues/4470) (👍 0)
-- [[BUG] When supports_function_calling() is True, only the output_pydantic model i](https://github.com/crewAIInc/crewAI/issues/4697) (👍 0)
+- [[BUG] Regression in CrewAI 1.9.3: custom BaseTool wrapper around BedrockKBRetrie](https://github.com/crewAIInc/crewAI/issues/4495) (👍 0)
 
 ---
 
 ### 🟠 stanfordnlp/dspy
-**框架**: `dspy` | **健康分数 Health Score**: **43.5/100** | **趋势 Trend**: ↓ declining
+**框架**: `dspy` | **健康分数 Health Score**: **41.0/100** | **趋势 Trend**: ↓ declining
 
 | 指标 | 数值 |
 |:---|:---|
-| 开放 Issues Open | 281 |
+| 开放 Issues Open | 282 |
 | 本周新增 New (7d) | 12 |
-| 本月新增 New (30d) | 24 |
-| 本周关闭 Closed (7d) | 8 |
+| 本月新增 New (30d) | 25 |
+| 本周关闭 Closed (7d) | 6 |
 | 本月关闭 Closed (30d) | 36 |
 | Bug 类 Issues | 76 |
 
@@ -224,20 +222,21 @@
 ---
 
 ### 🔴 langchain-ai/langchain
-**框架**: `langchain` | **健康分数 Health Score**: **37.2/100** | **趋势 Trend**: ↓ declining
+**框架**: `langchain` | **健康分数 Health Score**: **36.1/100** | **趋势 Trend**: ↓ declining
 
 | 指标 | 数值 |
 |:---|:---|
-| 开放 Issues Open | 277 |
-| 本周新增 New (7d) | 44 |
+| 开放 Issues Open | 281 |
+| 本周新增 New (7d) | 45 |
 | 本月新增 New (30d) | 117 |
-| 本周关闭 Closed (7d) | 14 |
-| 本月关闭 Closed (30d) | 73 |
+| 本周关闭 Closed (7d) | 10 |
+| 本月关闭 Closed (30d) | 66 |
 | Bug 类 Issues | 136 |
 
 **异常告警 Anomalies**:
+- ⚠️ 关闭率偏低：本周新增 45，仅关闭 10
 - 🔴 存在 5 个高影响 Bug Issues
-- 🐛 Bug 类 Issue 占比达 49%
+- 🐛 Bug 类 Issue 占比达 48%
 
 **🔥 热门 Issues / Hot Issues**:
 - [The batch method from ChatModels and all the Runnables does not really support t](https://github.com/langchain-ai/langchain/issues/28508) (👍 37 / 💬 12)
@@ -258,9 +257,9 @@
 |:---|:---|
 | 开放 Issues Open | 169 |
 | 本周新增 New (7d) | 7 |
-| 本月新增 New (30d) | 30 |
+| 本月新增 New (30d) | 27 |
 | 本周关闭 Closed (7d) | 1 |
-| 本月关闭 Closed (30d) | 8 |
+| 本月关闭 Closed (30d) | 7 |
 | Bug 类 Issues | 110 |
 
 **异常告警 Anomalies**:
@@ -284,7 +283,7 @@
 
 | 指标 | 数值 |
 |:---|:---|
-| 开放 Issues Open | 206 |
+| 开放 Issues Open | 208 |
 | 本周新增 New (7d) | 12 |
 | 本月新增 New (30d) | 51 |
 | 本周关闭 Closed (7d) | 3 |
@@ -298,12 +297,12 @@
 
 **🔥 热门 Issues / Hot Issues**:
 - [langgraph-checkpoint-postgres (psycopg.OperationalError: sending query and param](https://github.com/langchain-ai/langgraph/issues/3716) (👍 11 / 💬 47)
-- [Run Cancellation Causes Loss of Streamed State Not Yet Persisted as a Checkpoint](https://github.com/langchain-ai/langgraph/issues/5672) (👍 5 / 💬 6)
+- [Run Cancellation Causes Loss of Streamed State Not Yet Persisted as a Checkpoint](https://github.com/langchain-ai/langgraph/issues/5672) (👍 6 / 💬 6)
 - [In Langgraph studio the subgraph part is not shown when we invoke the subgraphs ](https://github.com/langchain-ai/langgraph/issues/3372) (👍 4 / 💬 15)
 
 **🚨 高危 Issues / Critical Issues**:
 - [langgraph-checkpoint-postgres (psycopg.OperationalError: sending query and param](https://github.com/langchain-ai/langgraph/issues/3716) (👍 11)
-- [Run Cancellation Causes Loss of Streamed State Not Yet Persisted as a Checkpoint](https://github.com/langchain-ai/langgraph/issues/5672) (👍 5)
+- [Run Cancellation Causes Loss of Streamed State Not Yet Persisted as a Checkpoint](https://github.com/langchain-ai/langgraph/issues/5672) (👍 6)
 - [When invoking a graph of an agent with tools with "messages" streaming mode, the](https://github.com/langchain-ai/langgraph/issues/4653) (👍 3)
 
 ---
