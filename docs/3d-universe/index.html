@@ -1548,7 +1548,7 @@
 
     const bloomPass = new UnrealBloomPass(
       new THREE.Vector2(window.innerWidth, window.innerHeight),
-      0.9, 0.3, 0.6 // 降低辉光强度(1.8 -> 0.9)，提高阈值(0.55 -> 0.6)，避免中心过曝
+      0.7, 0.3, 0.85 // strength=0.7, radius=0.3, threshold=0.85 — 只对极亮高光做辉光
     );
     composer.addPass(bloomPass);
 
@@ -1666,7 +1666,7 @@
       const beamMat = new THREE.MeshBasicMaterial({
         color: 0x66ffff,
         transparent: true,
-        opacity: 0.15, // 降低主光柱亮度
+        opacity: 0.03, // 极低透明度，三层叠加后仍柔和
         side: THREE.DoubleSide,
         blending: THREE.AdditiveBlending,
         depthWrite: false,
@@ -1677,9 +1677,9 @@
       // 内核心 — 更亮更细
       const innerGeom = new THREE.CylinderGeometry(0.04, 0.04, 60, 8, 1, true);
       const innerMat = new THREE.MeshBasicMaterial({
-        color: 0xffffff,
+        color: 0x88ddff,
         transparent: true,
-        opacity: 0.4, // 降低内核心亮度
+        opacity: 0.06, // 不用纯白+高opacity,避免叠加后过曝
         blending: THREE.AdditiveBlending,
         depthWrite: false,
       });
@@ -1690,7 +1690,7 @@
       const outerMat = new THREE.MeshBasicMaterial({
         color: 0x0055ff,
         transparent: true,
-        opacity: 0.08,
+        opacity: 0.03,
         blending: THREE.AdditiveBlending,
         depthWrite: false,
       });
@@ -1702,14 +1702,14 @@
 
     // ─── 🔥 升腾数据流 (Ascension Data Streams) ───
     function createAscensionStreams() {
-      const streamCount = 150;
+      const streamCount = 80; // 减少粒子数避免中心叠加过亮
       const geom = new THREE.BufferGeometry();
       const positions = new Float32Array(streamCount * 3);
       const speeds = new Float32Array(streamCount);
       const lengths = new Float32Array(streamCount);
 
       for (let i = 0; i < streamCount; i++) {
-        const radius = 0.4 + Math.random() * 0.8; // 紧贴核心光柱
+        const radius = 0.8 + Math.random() * 1.2; // 扩大分布半径，避免中心堆叠
         const theta = Math.random() * Math.PI * 2;
         positions[i * 3]     = radius * Math.cos(theta);
         positions[i * 3 + 1] = (Math.random() - 0.5) * 60; // 分布在高度 60 内
@@ -1747,7 +1747,7 @@
             if (r > 1.0) discard;
             // 头亮尾暗的光轨感
             float tail = 1.0 - gl_PointCoord.y;
-            gl_FragColor = vec4(color, (1.0 - r) * vAlpha * tail * 0.8);
+            gl_FragColor = vec4(color, (1.0 - r) * vAlpha * tail * 0.3); // 降低透明度避免叠加过曝
           }
         `,
         transparent: true,
