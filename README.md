@@ -629,10 +629,10 @@ python -m cyberhuatuo --help
 </p>
 
 <p align="center">
-  <img src="assets/cli_cinematic_effects.gif" alt="CyberHuaTuo Cinematic Effects — Soul Ring + HUD + Ranking + Leaderboard" width="100%"/>
+  <img src="assets/cli_soul_ring.gif" alt="CyberHuaTuo Soul Ring Hologram — Differential Rotation with HUD, Starfield & Energy Pulses" width="60%"/>
   <br>
-  <sub><strong>🔮 电影级特效 · Cinematic Effects</strong></sub><br>
-  <sub>魂环全息投影 → 丹术 HUD 面板 → 排名全息扫描 → 封神榜揭榜 → 分享卡片锻造</sub>
+  <sub><strong>🔮 魂环全息投影 · Soul Ring Hologram</strong></sub><br>
+  <sub>差速旋转 · HUD 科幻边框 · 星空背景 · 能量脉冲波 · 轨道亮标 · 环间电弧</sub>
 </p>
 
 ### ⌨️ Available CLI Commands
