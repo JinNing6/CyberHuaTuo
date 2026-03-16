@@ -282,104 +282,119 @@ def _energy_charge_bar(
 # ============================================================
 
 
-def _build_cinematic_ring_art(
+def _render_spinning_rings(
     ring_count: int,
     ring_emojis: str,
-) -> list[tuple[str, str]]:
+    total_frames: int = 40,
+    fps: float = 12.0,
+) -> None:
     """
-    构建电影级的魂环同心环 ASCII Art。
+    渲染动态旋转的魂环帧动画。
 
-    使用数学圆方程绘制精确的同心圆，配合丰富的字符渐变和光晕效果。
+    使用光标控制覆盖重绘同一屏幕区域，环上的流光标记沿圆弧旋转。
+    内圈旋转速度快，外圈慢（差速旋转），最后定格展示完整同心环。
     """
     if ring_count <= 0:
-        return []
+        return
 
-    # 解析环的颜色（dim, bright 两色）
-    ring_chars = [c for c in ring_emojis if c in "⚪🟡🟣⚫🔴✨"]
+    # 解析环的颜色
+    ring_chars_list = [c for c in ring_emojis if c in "⚪🟡🟣⚫🔴✨"]
     ring_palette = []
-    for rc in ring_chars:
+    for rc in ring_chars_list:
         dim_c, bright_c, _ = RING_COLORS.get(rc, (GRAY, WHITE, ""))
         ring_palette.append((dim_c, bright_c))
 
-    # 核心参数
-    base_radius = 3
-    ring_gap = 2.0
-    total_radius = base_radius + ring_count * ring_gap + 1
+    # 画布参数
+    base_radius = 3.0
+    ring_gap = 2.5
+    total_radius = base_radius + ring_count * ring_gap + 2.0
     canvas_h = int(total_radius * 2) + 1
-    canvas_w = int(total_radius * 4) + 2  # 宽度加倍补偿终端字符宽高比
-
+    canvas_w = int(total_radius * 3.6) + 2  # 终端字符宽高比补偿
     center_y = total_radius
-    center_x = total_radius * 2
+    center_x = total_radius * 1.8
 
-    # 逐像素绘制
-    lines = []
-    for y in range(canvas_h):
-        line = ""
-        for x in range(canvas_w):
-            dx = (x - center_x) / 2.0  # 补偿宽高比
-            dy = y - center_y
-            dist = math.sqrt(dx * dx + dy * dy)
+    frame_delay = 1.0 / fps
 
-            placed = False
+    # --- 帧循环 ---
+    for frame in range(total_frames + 1):
+        frame_lines = []
 
-            # 中心太极符号
-            if dist < 1.2:
-                line += f"{GOLD}{BOLD}☯{RESET}"
-                placed = True
-            elif dist < base_radius - 0.5:
-                # 中心区域——微弱能量场
-                if random.random() < 0.08:
-                    line += f"{GOLD_DIM}·"
-                else:
-                    line += " "
-                placed = True
+        # 逐行逐列绘制
+        for y in range(canvas_h):
+            line = ""
+            for x in range(canvas_w):
+                dx = (x - center_x) / 1.8  # 宽高比补偿
+                dy = y - center_y
+                dist = math.sqrt(dx * dx + dy * dy)
+                angle = math.atan2(dy, dx)  # 当前像素相对中心的角度
 
-            if not placed:
-                # 检查每个环
-                for ring_idx in range(ring_count):
-                    ring_radius = base_radius + (ring_idx + 1) * ring_gap
-                    ring_dist = abs(dist - ring_radius)
+                char_placed = False
 
-                    if ring_dist < 0.7:
-                        dim_c, bright_c = ring_palette[min(ring_idx, len(ring_palette) - 1)]
+                # 中心核心 — 脉冲效果
+                if dist < 1.0:
+                    if frame % 4 < 2:
+                        line += f"{GOLD}{BOLD}◉{RESET}"
+                    else:
+                        line += f"{YELLOW_BRIGHT}{BOLD}◉{RESET}"
+                    char_placed = True
 
-                        # 根据距离选择字符和颜色
-                        if ring_dist < 0.25:
-                            # 环的核心 — 最亮
-                            symbols = "█▓▓█"
-                            line += f"{bright_c}{BOLD}{random.choice(symbols)}{RESET}"
-                        elif ring_dist < 0.5:
-                            # 环的边缘 — 中等亮度
-                            symbols = "▓░▒"
-                            line += f"{bright_c}{random.choice(symbols)}{RESET}"
-                        else:
-                            # 光晕区域
-                            symbols = "░·"
-                            line += f"{dim_c}{random.choice(symbols)}{RESET}"
-                        placed = True
-                        break
+                if not char_placed:
+                    # 检查每个环
+                    for ring_idx in range(ring_count):
+                        ring_radius = base_radius + (ring_idx + 1) * ring_gap
+                        ring_dist = abs(dist - ring_radius)
 
-                    # 环间能量涟漪
-                    if ring_idx < ring_count - 1:
-                        next_radius = base_radius + (ring_idx + 2) * ring_gap
-                        mid_point = (ring_radius + next_radius) / 2
-                        if abs(dist - mid_point) < 0.3 and random.random() < 0.05:
-                            line += f"{DARK_GRAY}∙"
-                            placed = True
+                        if ring_dist < 0.55:
+                            dim_c, bright_c = ring_palette[
+                                min(ring_idx, len(ring_palette) - 1)
+                            ]
+
+                            # 差速旋转：内圈快，外圈慢
+                            speed = (ring_count - ring_idx) * 0.15
+                            rotation_angle = frame * speed
+
+                            # 计算当前像素与旋转流光头部的角度差
+                            # 流光头部和尾部各占约 90 度弧长
+                            head_angle = rotation_angle
+                            angle_diff = (angle - head_angle) % (2 * math.pi)
+
+                            # 流光区 (约 120 度弧)
+                            if angle_diff < 0.6:
+                                # 流光最亮处
+                                line += f"{bright_c}{BOLD}●{RESET}"
+                            elif angle_diff < 1.2:
+                                # 流光中段
+                                line += f"{bright_c}●{RESET}"
+                            elif angle_diff < 2.0:
+                                # 流光尾部
+                                line += f"{dim_c}○{RESET}"
+                            else:
+                                # 环的暗部 — 轨道线
+                                line += f"{DARK_GRAY}·{RESET}"
+
+                            char_placed = True
                             break
 
-            if not placed:
-                # 外围暗能量粒子
-                if dist < total_radius and dist > total_radius - 2 and random.random() < 0.03:
-                    line += f"{DARK_GRAY}·"
-                else:
+                if not char_placed:
                     line += " "
 
-        stripped = line.rstrip()
-        if stripped.strip():
-            lines.append((WHITE, stripped))
+            frame_lines.append(line.rstrip())
 
-    return lines
+        # 输出帧
+        frame_text = "\n".join(f"  {ln}" for ln in frame_lines if ln.strip())
+        actual_lines = [ln for ln in frame_lines if ln.strip()]
+
+        if frame == 0:
+            # 第一帧直接打印
+            _write(frame_text + "\n")
+        else:
+            # 后续帧：用光标上移覆盖重绘
+            _write(f"\033[{len(actual_lines)}A")
+            _write(frame_text + "\n")
+
+        time.sleep(frame_delay)
+
+    # 最终帧不需要光标操作
 
 
 def render_soul_rings(
@@ -397,11 +412,6 @@ def render_soul_rings(
         return
 
     width = min(_get_term_width(), 72)
-
-    # ─── 序幕：矩阵雨 ───
-    if animate:
-        _matrix_rain_short(width - 4, lines=2)
-        time.sleep(0.1)
 
     # ─── 标题（全息闪烁） ───
     title_text = "◆ 魂 环 全 息 投 影 · SOUL RING HOLOGRAM ◆"
@@ -427,12 +437,7 @@ def render_soul_rings(
         tier_info = RING_TIER_NAMES.get(ring_count, (f"{ring_count}环", f"{ring_count} Rings", ""))
         _, dir_bright, dir_grad = DIRECTION_PALETTES.get(dir_key, (CYAN_DIM, CYAN, CYAN_GRADIENT))
 
-        # ── 方向标题（雷达扫描 → 揭示） ──
-        if animate:
-            _radar_sweep(width - 4, sweeps=1)
-            _write("\n")
-
-        # 方向名称：渐变显示
+        # ── 方向名称：渐变显示 ──
         dir_title = f"  {emoji} {name_cn}丹师 · {name_en} Alchemist"
         if animate:
             # 逐字渐现
@@ -461,16 +466,8 @@ def render_soul_rings(
             time.sleep(0.1)
             _write("\n")
 
-        # ── 绘制魂环 ASCII Art ──
-        ring_art = _build_cinematic_ring_art(ring_count, rings_emoji)
-        for _color, line in ring_art:
-            if animate:
-                time.sleep(0.008)
-            _write(f"  {line}\n")
-
-        # ── 粒子爆炸收尾 ──
-        if animate:
-            _particle_burst(width - 4, frames=3, color=dir_bright)
+        # ── 绘制动态旋转魂环 ──
+        _render_spinning_rings(ring_count, rings_emoji)
 
         # ── 环型标注面板 ──
         _write(f"\n  {GRAY}   ┌─ 魂环构成 ─────────────────────────┐{RESET}\n")

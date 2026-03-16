@@ -562,6 +562,7 @@
     import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
     import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
     import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
+    import { BokehPass } from 'three/addons/postprocessing/BokehPass.js';
 
     // ─── 数据注入 ───
     const DATA = {
@@ -1530,12 +1531,24 @@
     renderer.toneMappingExposure = 1.2;
     container.appendChild(renderer.domElement);
 
-    // 后处理 - Bloom
+    // 后处理 - Bloom & Depth of Field (Bokeh)
     const composer = new EffectComposer(renderer);
-    composer.addPass(new RenderPass(scene, camera));
+    const renderPass = new RenderPass(scene, camera);
+    composer.addPass(renderPass);
+
+    // 景深效果 (Cinematic Depth of Field)
+    const bokehPass = new BokehPass(scene, camera, {
+      focus: 38.0,       // 对焦在主核心附近
+      aperture: 0.00002, // 极小光圈，大幅减弱模糊程度，保证八卦阵清晰
+      maxblur: 0.004,    // 降低最大模糊度
+      width: window.innerWidth,
+      height: window.innerHeight
+    });
+    composer.addPass(bokehPass);
+
     const bloomPass = new UnrealBloomPass(
       new THREE.Vector2(window.innerWidth, window.innerHeight),
-      1.8, 0.2, 0.55
+      0.9, 0.3, 0.6 // 降低辉光强度(1.8 -> 0.9)，提高阈值(0.55 -> 0.6)，避免中心过曝
     );
     composer.addPass(bloomPass);
 
@@ -1569,10 +1582,15 @@
         void main() {
           vec2 uv = vUv;
 
-          // 色差 — 边缘RGB偏移
+          // 随机 Glitch 抖动
+          float glitch = rand(vec2(time * 0.01, uv.y)) > 0.995 ? 0.02 * sin(time * 50.0) : 0.0;
+          uv.x += glitch;
+
+          // 色差 — 边缘RGB偏移 + Glitch放大色差
           vec2 center = uv - 0.5;
           float dist = length(center);
-          float aberration = aberrationAmount * dist * dist;
+          float aberration = aberrationAmount * dist * dist + abs(glitch) * 0.5;
+          
           float r = texture2D(tDiffuse, uv + vec2(aberration, 0.0)).r;
           float g = texture2D(tDiffuse, uv).g;
           float b = texture2D(tDiffuse, uv - vec2(aberration, 0.0)).b;
@@ -1582,9 +1600,13 @@
           float grain = rand(uv * time) * grainIntensity;
           color += grain - grainIntensity * 0.5;
 
-          // 暗角增强
-          float vignette = 1.0 - dist * 0.8;
-          vignette = smoothstep(0.2, 1.0, vignette);
+          // CRT 扫描线 (极微弱)
+          float scanline = sin(uv.y * 800.0) * 0.02;
+          color -= scanline;
+
+          // 暗角增强 (Cinematic Vignette)
+          float vignette = 1.0 - dist * 0.9;
+          vignette = smoothstep(0.1, 1.0, vignette);
           color *= vignette;
 
           gl_FragColor = vec4(color, 1.0);
@@ -1644,7 +1666,7 @@
       const beamMat = new THREE.MeshBasicMaterial({
         color: 0x66ffff,
         transparent: true,
-        opacity: 0.35,
+        opacity: 0.15, // 降低主光柱亮度
         side: THREE.DoubleSide,
         blending: THREE.AdditiveBlending,
         depthWrite: false,
@@ -1657,7 +1679,7 @@
       const innerMat = new THREE.MeshBasicMaterial({
         color: 0xffffff,
         transparent: true,
-        opacity: 0.7,
+        opacity: 0.4, // 降低内核心亮度
         blending: THREE.AdditiveBlending,
         depthWrite: false,
       });
@@ -1677,6 +1699,70 @@
       scene.add(beamGroup);
       return beamGroup;
     }
+
+    // ─── 🔥 升腾数据流 (Ascension Data Streams) ───
+    function createAscensionStreams() {
+      const streamCount = 150;
+      const geom = new THREE.BufferGeometry();
+      const positions = new Float32Array(streamCount * 3);
+      const speeds = new Float32Array(streamCount);
+      const lengths = new Float32Array(streamCount);
+
+      for (let i = 0; i < streamCount; i++) {
+        const radius = 0.4 + Math.random() * 0.8; // 紧贴核心光柱
+        const theta = Math.random() * Math.PI * 2;
+        positions[i * 3]     = radius * Math.cos(theta);
+        positions[i * 3 + 1] = (Math.random() - 0.5) * 60; // 分布在高度 60 内
+        positions[i * 3 + 2] = radius * Math.sin(theta);
+        
+        speeds[i] = 15.0 + Math.random() * 25.0; // 极速飞升
+        lengths[i] = 0.5 + Math.random() * 2.0;
+      }
+
+      geom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+      
+      // 使用带长度的线段着色器模拟光纤
+      const mat = new THREE.ShaderMaterial({
+        uniforms: {
+          color: { value: new THREE.Color(0x66ffff) },
+          time: { value: 0 }
+        },
+        vertexShader: `
+          attribute float lengthAttr;
+          varying float vAlpha;
+          void main() {
+            // 越靠近中心顶部越亮
+            vAlpha = smoothstep(30.0, 0.0, abs(position.y));
+            gl_PointSize = clamp(20.0 / length(modelViewMatrix * vec4(position, 1.0)), 1.0, 10.0);
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+          }
+        `,
+        fragmentShader: `
+          uniform vec3 color;
+          varying float vAlpha;
+          void main() {
+            // 画成竖长条形 (简单实现用 Point 配合Alpha，或极细的拉伸效果)
+            vec2 cxy = 2.0 * gl_PointCoord - 1.0;
+            float r = dot(cxy, cxy);
+            if (r > 1.0) discard;
+            // 头亮尾暗的光轨感
+            float tail = 1.0 - gl_PointCoord.y;
+            gl_FragColor = vec4(color, (1.0 - r) * vAlpha * tail * 0.8);
+          }
+        `,
+        transparent: true,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false
+      });
+
+      const streams = new THREE.Points(geom, mat);
+      streams.name = 'ascensionStreams';
+      streams.userData.speeds = speeds;
+      scene.add(streams);
+      return streams;
+    }
+    
+    const ascensionStreams = createAscensionStreams();
 
     // ─── 🔥 透视地面网格 (来自封面 SVG 的地板) ───
     function createFloorGrid() {
@@ -2166,7 +2252,7 @@
         const lineMat = new THREE.LineBasicMaterial({
           color: new THREE.Color(colorStr),
           transparent: true,
-          opacity: 0.15 + (i % 2 === 0 ? 0.15 : 0), // 层次亮度差异
+          opacity: 0.45 + (i % 2 === 0 ? 0.1 : 0), // 层次亮度差异
         });
         const octagon = new THREE.LineSegments(edges, lineMat);
         octagon.rotation.x = Math.PI / 2;
@@ -2184,7 +2270,7 @@
            new THREE.Vector3(maxRadius * Math.cos(angle), 0, maxRadius * Math.sin(angle))
         ];
         const geom = new THREE.BufferGeometry().setFromPoints(pts);
-        const mat = new THREE.LineBasicMaterial({ color: 0x00D09C, transparent: true, opacity: 0.1 });
+        const mat = new THREE.LineBasicMaterial({ color: 0x00D09C, transparent: true, opacity: 0.35 });
         compassGroup.add(new THREE.Line(geom, mat));
       }
 
@@ -2502,6 +2588,13 @@
 
       scene.add(scroll);
       activeScroll = scroll;
+      
+      // 设置景深焦点到卷轴
+      if (bokehPass) {
+        // 计算摄像机到卷轴的距离作为焦点
+        bokehPass.uniforms.focus.value = camera.position.distanceTo(pos);
+        bokehPass.uniforms.aperture.value = 0.002; // 加深背景模糊
+      }
 
       scrollAnimState = {
         phase: 'opening', progress: 0,
@@ -2530,6 +2623,11 @@
       setTimeout(() => {
         scene.remove(scrollToRemove);
         if (restoreCam) controls.autoRotate = true;
+        // 恢复全局景深
+        if (bokehPass) {
+          bokehPass.uniforms.focus.value = 38.0;
+          bokehPass.uniforms.aperture.value = 0.00002;
+        }
       }, 600);
     }
 
@@ -2549,6 +2647,9 @@
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
     const tooltip = document.getElementById('tooltip');
+    
+    // 存储所有激活的涟漪
+    const activeShockwaves = [];
 
     renderer.domElement.addEventListener('click', (e) => {
       mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
@@ -2556,8 +2657,39 @@
       raycaster.setFromCamera(mouse, camera);
       const intersects = raycaster.intersectObjects(nodeObjects);
       if (intersects.length > 0) {
-        const data = nodeDataMap.get(intersects[0].object);
-        if (data) showDetail(data);
+        const obj = intersects[0].object;
+        const data = nodeDataMap.get(obj);
+        if (data) {
+          // 触发交互引力涟漪
+          const fwGroup = obj.parent;
+          // 由于物体是在 fwGroup 里的相对坐标，我们获取它的世界坐标
+          const worldPos = new THREE.Vector3();
+          obj.getWorldPosition(worldPos);
+
+          const colorParams = data.color ? new THREE.Color(data.color) : new THREE.Color(0x00D09C);
+          
+          const shockGeom = new THREE.RingGeometry(0.1, 0.4, 32);
+          const shockMat = new THREE.MeshBasicMaterial({
+            color: colorParams,
+            transparent: true,
+            opacity: 0.8,
+            side: THREE.DoubleSide,
+            blending: THREE.AdditiveBlending,
+            depthWrite: false
+          });
+          const shockMesh = new THREE.Mesh(shockGeom, shockMat);
+          shockMesh.position.copy(worldPos);
+          shockMesh.lookAt(camera.position);
+          scene.add(shockMesh);
+          
+          activeShockwaves.push({
+            mesh: shockMesh,
+            born: performance.now(),
+            life: 800 // mx life ms
+          });
+
+          showDetail(data);
+        }
       }
     });
 
@@ -2650,8 +2782,19 @@
       const dr = scene.getObjectByName('dashRing');
       if (dr) dr.rotation.z = t * 0.2;
 
-      // 胶片颗粒时间更新
+      // 胶片颗粒时间更新 & 景深动画
       if (filmPass) filmPass.uniforms.time.value = t;
+      if (ascensionStreams) {
+        // 数据流高速飞升
+        const p = ascensionStreams.geometry.attributes.position;
+        const speeds = ascensionStreams.userData.speeds;
+        for (let i = 0; i < p.count; i++) {
+          let y = p.getY(i) + speeds[i] * 0.016; // 假设 60fps
+          if (y > 30) y = -30;
+          p.setY(i, y);
+        }
+        p.needsUpdate = true;
+      }
 
       // 星云雾气缓旋
       const nc = scene.getObjectByName('nebulaClouds');
@@ -2710,6 +2853,37 @@
       // 正常的跟随朝向 (当不在收起动画中时)
       if (activeScroll && !scrollAnimState) {
         activeScroll.lookAt(camera.position);
+      }
+
+      // 🎥 电影级呼吸运镜 (Cinematic Handheld/Drone Camera Sway)
+      // 在基础轨道控制后，叠加微小的正弦波偏移
+      if (!activeScroll) { // 打开药方时不晃动以免影响阅读
+        const swayX = Math.sin(t * 0.5) * 0.2;
+        const swayY = Math.cos(t * 0.4) * 0.15;
+        const swayZ = Math.sin(t * 0.6) * 0.2;
+        camera.position.x += swayX * 0.02;
+        camera.position.y += swayY * 0.02;
+        camera.position.z += swayZ * 0.02;
+        camera.lookAt(controls.target); // 保持注视点
+      }
+
+      // 更新交互涟漪
+      const now = performance.now();
+      for (let i = activeShockwaves.length - 1; i >= 0; i--) {
+        const sw = activeShockwaves[i];
+        const age = now - sw.born;
+        const p = age / sw.life; // 0 to 1
+        if (p >= 1) {
+          scene.remove(sw.mesh);
+          sw.mesh.geometry.dispose();
+          sw.mesh.material.dispose();
+          activeShockwaves.splice(i, 1);
+        } else {
+          // 涟漪扩大 + 淡出
+          const scale = 1.0 + p * 15.0; // 扩散有多大
+          sw.mesh.scale.set(scale, scale, scale);
+          sw.mesh.material.opacity = 0.8 * (1.0 - p);
+        }
       }
 
       controls.update();

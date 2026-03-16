@@ -53,6 +53,15 @@
 </tr>
 <tr>
 <td align="center" colspan="2">
+  <img src="assets/cli_soul_ring.gif" alt="Soul Ring Hologram — Dynamic Differential Rotation" width="60%"/>
+  <br>
+  <sub><strong>🔮 魂环全息投影 · 差速旋转</strong></sub><br>
+  <sub>Soul Ring Hologram — Each Ring Rotates at Its Own Speed</sub><br>
+  <sub><em>白环 → 黄环 → 紫环 → 黑环 → 红环——你的魂环，由你的贡献铸就。</em></sub>
+</td>
+</tr>
+<tr>
+<td align="center" colspan="2">
   <sub>📖 <strong>第二章 · 飞升</strong> — Chapter II: Ascension</sub>
 </td>
 </tr>
