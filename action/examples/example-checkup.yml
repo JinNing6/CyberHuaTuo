@@ -1,0 +1,52 @@
+# ============================================================
+# 🩺 CyberHuaTuo Security Checkup — 示例 Workflow
+# 复制此文件到你的项目 .github/workflows/ 目录即可使用
+# ============================================================
+
+name: 🩺 CyberHuaTuo Security Checkup
+
+on:
+  pull_request:
+    branches: [main, master, develop]
+    paths:
+      - "**/*.py"
+      - "**/*.js"
+      - "**/*.ts"
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  security-checkup:
+    name: 🩺 AI 安全体检
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🩺 CyberHuaTuo Security Checkup
+        id: checkup
+        uses: JinNing6/CyberHuaTuo/action@v1
+        with:
+          # AI 深度分析模式（推荐，需要 API Key）
+          api-key: ${{ secrets.OPENAI_API_KEY }}
+          provider: openai
+
+          # 评论配置
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          comment-on-pr: true
+
+          # 扫描配置
+          scan-path: .
+          file-pattern: "**/*.py"
+          max-files: 10
+
+          # 阈值设置（可选：低于此分数时 CI 失败）
+          fail-on-score: 0
+
+      # 可选：使用体检结果做后续判断
+      - name: 📊 输出体检评分
+        run: |
+          echo "🏥 健康评分: ${{ steps.checkup.outputs.health-score }}/100"

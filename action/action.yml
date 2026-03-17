@@ -1,0 +1,96 @@
+# ============================================================
+# 🩺 CyberHuaTuo Security Checkup — GitHub Action
+# AI Agent 代码六经脉安全体检
+# ============================================================
+# 用法:
+#   uses: JinNing6/CyberHuaTuo/action@v1
+#   with:
+#     api-key: ${{ secrets.OPENAI_API_KEY }}
+#     github-token: ${{ secrets.GITHUB_TOKEN }}
+# ============================================================
+
+name: "CyberHuaTuo Security Checkup"
+description: "🩺 AI Agent 代码六经脉安全体检 — 沙箱隔离 / 密钥安全 / Prompt 安全 / 输出安全 / 韧性设计 / 可观测性"
+author: "JinNing6"
+
+branding:
+  icon: "shield"
+  color: "green"
+
+inputs:
+  api-key:
+    description: "LLM API Key（支持 OpenAI / DeepSeek / Gemini / Anthropic 等）。不提供时使用静态规则扫描。"
+    required: false
+    default: ""
+  provider:
+    description: "LLM 提供商: openai / deepseek / gemini / anthropic / groq"
+    required: false
+    default: "openai"
+  model:
+    description: "LLM 模型名称（留空使用提供商默认模型）"
+    required: false
+    default: ""
+  scan-path:
+    description: "扫描根路径（相对于仓库根目录）"
+    required: false
+    default: "."
+  file-pattern:
+    description: "文件匹配模式（glob 格式，多个用逗号分隔）"
+    required: false
+    default: "**/*.py"
+  max-files:
+    description: "最多扫描文件数（防止大仓库超时）"
+    required: false
+    default: "10"
+  fail-on-score:
+    description: "低于此分数时 Action 标记为失败（0 = 永不失败）"
+    required: false
+    default: "0"
+  comment-on-pr:
+    description: "是否在 PR 下发表体检报告评论"
+    required: false
+    default: "true"
+  github-token:
+    description: "GitHub Token（用于 PR 评论），通常使用 ${{ secrets.GITHUB_TOKEN }}"
+    required: false
+    default: ${{ github.token }}
+
+outputs:
+  health-score:
+    description: "总体健康评分 (0-100)"
+    value: ${{ steps.checkup.outputs.health-score }}
+  report-json:
+    description: "JSON 格式完整体检报告"
+    value: ${{ steps.checkup.outputs.report-json }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: 🐍 Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.11"
+
+    - name: 📦 Install CyberHuaTuo
+      shell: bash
+      run: |
+        pip install -q litellm httpx
+
+    - name: 🩺 Run Security Checkup
+      id: checkup
+      shell: bash
+      env:
+        INPUT_API_KEY: ${{ inputs.api-key }}
+        INPUT_PROVIDER: ${{ inputs.provider }}
+        INPUT_MODEL: ${{ inputs.model }}
+        INPUT_SCAN_PATH: ${{ inputs.scan-path }}
+        INPUT_FILE_PATTERN: ${{ inputs.file-pattern }}
+        INPUT_MAX_FILES: ${{ inputs.max-files }}
+        INPUT_FAIL_ON_SCORE: ${{ inputs.fail-on-score }}
+        INPUT_COMMENT_ON_PR: ${{ inputs.comment-on-pr }}
+        INPUT_GITHUB_TOKEN: ${{ inputs.github-token }}
+        GITHUB_EVENT_PATH: ${{ github.event_path }}
+        GITHUB_REPOSITORY: ${{ github.repository }}
+        GITHUB_EVENT_NAME: ${{ github.event_name }}
+      run: |
+        python "${{ github.action_path }}/entrypoint.py"
