@@ -1,11 +1,175 @@
 """
 CyberHuaTuo Static Rules Engine — 无 LLM 的六经脉静态规则扫描
-当用户未提供 API Key 时，使用正则匹配和 AST 分析进行基础安全检测。
+当用户未提供 API Key 时，使用正则匹配和 Bandit AST 分析进行安全检测。
+双引擎架构：自研正则（AI Agent 特有维度）+ Bandit AST（通用 Python 安全）
 """
 
 from __future__ import annotations
 
+import json
+import logging
+import os
 import re
+import subprocess
+import tempfile
+
+logger = logging.getLogger("cyberhuatuo.static_rules")
+
+# ═══════════════════════════════════════════════════════════
+# Bandit AST 引擎 — 通用 Python 安全扫描
+# ═══════════════════════════════════════════════════════════
+
+# Bandit Test ID → 六经脉维度映射
+_BANDIT_DIMENSION_MAP: dict[str, str] = {
+    # 沙箱隔离
+    "B102": "沙箱隔离",  # exec_used
+    "B307": "沙箱隔离",  # eval
+    "B301": "沙箱隔离",  # pickle
+    "B302": "沙箱隔离",  # marshal
+    "B303": "沙箱隔离",  # md5/sha1 insecure hash
+    "B310": "沙箱隔离",  # urllib_urlopen
+    "B311": "沙箱隔离",  # random (not crypto-safe)
+    "B312": "沙箱隔离",  # telnetlib
+    "B313": "沙箱隔离",  # xml vulnerabilities
+    "B314": "沙箱隔离",  # xml vulnerabilities
+    "B315": "沙箱隔离",  # xml vulnerabilities
+    "B316": "沙箱隔离",  # xml vulnerabilities
+    "B317": "沙箱隔离",  # xml vulnerabilities
+    "B318": "沙箱隔离",  # xml vulnerabilities
+    "B319": "沙箱隔离",  # xml vulnerabilities
+    "B320": "沙箱隔离",  # xml vulnerabilities
+    "B321": "沙箱隔离",  # ftplib
+    "B602": "沙箱隔离",  # subprocess_popen_with_shell
+    "B603": "沙箱隔离",  # subprocess_without_shell_equals_true
+    "B604": "沙箱隔离",  # any_other_function_with_shell_equals_true
+    "B605": "沙箱隔离",  # start_process_with_a_shell
+    "B606": "沙箱隔离",  # start_process_with_no_shell
+    "B607": "沙箱隔离",  # start_process_with_partial_path
+    # 密钥安全
+    "B105": "密钥安全",  # hardcoded_password_string
+    "B106": "密钥安全",  # hardcoded_password_funcarg
+    "B107": "密钥安全",  # hardcoded_password_default
+    "B108": "密钥安全",  # hardcoded_tmp_directory
+    "B501": "密钥安全",  # request_with_no_cert_validation
+    "B502": "密钥安全",  # ssl_with_bad_version
+    "B503": "密钥安全",  # ssl_with_bad_defaults
+    "B504": "密钥安全",  # ssl_with_no_version
+    "B505": "密钥安全",  # weak_cryptographic_key
+    # 输出安全
+    "B601": "输出安全",  # paramiko_calls
+    "B608": "输出安全",  # hardcoded_sql_expressions
+    "B609": "输出安全",  # linux_commands_wildcard_injection
+    "B610": "输出安全",  # django_extra_used
+    "B611": "输出安全",  # django_rawsql_used
+    "B701": "输出安全",  # jinja2_autoescape_false
+    "B702": "输出安全",  # use_of_mako_templates
+    "B703": "输出安全",  # django_mark_safe
+    # 韧性设计
+    "B110": "韧性设计",  # try_except_pass
+    "B112": "韧性设计",  # try_except_continue
+    # 可观测性
+    "B104": "可观测性",  # hardcoded_bind_all_interfaces
+}
+
+
+def _run_bandit(code: str) -> list[dict]:
+    """
+    通过 subprocess 调用 Bandit 扫描代码，返回结构化结果。
+
+    将代码写入临时文件 → 调用 bandit -f json → 解析 JSON 输出。
+    Bandit 不可用时优雅降级返回空列表。
+
+    Args:
+        code: 待扫描的 Python 源代码
+
+    Returns:
+        Bandit 发现的问题列表，每项含 test_id, issue_text, line_number 等
+    """
+    try:
+        # 写入临时文件（Bandit 需要文件路径）
+        with tempfile.NamedTemporaryFile(
+            mode="w",
+            suffix=".py",
+            delete=False,
+            encoding="utf-8",
+        ) as tmp:
+            tmp.write(code)
+            tmp_path = tmp.name
+
+        try:
+            result = subprocess.run(
+                [
+                    "bandit",
+                    "-f", "json",
+                    "-q",             # quiet 模式，减少无关输出
+                    "--severity-level", "low",  # 捕获所有严重级别
+                    tmp_path,
+                ],
+                capture_output=True,
+                text=True,
+                timeout=30,
+                encoding="utf-8",
+            )
+            # Bandit 返回非零退出码表示发现了问题（正常行为）
+            output = result.stdout.strip()
+            if not output:
+                return []
+            report = json.loads(output)
+            return report.get("results", [])
+        finally:
+            os.unlink(tmp_path)
+    except FileNotFoundError:
+        logger.warning("Bandit 未安装，跳过 AST 扫描。请运行: pip install bandit")
+        return []
+    except subprocess.TimeoutExpired:
+        logger.warning("Bandit 扫描超时（30s），跳过")
+        return []
+    except (json.JSONDecodeError, Exception) as e:
+        logger.warning(f"Bandit 扫描异常: {e}")
+        return []
+
+
+def _map_bandit_to_dimensions(
+    bandit_results: list[dict],
+) -> dict[str, list[dict]]:
+    """
+    将 Bandit 扫描结果按 Test ID 映射到六经脉维度。
+
+    Args:
+        bandit_results: Bandit JSON 输出的 results 列表
+
+    Returns:
+        {维度名: [发现列表]} 的字典
+    """
+    mapped: dict[str, list[dict]] = {
+        "沙箱隔离": [],
+        "密钥安全": [],
+        "Prompt 安全": [],
+        "输出安全": [],
+        "韧性设计": [],
+        "可观测性": [],
+    }
+
+    for issue in bandit_results:
+        test_id = issue.get("test_id", "")
+        dimension = _BANDIT_DIMENSION_MAP.get(test_id)
+        if dimension and dimension in mapped:
+            severity = issue.get("issue_severity", "MEDIUM")
+            confidence = issue.get("issue_confidence", "MEDIUM")
+            mapped[dimension].append({
+                "line": issue.get("line_number", 0),
+                "description": (
+                    f"[Bandit {test_id}] {issue.get('issue_text', '未知问题')}"
+                    f" (严重性: {severity}, 置信度: {confidence})"
+                ),
+                "matched_text": issue.get("code", "")[:120].strip(),
+                "source": "bandit",
+                "test_id": test_id,
+                "severity": severity,
+                "confidence": confidence,
+            })
+
+    return mapped
 
 # ═══════════════════════════════════════════════════════════
 # 六经脉检测规则
@@ -20,11 +184,18 @@ DANGEROUS_FUNCTIONS = [
     (r"subprocess\.(?:call|run|Popen)\s*\([^)]*shell\s*=\s*True", "subprocess 使用 shell=True，存在命令注入风险"),
     (r"__import__\s*\(", "使用了 __import__()，可能存在动态模块加载风险"),
     (r"\bcompile\s*\(.*\bexec\b", "使用了 compile() + exec 模式"),
+    # === 新增：权限边界与深度隔离检测 ===
+    (r"\bpickle\.load\s*\(", "使用了 pickle.load()，存在反序列化任意代码执行风险"),
+    (r"\bpickle\.loads\s*\(", "使用了 pickle.loads()，存在反序列化任意代码执行风险"),
+    (r"\bsocket\.socket\s*\(", "直接使用 socket 创建网络连接，建议通过出口白名单代理访问外部"),
+    (r"\bctypes\.\w+\s*\(", "使用了 ctypes 加载外部库，可能绕过 Python 沙箱限制"),
+    (r"\bsetattr\s*\(.*,\s*['\"]__", "使用 setattr 修改 dunder 属性，可能绕过安全限制"),
+    (r"\bglobals\s*\(\s*\)", "调用 globals() 访问全局命名空间，可能导致沙箱逃逸"),
 ]
 
 # 经脉二：密钥安全 — 检测硬编码密钥
 SECRET_PATTERNS = [
-    (r"""(?:api[_-]?key|apikey|secret[_-]?key|access[_-]?token|auth[_-]?token)\s*=\s*['\"][A-Za-z0-9+/=_\-]{16,}['\"]""",
+    (r"""(?:api[_-]?key|apikey|secret[_-]?key|access[_-]?token|auth[_-]?token)\s*=\s*['\""][A-Za-z0-9+/=_\-]{16,}['\"]""",
      "发现疑似硬编码 API Key"),
     (r"""['\"]sk-[A-Za-z0-9\-_]{20,}['\"]""", "发现疑似 OpenAI API Key (sk-...)"),
     (r"""['\"]AKIA[A-Z0-9]{12,}['\"]""", "发现疑似 AWS Access Key (AKIA...)"),
@@ -34,6 +205,9 @@ SECRET_PATTERNS = [
     (r"""['\"]xoxb-[0-9]{10,}-[A-Za-z0-9]+['\"]""", "发现疑似 Slack Bot Token"),
     (r"""['\"]AIza[A-Za-z0-9_\-]{35}['\"]""", "发现疑似 Google API Key (AIza...)"),
     (r"""password\s*=\s*['\"][^'\"]{4,}['\"]""", "发现疑似硬编码密码"),
+    # === 新增：环境变量直接暴露检测 ===
+    (r"""os\.environ\[['\"]\w*(?:KEY|SECRET|TOKEN|PASSWORD)\w*['\"]\]""",
+     "直接通过 os.environ 读取敏感环境变量，建议使用 Secrets Manager 或 dotenv"),
 ]
 
 # 经脉三：Prompt 安全 — 检测 Prompt 注入风险
@@ -99,23 +273,75 @@ def static_scan(code: str) -> dict:
     """
     对代码进行六经脉静态规则扫描（无需 LLM）
 
+    双引擎架构：
+    1. 自研正则引擎 — 覆盖 AI Agent 特有维度（Prompt 安全、MCP 安全）
+    2. Bandit AST 引擎 — 通用 Python 安全（eval/pickle/shell/密钥泄露）
+
+    两个引擎的发现按维度合并、去重后统一计分。
+
     Args:
         code: 源代码内容
 
     Returns:
         兼容 security_checkup() 格式的体检报告 dict
     """
-    # 逐经脉扫描
-    sandbox_findings = _scan_with_rules(code, DANGEROUS_FUNCTIONS)
-    secret_findings = _scan_with_rules(code, SECRET_PATTERNS)
-    prompt_findings = _scan_with_rules(code, PROMPT_RISKS)
-    output_findings = _scan_with_rules(code, OUTPUT_RISKS)
-    resilience_findings = _scan_with_rules(code, RESILIENCE_PATTERNS)
-    observability_findings = _scan_with_rules(code, OBSERVABILITY_RISKS)
+    # ── 引擎一：自研正则扫描 ──
+    regex_sandbox = _scan_with_rules(code, DANGEROUS_FUNCTIONS)
+    regex_secret = _scan_with_rules(code, SECRET_PATTERNS)
+    regex_prompt = _scan_with_rules(code, PROMPT_RISKS)
+    regex_output = _scan_with_rules(code, OUTPUT_RISKS)
+    regex_resilience = _scan_with_rules(code, RESILIENCE_PATTERNS)
+    regex_observability = _scan_with_rules(code, OBSERVABILITY_RISKS)
 
-    # 计算各维度分数 (100 - 每个发现扣15分，最低0)
+    # ── 引擎二：Bandit AST 扫描 ──
+    bandit_results = _run_bandit(code)
+    bandit_mapped = _map_bandit_to_dimensions(bandit_results)
+    bandit_active = len(bandit_results) > 0 or bool(bandit_mapped)
+
+    # ── 合并双引擎结果（按维度去重同行发现）──
+    def _merge_findings(
+        regex_list: list[dict], bandit_list: list[dict],
+    ) -> list[dict]:
+        """合并两个引擎的发现列表，按行号去重"""
+        merged = list(regex_list)
+        existing_lines = {f.get("line") for f in regex_list}
+        for bf in bandit_list:
+            if bf.get("line") not in existing_lines:
+                merged.append(bf)
+        return merged
+
+    sandbox_findings = _merge_findings(
+        regex_sandbox, bandit_mapped.get("沙箱隔离", [])
+    )
+    secret_findings = _merge_findings(
+        regex_secret, bandit_mapped.get("密钥安全", [])
+    )
+    prompt_findings = _merge_findings(
+        regex_prompt, bandit_mapped.get("Prompt 安全", [])
+    )
+    output_findings = _merge_findings(
+        regex_output, bandit_mapped.get("输出安全", [])
+    )
+    resilience_findings = _merge_findings(
+        regex_resilience, bandit_mapped.get("韧性设计", [])
+    )
+    observability_findings = _merge_findings(
+        regex_observability, bandit_mapped.get("可观测性", [])
+    )
+
+    # ── 计算各维度分数 ──
+    # Bandit 发现按严重级别加权扣分：HIGH=20, MEDIUM=15, LOW=10
     def calc_score(findings: list) -> int:
-        return max(0, 100 - len(findings) * 15)
+        penalty = 0
+        for f in findings:
+            severity = f.get("severity", "")
+            if severity == "HIGH":
+                penalty += 20
+            elif severity == "MEDIUM":
+                penalty += 15
+            else:
+                penalty += 15  # 自研正则默认扣 15
+        return max(0, 100 - penalty)
 
     sandbox_score = calc_score(sandbox_findings)
     secret_score = calc_score(secret_findings)
@@ -221,14 +447,19 @@ def static_scan(code: str) -> dict:
             all_findings.append(f)
     top_issues = all_findings[:3] if all_findings else ["未发现安全问题 🎉"]
 
+    # 确定扫描模式标识
+    scan_mode = "static_rules+bandit" if bandit_active else "static_rules"
+
     return {
         "health_score": health_score,
         "level": level,
-        "scan_mode": "static_rules",
+        "scan_mode": scan_mode,
         "dimensions": dimensions,
         "top_issues": top_issues,
-        "summary": f"静态规则扫描完成，健康评分 {health_score}/100（{level}）。"
-        f"共检测到 {len(all_findings)} 个潜在问题。"
+        "bandit_issues_count": len(bandit_results),
+        "summary": f"双引擎扫描完成（正则+Bandit AST），健康评分 {health_score}/100（{level}）。"
+        f"共检测到 {len(all_findings)} 个潜在问题（Bandit 发现 {len(bandit_results)} 个）。"
         if all_findings
-        else f"静态规则扫描完成，健康评分 {health_score}/100（{level}）。代码安全状况良好！",
+        else f"双引擎扫描完成（正则+Bandit AST），健康评分 {health_score}/100（{level}）。代码安全状况良好！",
     }
+

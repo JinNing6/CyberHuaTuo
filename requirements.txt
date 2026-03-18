@@ -8,3 +8,4 @@ litellm>=1.40.0
 python-multipart>=0.0.9
 httpx>=0.27.0
 mcp>=1.0.0
+bandit>=1.7.0

