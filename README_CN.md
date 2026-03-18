@@ -582,7 +582,7 @@ pip install cyberhuatuo
 <!-- LEADERBOARD_START -->
 | 排名 | 头像 | 名称 | 称号 | 贡献 |
 |:----:|:----:|:----:|:----:|:----:|
-| 🥇 | <a href="https://github.com/CyberHuaTuo"><img src="https://github.com/CyberHuaTuo.png" width="50" height="50" style="border-radius:50%"/></a> | [@CyberHuaTuo](https://github.com/CyberHuaTuo) | 🩺 华佗再世 | 30 |
+| 🥇 | <a href="https://github.com/CyberHuaTuo"><img src="https://github.com/CyberHuaTuo.png" width="50" height="50" style="border-radius:50%"/></a> | [@CyberHuaTuo](https://github.com/CyberHuaTuo) | 🩺 华佗再世 | 33 |
 | 🥈 | <a href="https://github.com/JinNing6"><img src="https://github.com/JinNing6.png" width="50" height="50" style="border-radius:50%"/></a> | [@JinNing6](https://github.com/JinNing6) | ⭐ 一星炼丹师 | 1 |
 <!-- LEADERBOARD_END -->
 

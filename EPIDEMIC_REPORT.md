@@ -1,6 +1,6 @@
 # 🏥 疫情通报 Epidemic Report
 
-> 🕐 最后更新: 2026-03-18 01:54 · 自动生成 by `tools/stats.py`
+> 🕐 最后更新: 2026-03-18 05:34 · 自动生成 by `tools/stats.py`
 
 ---
 
@@ -8,9 +8,9 @@
 
 | 指标 | 数值 |
 |------|------|
-| 📋 总病例数 | **31** |
+| 📋 总病例数 | **34** |
 | 🩺 诊断病例 | **25** |
-| 🧬 滋补药方 | **6** |
+| 🧬 滋补药方 | **9** |
 | 🔧 覆盖框架 | **6** |
 | 👥 贡献者 | **2** |
 
@@ -27,7 +27,7 @@
 
 ## ⚠️ 严重程度分布
 
-- 🔴 **critical**: 7 ███████
+- 🔴 **critical**: 10 ██████████
 - 🟠 **high**: 17 █████████████████
 - 🟡 **medium**: 7 ███████
 - 🟢 **low**: 0 
@@ -36,31 +36,34 @@
 
 - **simple**: 8 ▓▓▓▓▓▓▓▓
 - **moderate**: 17 ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
-- **complex**: 6 ▓▓▓▓▓▓
+- **complex**: 9 ▓▓▓▓▓▓▓▓▓
 - **extreme**: 0 
 
 ## 🏷️ 热门标签 Top 10
 
 - `configuration` (9)
+- `tool-calling` (7)
 - `breaking-change` (7)
-- `tool-calling` (6)
+- `sandbox` (6)
 - `agent-behavior` (6)
 - `authentication` (4)
 - `retrieval` (4)
 - `migration` (4)
 - `performance` (4)
-- `sandbox` (3)
 - `security` (3)
 
 ## 🏆 贡献者 Hall of Fame
 
 | 排名 | 贡献者 | 药方数 |
 |------|--------|--------|
-| 🥇 | [@CyberHuaTuo](https://github.com/CyberHuaTuo) | 30 |
+| 🥇 | [@CyberHuaTuo](https://github.com/CyberHuaTuo) | 33 |
 | 🥈 | [@JinNing6](https://github.com/JinNing6) | 1 |
 
 ## 📝 最新收录
 
+- 🔴 **[_nourishing]** Agent 权限边界管理 — 能力注册表与运行时守卫 (`nourishing-sandbox-permission-boundary-004`)
+- 🔴 **[_nourishing]** MCP Tool 安全调用沙箱 (`nourishing-sandbox-mcp-tool-security-005`)
+- 🔴 **[_nourishing]** 零信任 Agent 网络隔离方案 (`nourishing-sandbox-zero-trust-network-006`)
 - 🟡 **[nextjs]** NextJS 14 App Router 页面不刷新缓存坑 (`nextjs-nextjs-14-app-router-001`)
 - 🟠 **[_nourishing]** AI Agent 安全沙箱最佳实践总指南 (`nourishing-sandbox-best-practices-001`)
 - 🟠 **[_nourishing]** Docker 隔离方案 — AI Agent 安全执行环境 (`nourishing-sandbox-docker-isolation-002`)
@@ -68,9 +71,6 @@
 - 🔴 **[_nourishing]** API Key 保护三十六计 (`nourishing-security-api-key-protection-001`)
 - 🟠 **[_nourishing]** LLM 输出消毒指南 (`nourishing-security-llm-output-sanitization-003`)
 - 🔴 **[_nourishing]** Prompt 注入防御术 (`nourishing-security-prompt-injection-002`)
-- 🟠 **[crewai]** CrewAI Agent 执行时报 NoneType object has no attribute startswith (`crewai-nonetype-startswith-002`)
-- 🟡 **[crewai]** CrewAI 配置 Ollama 本地 Embedding 时报 embedder provider not found (`crewai-ollama-embedder-003`)
-- 🔴 **[langchain]** Agent 在工具返回空值时陷入无限循环 (`langchain-agent-loop-008`)
 
 ---
 
