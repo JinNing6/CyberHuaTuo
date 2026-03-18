@@ -1,6 +1,6 @@
 # 🏥 疫情通报 Epidemic Report
 
-> 🕐 最后更新: 2026-03-18 05:34 · 自动生成 by `tools/stats.py`
+> 🕐 最后更新: 2026-03-18 06:28 · 自动生成 by `tools/stats.py`
 
 ---
 
@@ -8,9 +8,9 @@
 
 | 指标 | 数值 |
 |------|------|
-| 📋 总病例数 | **34** |
+| 📋 总病例数 | **35** |
 | 🩺 诊断病例 | **25** |
-| 🧬 滋补药方 | **9** |
+| 🧬 滋补药方 | **10** |
 | 🔧 覆盖框架 | **6** |
 | 👥 贡献者 | **2** |
 
@@ -28,40 +28,41 @@
 ## ⚠️ 严重程度分布
 
 - 🔴 **critical**: 10 ██████████
-- 🟠 **high**: 17 █████████████████
+- 🟠 **high**: 18 ██████████████████
 - 🟡 **medium**: 7 ███████
 - 🟢 **low**: 0 
 
 ## 🧩 复杂度分布
 
 - **simple**: 8 ▓▓▓▓▓▓▓▓
-- **moderate**: 17 ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
+- **moderate**: 18 ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
 - **complex**: 9 ▓▓▓▓▓▓▓▓▓
 - **extreme**: 0 
 
 ## 🏷️ 热门标签 Top 10
 
 - `configuration` (9)
+- `sandbox` (7)
 - `tool-calling` (7)
 - `breaking-change` (7)
-- `sandbox` (6)
 - `agent-behavior` (6)
+- `security` (4)
 - `authentication` (4)
 - `retrieval` (4)
 - `migration` (4)
 - `performance` (4)
-- `security` (3)
 
 ## 🏆 贡献者 Hall of Fame
 
 | 排名 | 贡献者 | 药方数 |
 |------|--------|--------|
-| 🥇 | [@CyberHuaTuo](https://github.com/CyberHuaTuo) | 33 |
+| 🥇 | [@CyberHuaTuo](https://github.com/CyberHuaTuo) | 34 |
 | 🥈 | [@JinNing6](https://github.com/JinNing6) | 1 |
 
 ## 📝 最新收录
 
 - 🔴 **[_nourishing]** Agent 权限边界管理 — 能力注册表与运行时守卫 (`nourishing-sandbox-permission-boundary-004`)
+- 🟠 **[_nourishing]** AI Agent 安全体检：Bandit AST 漏洞双引擎扫描集成指南 (`nourishing-sandbox-bandit-ast-scanner-007`)
 - 🔴 **[_nourishing]** MCP Tool 安全调用沙箱 (`nourishing-sandbox-mcp-tool-security-005`)
 - 🔴 **[_nourishing]** 零信任 Agent 网络隔离方案 (`nourishing-sandbox-zero-trust-network-006`)
 - 🟡 **[nextjs]** NextJS 14 App Router 页面不刷新缓存坑 (`nextjs-nextjs-14-app-router-001`)
@@ -70,7 +71,6 @@
 - 🟡 **[_nourishing]** RestrictedPython 轻量级安全执行方案 (`nourishing-sandbox-restrictedpython-003`)
 - 🔴 **[_nourishing]** API Key 保护三十六计 (`nourishing-security-api-key-protection-001`)
 - 🟠 **[_nourishing]** LLM 输出消毒指南 (`nourishing-security-llm-output-sanitization-003`)
-- 🔴 **[_nourishing]** Prompt 注入防御术 (`nourishing-security-prompt-injection-002`)
 
 ---
 
