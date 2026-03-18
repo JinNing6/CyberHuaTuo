@@ -11,6 +11,7 @@ import logging
 import os
 import re
 import subprocess
+import sys
 import tempfile
 
 logger = logging.getLogger("cyberhuatuo.static_rules")
@@ -99,7 +100,7 @@ def _run_bandit(code: str) -> list[dict]:
         try:
             result = subprocess.run(
                 [
-                    "bandit",
+                    sys.executable, "-m", "bandit",
                     "-f", "json",
                     "-q",             # quiet 模式，减少无关输出
                     "--severity-level", "low",  # 捕获所有严重级别
@@ -296,7 +297,9 @@ def static_scan(code: str) -> dict:
     # ── 引擎二：Bandit AST 扫描 ──
     bandit_results = _run_bandit(code)
     bandit_mapped = _map_bandit_to_dimensions(bandit_results)
-    bandit_active = len(bandit_results) > 0 or bool(bandit_mapped)
+    bandit_active = len(bandit_results) > 0 or any(
+        v for v in bandit_mapped.values() if v
+    )
 
     # ── 合并双引擎结果（按维度去重同行发现）──
     def _merge_findings(

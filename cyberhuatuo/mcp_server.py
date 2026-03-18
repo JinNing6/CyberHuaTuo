@@ -384,6 +384,25 @@ async def security_checkup(code: str) -> str:
     Args:
         code: 要进行安全体检的代码内容 / The code to audit (provide the main app logic)
     """
+    # 0. 尝试执行本地静态扫描（双引擎：正则 + Bandit）
+    static_report_str = ""
+    try:
+        import os
+        import sys
+        
+        repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        if repo_root not in sys.path:
+            sys.path.insert(0, repo_root)
+            
+        from action.static_rules import static_scan
+        
+        static_result = static_scan(code)
+        # 将结果格式化并修改标题
+        static_report_str = _format_checkup_result(static_result)
+        static_report_str = static_report_str.replace("# 🩺 赛博华佗安全体检报告", "## ⚡ 本地静态体检报告 (Regex + Bandit AST)")
+    except Exception as e:
+        logger.debug(f"本地静态扫描引擎未能加载 (可能非源码环境运行): {e}")
+
     # 1. 优先尝试使用独立 LLM Key 进行分析
     try:
         from .nourishing import security_checkup as do_checkup
@@ -394,19 +413,35 @@ async def security_checkup(code: str) -> str:
         if "error" in result and result.get("health_score", 0) == -1:
             error_msg = result.get("error", "")
             if "API Key" in error_msg or "未配置" in error_msg:
-                return _build_host_agent_checkup_template(code)
+                out = _build_host_agent_checkup_template(code)
+                if static_report_str:
+                    out = static_report_str + "\n\n---\n\n" + out
+                return out
             return f"⚠️ 安全体检失败: {error_msg}"
 
         # LLM 分析成功，格式化输出
-        return _append_brand_footer(_format_checkup_result(result))
+        out = _format_checkup_result(result)
+        if static_report_str:
+            out = out.replace("# 🩺 赛博华佗安全体检报告\n", "")
+            out = "# 🩺 赛博华佗安全体检综合报告 (双重引擎)\n\n" + static_report_str + "\n\n---\n\n## 🤖 LLM 深度代码语义分析\n" + out
+        else:
+            out = _format_checkup_result(result)
+            
+        return _append_brand_footer(out)
 
     except ImportError:
         # litellm 未安装，回退到宿主智能体分析
-        return _build_host_agent_checkup_template(code)
+        out = _build_host_agent_checkup_template(code)
+        if static_report_str:
+            out = static_report_str + "\n\n---\n\n" + out
+        return out
     except Exception as e:
         # 其他异常（如网络错误），也回退到宿主智能体分析
         logger.warning(f"LLM 安全体检异常，回退到宿主智能体分析: {e}")
-        return _build_host_agent_checkup_template(code)
+        out = _build_host_agent_checkup_template(code)
+        if static_report_str:
+            out = static_report_str + "\n\n---\n\n" + out
+        return out
 
 
 def _format_checkup_result(result: dict) -> str:
