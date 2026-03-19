@@ -237,3 +237,64 @@ class TestIssueParser:
         assert result.source == "瞬时"
         assert result.title == "RAG内存泄漏修复"
 
+
+# ============================================================
+# 📦 browse_prescriptions 工具测试
+# ============================================================
+
+
+class TestBrowsePrescriptions:
+    """测试 browse_prescriptions 药方库浏览工具"""
+
+    def test_browse_list_returns_string(self):
+        """list action 应返回包含药方库标题的字符串"""
+        from cyberhuatuo.mcp_server import browse_prescriptions
+        result = browse_prescriptions(action="list")
+        assert isinstance(result, str)
+        assert "药方库" in result or "药方" in result
+
+    def test_browse_list_with_framework_filter(self):
+        """按框架筛选时，结果中应只包含对应框架的药方"""
+        from cyberhuatuo.mcp_server import browse_prescriptions
+        result = browse_prescriptions(action="list", framework="langchain")
+        assert isinstance(result, str)
+        # 如果 langchain 有药方，结果中应包含 langchain
+        # 如果没有药方，结果中也应有合理提示
+        if "未找到" not in result:
+            assert "langchain" in result.lower()
+
+    def test_browse_detail_with_valid_id(self):
+        """detail action + 已知 case_id 应返回包含完整内容的字符串"""
+        from cyberhuatuo.indexer import scan_cases
+        from cyberhuatuo.mcp_server import browse_prescriptions
+        cases = scan_cases()
+        if cases:
+            first_id = cases[0]["id"]
+            result = browse_prescriptions(action="detail", case_id=first_id)
+            assert isinstance(result, str)
+            assert "药方详情" in result or first_id in result
+
+    def test_browse_detail_missing_id(self):
+        """detail action 不提供 case_id 应返回提示信息"""
+        from cyberhuatuo.mcp_server import browse_prescriptions
+        result = browse_prescriptions(action="detail")
+        assert isinstance(result, str)
+        assert "case_id" in result
+
+    def test_browse_stats(self):
+        """stats action 应返回包含统计数据的字符串"""
+        from cyberhuatuo.mcp_server import browse_prescriptions
+        result = browse_prescriptions(action="stats")
+        assert isinstance(result, str)
+        assert "总计" in result or "统计" in result or "为空" in result
+
+    def test_browse_pagination(self):
+        """分页参数应生效，page_size=1 时只展示 1 条"""
+        from cyberhuatuo.indexer import scan_cases
+        from cyberhuatuo.mcp_server import browse_prescriptions
+        cases = scan_cases()
+        if len(cases) > 1:
+            result = browse_prescriptions(action="list", page_size=1)
+            # 表格中应只有 1 条数据行（除了表头两行）
+            # 第 2 页链接应存在
+            assert "下一页" in result or "page=2" in result

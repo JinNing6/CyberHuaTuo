@@ -1515,6 +1515,332 @@ def my_medical_record(
 
 
 # ============================================================
+# 📦 Prescription Library — 药方库浏览
+# ============================================================
+
+
+_SEVERITY_ORDER = {"critical": 0, "high": 1, "medium": 2, "low": 3}
+
+
+@mcp.tool()
+def browse_prescriptions(
+    action: str = "list",
+    framework: str | None = None,
+    severity: str | None = None,
+    complexity: str | None = None,
+    case_type: str | None = None,
+    sort_by: str = "framework",
+    page: int = 1,
+    page_size: int = 20,
+    case_id: str | None = None,
+) -> str:
+    """
+    📦 浏览药方库 — 查看、筛选、统计知识库中的所有药方
+    Browse Prescription Library — list, filter, and inspect all prescriptions.
+
+    无需搜索查询即可浏览整个药方库！支持按框架、严重性、复杂度等维度筛选，
+    查看单个药方的完整内容，或获取药方库的统计概览。
+
+    Browse the entire prescription library without a search query!
+    Filter by framework, severity, complexity, etc., view full content
+    of a specific prescription, or get a statistical overview of the library.
+
+    [触发场景 MUST READ]
+    当用户问到："看看所有药方"、"列出 LangChain 的药方"、"药方库有多少条"、
+    "查看药方详情"、"浏览知识库" 时触发。
+
+    Actions:
+      - list:   列出药方（支持筛选、排序、分页）/ List prescriptions with filtering, sorting, pagination
+      - detail: 查看单个药方完整内容 / View full content of a single prescription
+      - stats:  显示药方库统计概览 / Show library statistics overview
+
+    Args:
+        action: list / detail / stats
+        framework: 按框架筛选 / Filter by framework (e.g. langchain, pytorch)
+        severity: 按严重性筛选 / Filter by severity (low / medium / high / critical)
+        complexity: 按复杂度筛选 / Filter by complexity (simple / moderate / complex / extreme)
+        case_type: 按类型筛选 / Filter by case type (treatment / nourishing)
+        sort_by: 排序方式 / Sort by: framework (default), severity, title
+        page: 页码，默认 1 / Page number, default 1
+        page_size: 每页数量，默认 20 / Items per page, default 20
+        case_id: 药方 ID（action=detail 时使用）/ Prescription ID (for action=detail)
+    """
+    if action == "list":
+        return _browse_list(framework, severity, complexity, case_type, sort_by, page, page_size)
+    elif action == "detail":
+        return _browse_detail(case_id)
+    elif action == "stats":
+        return _browse_stats(framework)
+    else:
+        return "Unknown action. Use: list, detail, or stats."
+
+
+def _browse_list(
+    framework: str | None,
+    severity: str | None,
+    complexity: str | None,
+    case_type: str | None,
+    sort_by: str,
+    page: int,
+    page_size: int,
+) -> str:
+    """药方库列表浏览（筛选 + 排序 + 分页）"""
+    _maybe_sync_cases()
+    cases = scan_cases()
+
+    if not cases:
+        return _append_brand_footer("药方库为空，尚无任何药方。")
+
+    # --- 筛选 ---
+    filtered = cases
+    if framework:
+        filtered = [c for c in filtered if c["metadata"].get("framework", "").lower() == framework.lower()]
+    if severity:
+        filtered = [c for c in filtered if c["metadata"].get("severity", "").lower() == severity.lower()]
+    if complexity:
+        filtered = [c for c in filtered if c["metadata"].get("complexity", "").lower() == complexity.lower()]
+    if case_type:
+        filtered = [c for c in filtered if c["metadata"].get("case_type", "").lower() == case_type.lower()]
+
+    if not filtered:
+        filter_desc = []
+        if framework:
+            filter_desc.append(f"framework={framework}")
+        if severity:
+            filter_desc.append(f"severity={severity}")
+        if complexity:
+            filter_desc.append(f"complexity={complexity}")
+        if case_type:
+            filter_desc.append(f"case_type={case_type}")
+        return _append_brand_footer(
+            f"未找到匹配的药方（筛选条件: {', '.join(filter_desc)}）。\n\n"
+            "💡 使用 `browse_prescriptions(action='stats')` 查看所有可用框架和分类。"
+        )
+
+    # --- 排序 ---
+    if sort_by == "severity":
+        filtered.sort(key=lambda c: _SEVERITY_ORDER.get(c["metadata"].get("severity", "medium"), 2))
+    elif sort_by == "title":
+        filtered.sort(key=lambda c: c["metadata"].get("title", ""))
+    else:  # 默认按 framework
+        filtered.sort(key=lambda c: c["metadata"].get("framework", ""))
+
+    # --- 分页 ---
+    total = len(filtered)
+    page = max(1, page)
+    page_size = max(1, min(page_size, 50))
+    total_pages = (total + page_size - 1) // page_size
+    page = min(page, total_pages)
+    start_idx = (page - 1) * page_size
+    end_idx = min(start_idx + page_size, total)
+    page_items = filtered[start_idx:end_idx]
+
+    # --- 构建输出 ---
+    filter_tags = []
+    if framework:
+        filter_tags.append(f"框架: {framework}")
+    if severity:
+        filter_tags.append(f"严重性: {severity}")
+    if complexity:
+        filter_tags.append(f"复杂度: {complexity}")
+    if case_type:
+        filter_tags.append(f"类型: {case_type}")
+    filter_line = f"筛选条件: {' | '.join(filter_tags)}\n" if filter_tags else ""
+
+    output_parts = [
+        "# 📦 赛博华佗药方库\n",
+        f"共 **{total}** 个药方 | 第 {page}/{total_pages} 页\n",
+    ]
+    if filter_line:
+        output_parts.append(filter_line)
+
+    output_parts.append("| # | 药方 ID | 标题 | 框架 | 严重性 | 复杂度 | 类型 |")
+    output_parts.append("|:---:|:---|:---|:---:|:---:|:---:|:---:|")
+
+    severity_emoji = {"critical": "🔴", "high": "🟠", "medium": "🟡", "low": "🟢"}
+    type_emoji = {"nourishing": "🍵", "treatment": "💊"}
+
+    for i, case in enumerate(page_items, start=start_idx + 1):
+        meta = case["metadata"]
+        cid = case["id"]
+        title = meta.get("title", "无标题")
+        fw = meta.get("framework", "unknown")
+        sev = meta.get("severity", "medium")
+        comp = meta.get("complexity", "moderate")
+        ct = meta.get("case_type", "treatment")
+        sev_icon = severity_emoji.get(sev, "⚪")
+        ct_icon = type_emoji.get(ct, "💊")
+        output_parts.append(f"| {i} | `{cid}` | {title} | {fw} | {sev_icon} {sev} | {comp} | {ct_icon} {ct} |")
+
+    # 分页导航提示
+    nav_hints = []
+    if page > 1:
+        nav_hints.append(f"`browse_prescriptions(page={page - 1})` ← 上一页")
+    if page < total_pages:
+        nav_hints.append(f"`browse_prescriptions(page={page + 1})` → 下一页")
+    if nav_hints:
+        output_parts.append(f"\n{' | '.join(nav_hints)}")
+
+    output_parts.append(
+        "\n> 💡 查看详情: `browse_prescriptions(action='detail', case_id='...')`"
+    )
+
+    return _append_brand_footer("\n".join(output_parts))
+
+
+def _browse_detail(case_id: str | None) -> str:
+    """查看单个药方完整内容"""
+    if not case_id:
+        return "请提供 `case_id` 参数来查看药方详情。\nPlease provide `case_id` to view prescription details."
+
+    _maybe_sync_cases()
+    cases = scan_cases()
+
+    # 按 ID 查找
+    target = None
+    for case in cases:
+        if case["id"] == case_id:
+            target = case
+            break
+
+    if not target:
+        # 模糊匹配：ID 包含查询
+        for case in cases:
+            if case_id.lower() in case["id"].lower():
+                target = case
+                break
+
+    if not target:
+        return _append_brand_footer(
+            f"未找到 ID 为 `{case_id}` 的药方。\n\n"
+            "💡 使用 `browse_prescriptions(action='list')` 查看所有药方 ID。"
+        )
+
+    meta = target["metadata"]
+    content = target.get("content", "")
+
+    # 提取贡献者信息
+    contributors = meta.get("contributors", [])
+    contributor_line = ""
+    if isinstance(contributors, list) and contributors:
+        if isinstance(contributors[0], dict):
+            contrib_names = [f"@{c.get('github', '?')}" for c in contributors]
+        else:
+            contrib_names = [str(c) for c in contributors]
+        contributor_line = f"- **贡献者 / Contributors**: {', '.join(contrib_names)}\n"
+
+    tags = meta.get("tags", [])
+    tags_line = f"- **标签 / Tags**: {', '.join(tags)}\n" if tags else ""
+
+    output_parts = [
+        f"# 📜 药方详情: {meta.get('title', case_id)}\n",
+        f"- **ID**: `{target['id']}`",
+        f"- **英文标题**: {meta.get('title_en', 'N/A')}",
+        f"- **框架 / Framework**: {meta.get('framework', 'unknown')}",
+        f"- **严重性 / Severity**: {meta.get('severity', 'medium')}",
+        f"- **复杂度 / Complexity**: {meta.get('complexity', 'moderate')}",
+        f"- **类型 / Type**: {meta.get('case_type', 'treatment')}",
+        f"- **文件路径**: {target.get('filepath', 'N/A')}",
+    ]
+    if contributor_line:
+        output_parts.append(contributor_line.rstrip())
+    if tags_line:
+        output_parts.append(tags_line.rstrip())
+
+    output_parts.append("\n---\n")
+    output_parts.append(content if content else "*（药方内容为空）*")
+
+    return _append_brand_footer("\n".join(output_parts))
+
+
+def _browse_stats(framework: str | None) -> str:
+    """药方库统计概览"""
+    _maybe_sync_cases()
+    cases = scan_cases()
+
+    if not cases:
+        return _append_brand_footer("药方库为空，尚无任何药方。")
+
+    # 统计各维度
+    fw_counts: dict[str, int] = {}
+    sev_counts: dict[str, int] = {}
+    comp_counts: dict[str, int] = {}
+    type_counts: dict[str, int] = {}
+    contributor_counts: dict[str, int] = {}
+
+    for case in cases:
+        meta = case["metadata"]
+        fw = meta.get("framework", "unknown")
+        sev = meta.get("severity", "medium")
+        comp = meta.get("complexity", "moderate")
+        ct = meta.get("case_type", "treatment")
+
+        fw_counts[fw] = fw_counts.get(fw, 0) + 1
+        sev_counts[sev] = sev_counts.get(sev, 0) + 1
+        comp_counts[comp] = comp_counts.get(comp, 0) + 1
+        type_counts[ct] = type_counts.get(ct, 0) + 1
+
+        contributors = meta.get("contributors", [])
+        if isinstance(contributors, list):
+            for c in contributors:
+                if isinstance(c, dict):
+                    name = c.get("github", "")
+                else:
+                    name = str(c)
+                if name:
+                    contributor_counts[name] = contributor_counts.get(name, 0) + 1
+
+    output_parts = [
+        "# 📊 赛博华佗药方库统计\n",
+        f"**总计 / Total**: {len(cases)} 个药方\n",
+    ]
+
+    # 框架分布
+    output_parts.append("## 🏷️ 框架分布 / Framework Distribution\n")
+    output_parts.append("| 框架 | 数量 | 占比 |")
+    output_parts.append("|:---|:---:|:---:|")
+    for fw, count in sorted(fw_counts.items(), key=lambda x: -x[1]):
+        pct = round(count / len(cases) * 100, 1)
+        output_parts.append(f"| {fw} | {count} | {pct}% |")
+
+    # 严重性分布
+    severity_emoji = {"critical": "🔴", "high": "🟠", "medium": "🟡", "low": "🟢"}
+    output_parts.append("\n## ⚠️ 严重性分布 / Severity Distribution\n")
+    for sev in ["critical", "high", "medium", "low"]:
+        count = sev_counts.get(sev, 0)
+        icon = severity_emoji.get(sev, "⚪")
+        if count > 0:
+            output_parts.append(f"- {icon} **{sev}**: {count} 个")
+
+    # 复杂度分布
+    output_parts.append("\n## 🧩 复杂度分布 / Complexity Distribution\n")
+    for comp in ["extreme", "complex", "moderate", "simple"]:
+        count = comp_counts.get(comp, 0)
+        if count > 0:
+            output_parts.append(f"- **{comp}**: {count} 个")
+
+    # 类型分布
+    type_emoji = {"nourishing": "🍵 滋补药方", "treatment": "💊 治病药方"}
+    output_parts.append("\n## 📋 类型分布 / Type Distribution\n")
+    for ct, label in type_emoji.items():
+        count = type_counts.get(ct, 0)
+        if count > 0:
+            output_parts.append(f"- {label}: {count} 个")
+
+    # Top 贡献者
+    if contributor_counts:
+        output_parts.append("\n## 🏅 Top 贡献者 / Top Contributors\n")
+        for name, count in sorted(contributor_counts.items(), key=lambda x: -x[1])[:5]:
+            output_parts.append(f"- @{name}: {count} 个药方")
+
+    output_parts.append(
+        "\n> 💡 浏览药方: `browse_prescriptions()` | 按框架筛选: `browse_prescriptions(framework='langchain')`"
+    )
+
+    return _append_brand_footer("\n".join(output_parts))
+
+
+# ============================================================
 # 📬 Framework Subscription — 订阅与推送
 # ============================================================
 
