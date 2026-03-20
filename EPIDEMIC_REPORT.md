@@ -1,6 +1,6 @@
 # 🏥 疫情通报 Epidemic Report
 
-> 🕐 最后更新: 2026-03-19 01:55 · 自动生成 by `tools/stats.py`
+> 🕐 最后更新: 2026-03-20 01:49 · 自动生成 by `tools/stats.py`
 
 ---
 
