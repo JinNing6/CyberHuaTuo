@@ -275,9 +275,10 @@ Overall Health Score: 58/100  🟡 Needs Nourishing
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 💊 Top Nourishing Prescriptions:
-  1. Add execution sandboxing (RestrictedPython / Docker)
-  2. Implement prompt injection defenses
-  3. Add structured logging and tracing
+  1. 🏭 MCP & Skills Supply Chain Audit (100% Industrial Grade Sigstore/OSV/LLM) ✨ NEW
+  2. Add execution sandboxing (RestrictedPython / Docker)
+  3. Implement prompt injection defenses
+  4. Add structured logging and tracing
 ```
 
 **Your AI is running naked in production.** Do you know it?
@@ -401,7 +402,8 @@ Every prescription includes:
 | Category | Cases | Status | Join 👇 |
 |-----------|:-----:|--------|---------|
 | 🛡️ Security Sandbox | 2+ | 🟢 Live | [Add →](https://github.com/JinNing6/CyberHuaTuo/issues/new?template=prescription.yml) |
-| 🔒 Security Hardening | 2+ | 🟢 Live | [Add →](https://github.com/JinNing6/CyberHuaTuo/issues/new?template=prescription.yml) |
+| 🔒 Security Hardening | 3+ | 🟢 Live | [Add →](https://github.com/JinNing6/CyberHuaTuo/issues/new?template=prescription.yml) |
+| 🔗 Supply Chain Audit | 1 | 🟢 Live | [Add →](https://github.com/JinNing6/CyberHuaTuo/issues/new?template=prescription.yml) |
 | ⚡ Performance Tuning | — | 🟡 Accepting PRs | [Be the first →](https://github.com/JinNing6/CyberHuaTuo/issues/new) |
 
 > **Every framework starts with one case. Every nourishing recipe starts with one insight. Yours could be the first.**

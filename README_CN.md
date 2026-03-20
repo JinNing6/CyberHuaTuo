@@ -187,10 +187,11 @@ python -m cyberhuatuo serve
 综合健康评分: 58/100  🟡 需要调理
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-💊 三大滋补药方:
-  1. 添加执行沙箱 (RestrictedPython / Docker)
-  2. 实现 Prompt 注入防御
-  3. 添加结构化日志和链路追踪
+💊 顶级滋补药方:
+  1. 🏭 MCP & Skills 供应链安全审计 (100% 工业级 Sigstore/OSV/LLM) ✨ NEW
+  2. 添加执行沙箱 (RestrictedPython / Docker)
+  3. 实现 Prompt 注入防御
+  4. 添加结构化日志和链路追踪
 ```
 
 **你的 AI 正在生产环境里裸奔。** 你知道吗？
@@ -310,7 +311,8 @@ python -m cyberhuatuo serve
 | 分类 | 病例数 | 状态 | 参与 👇 |
 |-----------|:-----:|--------|---------|
 | 🛡️ 安全沙箱 | 2+ | 🟢 已上线 | [贡献 →](https://github.com/JinNing6/CyberHuaTuo/issues/new?template=prescription.yml) |
-| 🔒 安全加固 | 2+ | 🟢 已上线 | [贡献 →](https://github.com/JinNing6/CyberHuaTuo/issues/new?template=prescription.yml) |
+| 🔒 安全加固 | 3+ | 🟢 已上线 | [贡献 →](https://github.com/JinNing6/CyberHuaTuo/issues/new?template=prescription.yml) |
+| 🔗 供应链审计 | 1 | 🟢 已上线 | [贡献 →](https://github.com/JinNing6/CyberHuaTuo/issues/new?template=prescription.yml) |
 | ⚡ 性能调理 | — | 🟡 接受 PR | [成为第一人 →](https://github.com/JinNing6/CyberHuaTuo/issues/new) |
 
 > **每个框架的第一个病例，每个养生方的第一个药方——都可能出自你手。**
