@@ -1,6 +1,6 @@
 # 🏥 疫情通报 Epidemic Report
 
-> 🕐 最后更新: 2026-03-20 01:49 · 自动生成 by `tools/stats.py`
+> 🕐 最后更新: 2026-03-20 08:14 · 自动生成 by `tools/stats.py`
 
 ---
 
@@ -8,9 +8,9 @@
 
 | 指标 | 数值 |
 |------|------|
-| 📋 总病例数 | **35** |
+| 📋 总病例数 | **36** |
 | 🩺 诊断病例 | **25** |
-| 🧬 滋补药方 | **10** |
+| 🧬 滋补药方 | **11** |
 | 🔧 覆盖框架 | **6** |
 | 👥 贡献者 | **2** |
 
@@ -27,7 +27,7 @@
 
 ## ⚠️ 严重程度分布
 
-- 🔴 **critical**: 10 ██████████
+- 🔴 **critical**: 11 ███████████
 - 🟠 **high**: 18 ██████████████████
 - 🟡 **medium**: 7 ███████
 - 🟢 **low**: 0 
@@ -36,7 +36,7 @@
 
 - **simple**: 8 ▓▓▓▓▓▓▓▓
 - **moderate**: 18 ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
-- **complex**: 9 ▓▓▓▓▓▓▓▓▓
+- **complex**: 10 ▓▓▓▓▓▓▓▓▓▓
 - **extreme**: 0 
 
 ## 🏷️ 热门标签 Top 10
@@ -56,11 +56,12 @@
 
 | 排名 | 贡献者 | 药方数 |
 |------|--------|--------|
-| 🥇 | [@CyberHuaTuo](https://github.com/CyberHuaTuo) | 34 |
+| 🥇 | [@CyberHuaTuo](https://github.com/CyberHuaTuo) | 35 |
 | 🥈 | [@JinNing6](https://github.com/JinNing6) | 1 |
 
 ## 📝 最新收录
 
+- 🔴 **[_nourishing]** MCP 与 Skills 供应链安全审计 (`nourishing-sandbox-mcp-supply-chain-audit-008`)
 - 🔴 **[_nourishing]** Agent 权限边界管理 — 能力注册表与运行时守卫 (`nourishing-sandbox-permission-boundary-004`)
 - 🟠 **[_nourishing]** AI Agent 安全体检：Bandit AST 漏洞双引擎扫描集成指南 (`nourishing-sandbox-bandit-ast-scanner-007`)
 - 🔴 **[_nourishing]** MCP Tool 安全调用沙箱 (`nourishing-sandbox-mcp-tool-security-005`)
@@ -70,7 +71,6 @@
 - 🟠 **[_nourishing]** Docker 隔离方案 — AI Agent 安全执行环境 (`nourishing-sandbox-docker-isolation-002`)
 - 🟡 **[_nourishing]** RestrictedPython 轻量级安全执行方案 (`nourishing-sandbox-restrictedpython-003`)
 - 🔴 **[_nourishing]** API Key 保护三十六计 (`nourishing-security-api-key-protection-001`)
-- 🟠 **[_nourishing]** LLM 输出消毒指南 (`nourishing-security-llm-output-sanitization-003`)
 
 ---
 
