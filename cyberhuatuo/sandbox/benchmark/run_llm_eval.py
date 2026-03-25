@@ -13,6 +13,7 @@ TEC LLM 端到端测试入口 CLI
 """
 
 import csv
+import json
 import os
 import re
 import shutil
@@ -65,6 +66,122 @@ def _validate_output_path(output_path: str | None) -> None:
         )
 
 
+# ── 逐场景 CSV 表头 ──
+SCENARIO_CSV_FIELDS = [
+    "scenario_id", "category", "name",
+    "expected_blocked", "actual_blocked", "correct",
+    "decisions", "latency_ms",
+]
+
+
+def _save_structured_data(
+    target_dir: Path,
+    safe_model: str,
+    mode: str,
+    scenario_count: int,
+    model: str,
+    iso_timestamp: str,
+    elapsed: float,
+    attack_rate: float,
+    benign_rate: float,
+    fp_rate: float,
+    fn_count: int,
+    system_result,
+    backup_to_history: tuple | None = None,
+) -> None:
+    """将 SystemResult 保存为 CSV + JSON 结构化格式
+
+    Args:
+        target_dir: 目标目录 (runs/xxx/ 或 latest/)
+        backup_to_history: 若非 None，为 (history_dir, timestamp_str) 元组，
+                          保存前先备份已有同名文件到 history 目录
+    """
+    # 文件名生成
+    if mode == "full":
+        base_name = f"llm_eval_{safe_model}_full"
+    elif mode == "core":
+        base_name = f"llm_eval_{safe_model}_core{scenario_count}"
+    else:
+        base_name = f"llm_eval_{safe_model}_{mode}{scenario_count}"
+
+    csv_path = target_dir / f"{base_name}.csv"
+    json_path = target_dir / f"{base_name}.json"
+
+    # 如需备份已有文件
+    if backup_to_history is not None:
+        history_dir, ts = backup_to_history
+        for fpath in [csv_path, json_path]:
+            if fpath.exists():
+                backup_name = fpath.stem + f"_{ts}" + fpath.suffix
+                shutil.copy2(str(fpath), str(history_dir / backup_name))
+
+    # ── 保存 CSV: 逐场景原始数据 ──
+    all_results = system_result.attack_results + system_result.benign_results
+    with open(csv_path, "w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=SCENARIO_CSV_FIELDS)
+        writer.writeheader()
+        for r in all_results:
+            writer.writerow({
+                "scenario_id": r.scenario_id,
+                "category": r.category,
+                "name": r.name,
+                "expected_blocked": r.expected_blocked,
+                "actual_blocked": r.blocked,
+                "correct": r.correct,
+                "decisions": "|".join(r.decisions),
+                "latency_ms": f"{r.latency_ms:.2f}",
+            })
+    print(f"📊 CSV 逐场景数据: {csv_path} ({len(all_results)} 行)")
+
+    # ── 保存 JSON: 完整结构化数据 ──
+    json_data = {
+        "metadata": {
+            "model": model,
+            "timestamp": iso_timestamp,
+            "mode": mode,
+            "scenario_count": scenario_count,
+            "elapsed_seconds": round(elapsed, 2),
+            "system": system_result.system,
+        },
+        "summary": {
+            "attack_block_rate": round(attack_rate, 2),
+            "benign_pass_rate": round(benign_rate, 2),
+            "false_positive_rate": round(fp_rate, 2),
+            "false_negative_count": fn_count,
+            "avg_latency_ms": round(system_result.avg_latency_ms, 2),
+        },
+        "category_results": {
+            cat: {
+                "total": cr.total,
+                "correct": cr.correct,
+                "accuracy": round(cr.accuracy, 4),
+                "true_positive": cr.true_positive,
+                "false_negative": cr.false_negative,
+                "true_negative": cr.true_negative,
+                "false_positive": cr.false_positive,
+            }
+            for cat, cr in system_result.category_results.items()
+        },
+        "scenarios": [
+            {
+                "scenario_id": r.scenario_id,
+                "category": r.category,
+                "name": r.name,
+                "expected_blocked": r.expected_blocked,
+                "actual_blocked": r.blocked,
+                "correct": r.correct,
+                "decisions": r.decisions,
+                "latency_ms": round(r.latency_ms, 2),
+            }
+            for r in all_results
+        ],
+    }
+    with open(json_path, "w", encoding="utf-8") as f:
+        json.dump(json_data, f, ensure_ascii=False, indent=2)
+    print(f"📋 JSON 结构化数据: {json_path}")
+
+
+
 def save_experiment_data(
     content: str,
     model: str,
@@ -78,10 +195,16 @@ def save_experiment_data(
     version: str = "",
     notes: str = "",
     extra_output: str | None = None,
+    system_result=None,
 ) -> str:
     """三层安全架构: 自动保存实验数据
 
     返回 run_dir 路径字符串。
+
+    保存格式:
+    - .txt:  人类可读摘要报告
+    - .csv:  逐场景原始数据（可直接 pd.read_csv 分析）
+    - .json: 完整结构化数据（含元数据，方便复现）
 
     层1: 追加到 experiment_ledger.csv（永不覆盖）
     层2: 保存到 data/runs/{timestamp}_{model}_{count}/ （不可变快照）
@@ -105,6 +228,15 @@ def save_experiment_data(
     run_file.write_text(content, encoding="utf-8")
     print(f"\n📦 层2 快照已保存: {run_file}")
 
+    # ── 层 2 补充: CSV + JSON 结构化数据 ──
+    if system_result is not None:
+        _save_structured_data(
+            run_dir, safe_model, mode, scenario_count,
+            model, iso_timestamp, elapsed,
+            attack_rate, benign_rate, fp_rate, fn_count,
+            system_result,
+        )
+
     # ── 层 3: 最新视图 + 历史备份 ──
     if mode == "full":
         latest_name = f"llm_eval_{safe_model}_full.txt"
@@ -123,6 +255,16 @@ def save_experiment_data(
 
     latest_file.write_text(content, encoding="utf-8")
     print(f"📋 层3 最新视图: {latest_file}")
+
+    # ── 层 3 补充: CSV + JSON 到 latest/ ──
+    if system_result is not None:
+        _save_structured_data(
+            LATEST_DIR, safe_model, mode, scenario_count,
+            model, iso_timestamp, elapsed,
+            attack_rate, benign_rate, fp_rate, fn_count,
+            system_result,
+            backup_to_history=(HISTORY_DIR, timestamp_str),
+        )
 
     # ── 额外 --output 路径（如果用户指定了）──
     if extra_output:
@@ -357,6 +499,7 @@ def main():
             fn_count=len(fn_list),
             elapsed=elapsed,
             extra_output=args.output,
+            system_result=result,
         )
     elif args.output:
         # --no-save 模式下仅写到 --output
