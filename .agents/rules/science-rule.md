@@ -19,10 +19,11 @@ CyberHuaTuo/
 │   ├── proxy.py                   #   工具调用代理
 │   └── benchmark/                 #   📊 评估基准套件
 │       ├── scenario_generator.py  #     550 场景参数化生成器（400 攻击 + 150 正常）
-│       ├── llm_driver.py          #     Ollama LLM 驱动（原生 HTTP，含重试+预热）
+│       ├── llm_driver.py          #     LLM 驱动（Ollama 本地 + OpenAI 兼容云端 API）
 │       ├── llm_harness.py         #     LLM 端到端评估引擎
 │       ├── llm_scenarios.py       #     10 个手工精选核心场景
-│       ├── run_llm_eval.py        #     CLI 入口（core/full/sample 三模式）
+│       ├── llama_guard_eval.py    #     Llama Guard 评估脚本
+│       ├── run_llm_eval.py        #     CLI 入口（core/full/sample + 三层安全自动保存）
 │       ├── mcnemar.py             #     McNemar 统计检验
 │       ├── harness.py             #     模拟评估引擎（用于消融实验）
 │       ├── attack_scenarios.py    #     模拟攻击场景库（174 场景）
@@ -59,14 +60,26 @@ python -m cyberhuatuo.sandbox.benchmark.run_llm_eval --model qwen2.5:latest --mo
 # 50 场景分层抽样（~2.5min）
 python -m cyberhuatuo.sandbox.benchmark.run_llm_eval --model qwen2.5:latest --mode sample --count 50
 
-# 全量 550 场景（~25min）
-python -m cyberhuatuo.sandbox.benchmark.run_llm_eval --model qwen2.5:latest --mode full --output data/latest/llm_eval_full.txt
+# 全量 550 场景（~25min，自动三层安全保存）
+python -m cyberhuatuo.sandbox.benchmark.run_llm_eval --model qwen2.5:latest --mode full
+
+# 云端 API — Groq 免费 70B（~15min，受限于 rate limit）
+python -m cyberhuatuo.sandbox.benchmark.run_llm_eval --model groq:llama-3.3-70b-versatile --mode full
+
+# 云端 API — Cerebras（~10min）
+python -m cyberhuatuo.sandbox.benchmark.run_llm_eval --model cerebras:llama-3.3-70b --mode core
+
+# 云端 API — SambaNova
+python -m cyberhuatuo.sandbox.benchmark.run_llm_eval --model sambanova:Meta-Llama-3.3-70B-Instruct --mode core
 
 # McNemar 统计检验
 python -m cyberhuatuo.sandbox.benchmark.mcnemar --result_a data/runs/.../v1.txt --result_b data/runs/.../v2.txt
 
 # 模拟基线评估（无需 LLM/GPU）
 python -m cyberhuatuo.sandbox.benchmark.run_academic_eval
+
+# 调试模式（跳过自动保存）
+python -m cyberhuatuo.sandbox.benchmark.run_llm_eval --model qwen3.5:9b --mode core --no-save
 ```
 
 ## 当前实验成绩档案
@@ -76,6 +89,10 @@ python -m cyberhuatuo.sandbox.benchmark.run_academic_eval
 | 2026-03-24 | qwen2.5:latest (7B) | 550 | 74.4% | 2.0% | 98.0% | v1 基线 |
 | 2026-03-24 | qwen2.5:latest (7B) | 550 | 82.0% | 1.3% | 98.7% | v2 +批量破坏检测 |
 | 2026-03-24 | qwen2.5:latest (7B) | 550 | **83.0%** | **0.0%** | **100%** | v3 最终 |
+| 2026-03-24 | qwen3:14b | 50 | 100% | 0.0% | 100% | 14B 抽样 |
+| 2026-03-24 | qwen2.5:latest (7B) | 550 | 83.0% | 0.0% | 100% | v3 消融 (TEC=97.3%) |
+| 2026-03-24 | llama-guard3:latest | 550 | 89.8% | 3.3% | 96.7% | Guard3 真实基线 |
+| 2026-03-25 | qwen3.5:9b | 550 | 74.2% | 0.0% | 100% | 9B 基线 |
 
 McNemar v1→v2: χ²=29.03, p≈0（极显著）
 
@@ -105,9 +122,20 @@ McNemar v1→v2: χ²=29.03, p≈0（极显著）
 - ❌ **禁止** 将实验结果文件输出到项目根目录（必须输出到 `data/` 下）
 - ✅ 每次跑完实验，结果必须存入 `data/runs/{timestamp}/` 和 `data/latest/`
 - ✅ 每次确认数据有效后，必须 Git commit
+- ✅ `run_llm_eval.py` 已内置三层安全自动保存（无需手动操作）
+
+## 断点续跑规则
+
+- ⚠️ 长时间实验（>100 场景）在运行日志中会定期输出进度
+- 如实验中断（系统重启/网络断开），优先检查 `data/runs/` 和 `data/latest/` 是否有部分数据
+- 中断的实验必须**完整重跑**，不接受拼接数据，确保统计显著性
+- 使用 `--no-save` 参数可在调试时跳过三层安全保存
 
 ## 成本控制规则
 
-- 🆓 **测试阶段**: 仅使用免费模型（本地 Ollama: qwen2.5, qwen3; 云端: Groq 免费额度）
-- 💰 **正式出数据**: 使用付费 API（OpenRouter: GPT-4o, Claude-3.5, Llama-3-70B），必须设置花费上限
+- 🆓 **测试阶段**: 仅使用免费模型
+  - 本地 Ollama: qwen2.5, qwen3, qwen3.5
+  - 云端免费: Groq / Cerebras / SambaNova / Mistral / GitHub Models
+  - 注意: GitHub Models 的 GPT-4o 通过 GITHUB_TOKEN 免费调用，定位为测试阶段使用
+- 💰 **正式出数据**: 使用付费 API（OpenRouter: Claude-3.5-Sonnet），必须设置花费上限
 - ⚠️ 每次调用付费 API 前，先用 `--mode sample --count 10` 确认脚本无 bug，再跑全量
