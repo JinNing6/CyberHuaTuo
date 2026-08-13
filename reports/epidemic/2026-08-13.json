@@ -1,0 +1,1013 @@
+{
+  "report_date": "2026-08-13",
+  "generated_at": "2026-08-13T00:59:39.893760+00:00",
+  "framework_count": 10,
+  "total_open_issues": 2901,
+  "total_new_issues_7d": 154,
+  "total_closed_issues_7d": 204,
+  "avg_health_score": 52.8,
+  "healthiest_frameworks": [
+    "mcp",
+    "haystack",
+    "langchain"
+  ],
+  "most_active_frameworks": [
+    "langchain",
+    "mcp",
+    "pydantic-ai"
+  ],
+  "needs_attention": [
+    "crewai",
+    "openai-sdk",
+    "dspy",
+    "langgraph"
+  ],
+  "global_anomalies": [
+    "[langchain] 🔴 存在 5 个高影响 Bug Issues",
+    "[langchain] 🐛 Bug 类 Issue 占比达 60%",
+    "[crewai] 🔴 存在 5 个高影响 Bug Issues",
+    "[llamaindex] 🔴 存在 5 个高影响 Bug Issues",
+    "[openai-sdk] 🔴 存在 5 个高影响 Bug Issues",
+    "[openai-sdk] 🐛 Bug 类 Issue 占比达 61%",
+    "[dspy] 🔴 存在 5 个高影响 Bug Issues",
+    "[mcp] 🔴 存在 5 个高影响 Bug Issues",
+    "[pydantic-ai] ⚠️ 本周新增 66 个 Issues，高于常规水平",
+    "[pydantic-ai] 🔴 存在 5 个高影响 Bug Issues",
+    "[langgraph] ⚠️ 关闭率偏低：本周新增 16，仅关闭 2",
+    "[langgraph] 🔴 存在 5 个高影响 Bug Issues",
+    "[langgraph] 🐛 Bug 类 Issue 占比达 42%"
+  ],
+  "frameworks": [
+    {
+      "framework": "langchain",
+      "display_name": "langchain-ai/langchain",
+      "owner": "langchain-ai",
+      "repo": "langchain",
+      "repo_url": "https://github.com/langchain-ai/langchain",
+      "open_issues_count": 334,
+      "closed_issues_count": 0,
+      "new_issues_7d": 35,
+      "new_issues_30d": 130,
+      "closed_issues_7d": 73,
+      "closed_issues_30d": 156,
+      "avg_close_time_hours": 0.0,
+      "critical_issues": [
+        {
+          "number": 29637,
+          "title": "`trim_messages` and `ChatAnthropic` token counter with tools",
+          "url": "https://github.com/langchain-ai/langchain/issues/29637",
+          "labels": [
+            "bug",
+            "investigate",
+            "integration",
+            "anthropic",
+            "internal"
+          ],
+          "reactions": 8,
+          "created_at": "2025-02-06T17:50:59Z"
+        },
+        {
+          "number": 36603,
+          "title": "Doesn't honour pydantic model field datatype and randomly throws `langchain_core.exceptions.OutputParserException`",
+          "url": "https://github.com/langchain-ai/langchain/issues/36603",
+          "labels": [
+            "bug",
+            "core",
+            "langchain",
+            "external"
+          ],
+          "reactions": 10,
+          "created_at": "2026-04-08T04:42:12Z"
+        },
+        {
+          "number": 36835,
+          "title": "Performance: transformers are imported unconditionally on BaseChatModel import",
+          "url": "https://github.com/langchain-ai/langchain/issues/36835",
+          "labels": [
+            "bug",
+            "core",
+            "external"
+          ],
+          "reactions": 4,
+          "created_at": "2026-04-16T22:07:07Z"
+        },
+        {
+          "number": 30146,
+          "title": "Setting a custom `http_client` fails with unexpected keyword argument when using `ChatAnthropic`",
+          "url": "https://github.com/langchain-ai/langchain/issues/30146",
+          "labels": [
+            "bug",
+            "investigate",
+            "external"
+          ],
+          "reactions": 2,
+          "created_at": "2025-03-07T03:19:33Z"
+        },
+        {
+          "number": 29884,
+          "title": "`TokenTextSplitter` start indices are sometimes -1",
+          "url": "https://github.com/langchain-ai/langchain/issues/29884",
+          "labels": [
+            "bug",
+            "text-splitters",
+            "external"
+          ],
+          "reactions": 2,
+          "created_at": "2025-02-19T15:53:57Z"
+        }
+      ],
+      "bug_count": 202,
+      "top_issues": [
+        {
+          "number": 28508,
+          "title": "The batch method from ChatModels and all the Runnables does not really support the OpenAI batch API.",
+          "url": "https://github.com/langchain-ai/langchain/issues/28508",
+          "reactions": 37,
+          "comments": 15
+        },
+        {
+          "number": 33808,
+          "title": "Support dynamic tool addition/removal after agent creation and in middleware",
+          "url": "https://github.com/langchain-ai/langchain/issues/33808",
+          "reactions": 14,
+          "comments": 18
+        },
+        {
+          "number": 34130,
+          "title": "[Feature Request] Native Support for MCP Code Execution (Programmatic Tool Calling) & Lazy Result Loading",
+          "url": "https://github.com/langchain-ai/langchain/issues/34130",
+          "reactions": 30,
+          "comments": 12
+        },
+        {
+          "number": 36310,
+          "title": "Expose Deep Agent Harness as Composable LangGraph Primitives",
+          "url": "https://github.com/langchain-ai/langchain/issues/36310",
+          "reactions": 12,
+          "comments": 13
+        },
+        {
+          "number": 34441,
+          "title": "Python 3.14 support",
+          "url": "https://github.com/langchain-ai/langchain/issues/34441",
+          "reactions": 8,
+          "comments": 10
+        }
+      ],
+      "label_distribution": {},
+      "health_score": 65.0,
+      "trend": "→ stable",
+      "anomalies": [
+        "🔴 存在 5 个高影响 Bug Issues",
+        "🐛 Bug 类 Issue 占比达 60%"
+      ],
+      "scanned_at": "2026-08-13T00:59:39.893817+00:00",
+      "scan_error": ""
+    },
+    {
+      "framework": "crewai",
+      "display_name": "crewAIInc/crewAI",
+      "owner": "crewAIInc",
+      "repo": "crewAI",
+      "repo_url": "https://github.com/crewAIInc/crewAI",
+      "open_issues_count": 107,
+      "closed_issues_count": 0,
+      "new_issues_7d": 7,
+      "new_issues_30d": 55,
+      "closed_issues_7d": 1,
+      "closed_issues_30d": 29,
+      "avg_close_time_hours": 0.0,
+      "critical_issues": [
+        {
+          "number": 6611,
+          "title": "[BUG] Async tools are not awaited natively under native-function-calling models — executed via `asyncio.run()` inside a thread, inconsistent with the ReAct executor",
+          "url": "https://github.com/crewAIInc/crewAI/issues/6611",
+          "labels": [
+            "bug"
+          ],
+          "reactions": 0,
+          "created_at": "2026-07-22T06:22:32Z"
+        },
+        {
+          "number": 5930,
+          "title": "[BUG] input_files (PDFFile) are passed as base64 via read_file tool, causing context overflow and inconsistent LLM behavior",
+          "url": "https://github.com/crewAIInc/crewAI/issues/5930",
+          "labels": [
+            "bug"
+          ],
+          "reactions": 0,
+          "created_at": "2026-05-26T12:58:47Z"
+        },
+        {
+          "number": 5886,
+          "title": "[BUG] cache_breakpoint injected into messages for non-Anthropic providers (Groq, OpenAI-compatible)",
+          "url": "https://github.com/crewAIInc/crewAI/issues/5886",
+          "labels": [
+            "bug"
+          ],
+          "reactions": 0,
+          "created_at": "2026-05-21T09:56:58Z"
+        },
+        {
+          "number": 6430,
+          "title": "[BUG] Bare raise in ToolUsage._original_tool_calling causes RuntimeError instead of ToolUsageError",
+          "url": "https://github.com/crewAIInc/crewAI/issues/6430",
+          "labels": [
+            "bug"
+          ],
+          "reactions": 0,
+          "created_at": "2026-07-02T11:14:42Z"
+        },
+        {
+          "number": 6267,
+          "title": "[BUG]Agent execution loop crashes with TypeError when custom tool returns a nested dict",
+          "url": "https://github.com/crewAIInc/crewAI/issues/6267",
+          "labels": [
+            "bug"
+          ],
+          "reactions": 0,
+          "created_at": "2026-06-20T19:54:28Z"
+        }
+      ],
+      "bug_count": 16,
+      "top_issues": [],
+      "label_distribution": {},
+      "health_score": 39.7,
+      "trend": "↑ improving",
+      "anomalies": [
+        "🔴 存在 5 个高影响 Bug Issues"
+      ],
+      "scanned_at": "2026-08-13T01:00:05.002267+00:00",
+      "scan_error": ""
+    },
+    {
+      "framework": "autogen",
+      "display_name": "microsoft/autogen",
+      "owner": "microsoft",
+      "repo": "autogen",
+      "repo_url": "https://github.com/microsoft/autogen",
+      "open_issues_count": 555,
+      "closed_issues_count": 0,
+      "new_issues_7d": 1,
+      "new_issues_30d": 9,
+      "closed_issues_7d": 0,
+      "closed_issues_30d": 9,
+      "avg_close_time_hours": 0.0,
+      "critical_issues": [],
+      "bug_count": 0,
+      "top_issues": [
+        {
+          "number": 1700,
+          "title": "[Feature Request]: Golang/Rust implementation",
+          "url": "https://github.com/microsoft/autogen/issues/1700",
+          "reactions": 34,
+          "comments": 4
+        },
+        {
+          "number": 4079,
+          "title": "autogen-magentic-one ModuleNotFoundError: No module named 'autogen_core'",
+          "url": "https://github.com/microsoft/autogen/issues/4079",
+          "reactions": 6,
+          "comments": 27
+        },
+        {
+          "number": 6995,
+          "title": "MCP tool JSON serialization lacks ensure_ascii=False, degrades LLM performance for Japanese text",
+          "url": "https://github.com/microsoft/autogen/issues/6995",
+          "reactions": 5,
+          "comments": 0
+        },
+        {
+          "number": 4707,
+          "title": "Adding Memory Components (useful for RAG workflows) in AGS",
+          "url": "https://github.com/microsoft/autogen/issues/4707",
+          "reactions": 4,
+          "comments": 5
+        },
+        {
+          "number": 3858,
+          "title": "Typescript language support in new architecture",
+          "url": "https://github.com/microsoft/autogen/issues/3858",
+          "reactions": 3,
+          "comments": 1
+        }
+      ],
+      "label_distribution": {},
+      "health_score": 52.0,
+      "trend": "↑ improving",
+      "anomalies": [],
+      "scanned_at": "2026-08-13T01:00:30.051695+00:00",
+      "scan_error": ""
+    },
+    {
+      "framework": "llamaindex",
+      "display_name": "run-llama/llama_index",
+      "owner": "run-llama",
+      "repo": "llama_index",
+      "repo_url": "https://github.com/run-llama/llama_index",
+      "open_issues_count": 174,
+      "closed_issues_count": 0,
+      "new_issues_7d": 7,
+      "new_issues_30d": 36,
+      "closed_issues_7d": 32,
+      "closed_issues_30d": 60,
+      "avg_close_time_hours": 0.0,
+      "critical_issues": [
+        {
+          "number": 19293,
+          "title": "[Bug]: No Input/Output Token count for Gemini 2.5 models",
+          "url": "https://github.com/run-llama/llama_index/issues/19293",
+          "labels": [
+            "bug",
+            "P2"
+          ],
+          "reactions": 2,
+          "created_at": "2025-07-01T15:07:14Z"
+        },
+        {
+          "number": 15681,
+          "title": "[Bug]: Unable to use ChromaDB for vector memory",
+          "url": "https://github.com/run-llama/llama_index/issues/15681",
+          "labels": [
+            "bug",
+            "P0"
+          ],
+          "reactions": 1,
+          "created_at": "2024-08-28T00:13:43Z"
+        },
+        {
+          "number": 20300,
+          "title": "[Bug]: RetryGuidelineQueryEngine/GuidelineEvaluator causes ~400k token prompts when used with NLSQLTableQueryEngine(synthesize_response=False)",
+          "url": "https://github.com/run-llama/llama_index/issues/20300",
+          "labels": [
+            "bug",
+            "triage"
+          ],
+          "reactions": 0,
+          "created_at": "2025-11-22T19:59:23Z"
+        },
+        {
+          "number": 12101,
+          "title": "[Bug]: llamaindex is unable to connect to Sagemaker endoint using the latest llama-index and llama-index-embeddings-sagemaker-endpoint",
+          "url": "https://github.com/run-llama/llama_index/issues/12101",
+          "labels": [
+            "bug",
+            "P2"
+          ],
+          "reactions": 0,
+          "created_at": "2024-03-20T05:19:53Z"
+        },
+        {
+          "number": 11969,
+          "title": "[Bug]: MilvusVectorStore not working with RecursiveRetriever",
+          "url": "https://github.com/run-llama/llama_index/issues/11969",
+          "labels": [
+            "bug",
+            "P2"
+          ],
+          "reactions": 0,
+          "created_at": "2024-03-15T11:28:43Z"
+        }
+      ],
+      "bug_count": 66,
+      "top_issues": [
+        {
+          "number": 10486,
+          "title": "[Feature Request]: Support Multiple Embeddings per Node",
+          "url": "https://github.com/run-llama/llama_index/issues/10486",
+          "reactions": 4,
+          "comments": 13
+        }
+      ],
+      "label_distribution": {},
+      "health_score": 61.0,
+      "trend": "→ stable",
+      "anomalies": [
+        "🔴 存在 5 个高影响 Bug Issues"
+      ],
+      "scanned_at": "2026-08-13T01:00:55.024193+00:00",
+      "scan_error": ""
+    },
+    {
+      "framework": "openai-sdk",
+      "display_name": "openai/openai-python",
+      "owner": "openai",
+      "repo": "openai-python",
+      "repo_url": "https://github.com/openai/openai-python",
+      "open_issues_count": 219,
+      "closed_issues_count": 0,
+      "new_issues_7d": 1,
+      "new_issues_30d": 11,
+      "closed_issues_7d": 1,
+      "closed_issues_30d": 3,
+      "avg_close_time_hours": 0.0,
+      "critical_issues": [
+        {
+          "number": 2672,
+          "title": "Unrestricted caching keyed by generated types causes memory leak in multi-threaded regimes",
+          "url": "https://github.com/openai/openai-python/issues/2672",
+          "labels": [
+            "bug"
+          ],
+          "reactions": 13,
+          "created_at": "2025-09-30T10:48:35Z"
+        },
+        {
+          "number": 1763,
+          "title": "beta.chat.completions.parse returns unhandled ValidationError",
+          "url": "https://github.com/openai/openai-python/issues/1763",
+          "labels": [
+            "bug",
+            "sdk"
+          ],
+          "reactions": 13,
+          "created_at": "2024-09-30T15:05:43Z"
+        },
+        {
+          "number": 2489,
+          "title": "Validation error for ResponseTextDeltaEvent after updating to 1.97.1",
+          "url": "https://github.com/openai/openai-python/issues/2489",
+          "labels": [
+            "bug"
+          ],
+          "reactions": 11,
+          "created_at": "2025-07-23T09:29:08Z"
+        },
+        {
+          "number": 1786,
+          "title": "Moderation Endpoint Schema Mismatch for illicit and illicit_violent fields",
+          "url": "https://github.com/openai/openai-python/issues/1786",
+          "labels": [
+            "bug",
+            "openapi"
+          ],
+          "reactions": 6,
+          "created_at": "2024-10-09T11:00:39Z"
+        },
+        {
+          "number": 2883,
+          "title": "`prompt_cache_retention` type declares `\"in-memory\"` but API expects `\"in_memory\"`",
+          "url": "https://github.com/openai/openai-python/issues/2883",
+          "labels": [
+            "bug"
+          ],
+          "reactions": 6,
+          "created_at": "2026-02-22T21:28:31Z"
+        }
+      ],
+      "bug_count": 133,
+      "top_issues": [
+        {
+          "number": 2300,
+          "title": "Support for File Inputs In Azure OpenAI",
+          "url": "https://github.com/openai/openai-python/issues/2300",
+          "reactions": 42,
+          "comments": 51
+        },
+        {
+          "number": 3375,
+          "title": "Consider migrating from httpx to httpx2",
+          "url": "https://github.com/openai/openai-python/issues/3375",
+          "reactions": 33,
+          "comments": 7
+        },
+        {
+          "number": 2672,
+          "title": "Unrestricted caching keyed by generated types causes memory leak in multi-threaded regimes",
+          "url": "https://github.com/openai/openai-python/issues/2672",
+          "reactions": 13,
+          "comments": 3
+        },
+        {
+          "number": 1763,
+          "title": "beta.chat.completions.parse returns unhandled ValidationError",
+          "url": "https://github.com/openai/openai-python/issues/1763",
+          "reactions": 13,
+          "comments": 22
+        },
+        {
+          "number": 2489,
+          "title": "Validation error for ResponseTextDeltaEvent after updating to 1.97.1",
+          "url": "https://github.com/openai/openai-python/issues/2489",
+          "reactions": 11,
+          "comments": 2
+        }
+      ],
+      "label_distribution": {},
+      "health_score": 35.0,
+      "trend": "↑ improving",
+      "anomalies": [
+        "🔴 存在 5 个高影响 Bug Issues",
+        "🐛 Bug 类 Issue 占比达 61%"
+      ],
+      "scanned_at": "2026-08-13T01:01:19.967042+00:00",
+      "scan_error": ""
+    },
+    {
+      "framework": "dspy",
+      "display_name": "stanfordnlp/dspy",
+      "owner": "stanfordnlp",
+      "repo": "dspy",
+      "repo_url": "https://github.com/stanfordnlp/dspy",
+      "open_issues_count": 308,
+      "closed_issues_count": 0,
+      "new_issues_7d": 3,
+      "new_issues_30d": 20,
+      "closed_issues_7d": 3,
+      "closed_issues_30d": 10,
+      "avg_close_time_hours": 0.0,
+      "critical_issues": [
+        {
+          "number": 8762,
+          "title": "[Bug] TypeError: SFTConfig.__init__() got an unexpected keyword argument 'max_seq_length'",
+          "url": "https://github.com/stanfordnlp/dspy/issues/8762",
+          "labels": [
+            "bug"
+          ],
+          "reactions": 5,
+          "created_at": "2025-09-03T20:41:48Z"
+        },
+        {
+          "number": 8205,
+          "title": "[Bug] ChainOfThoughtWithHint is broken (at least for Azure)",
+          "url": "https://github.com/stanfordnlp/dspy/issues/8205",
+          "labels": [
+            "bug"
+          ],
+          "reactions": 2,
+          "created_at": "2025-05-11T04:45:44Z"
+        },
+        {
+          "number": 8799,
+          "title": "[Bug] Bus error on import when cache on network drive (occurs rarely on some machines only)",
+          "url": "https://github.com/stanfordnlp/dspy/issues/8799",
+          "labels": [
+            "bug"
+          ],
+          "reactions": 2,
+          "created_at": "2025-09-11T13:57:06Z"
+        },
+        {
+          "number": 8276,
+          "title": "[Bug] dspy.utils.exceptions.AdapterParseError: Adapter ChatAdapter failed to parse the LM response.",
+          "url": "https://github.com/stanfordnlp/dspy/issues/8276",
+          "labels": [
+            "bug"
+          ],
+          "reactions": 1,
+          "created_at": "2025-05-26T09:50:39Z"
+        },
+        {
+          "number": 8257,
+          "title": "[Bug] dspy.Image not actually leading to generated image",
+          "url": "https://github.com/stanfordnlp/dspy/issues/8257",
+          "labels": [
+            "bug"
+          ],
+          "reactions": 1,
+          "created_at": "2025-05-22T13:39:43Z"
+        }
+      ],
+      "bug_count": 84,
+      "top_issues": [
+        {
+          "number": 556,
+          "title": "How do I optimise for F1 score?",
+          "url": "https://github.com/stanfordnlp/dspy/issues/556",
+          "reactions": 11,
+          "comments": 6
+        },
+        {
+          "number": 1975,
+          "title": "Better async support",
+          "url": "https://github.com/stanfordnlp/dspy/issues/1975",
+          "reactions": 13,
+          "comments": 3
+        },
+        {
+          "number": 9500,
+          "title": "[Notice] LiteLLM Supply Chain Attack",
+          "url": "https://github.com/stanfordnlp/dspy/issues/9500",
+          "reactions": 9,
+          "comments": 1
+        },
+        {
+          "number": 8507,
+          "title": "[Feature] Support for Video",
+          "url": "https://github.com/stanfordnlp/dspy/issues/8507",
+          "reactions": 14,
+          "comments": 10
+        },
+        {
+          "number": 9034,
+          "title": "[Feature] Coding agent CLIs with DSPy - a client that proxies DSPy calls through arbitrary CLI commands",
+          "url": "https://github.com/stanfordnlp/dspy/issues/9034",
+          "reactions": 12,
+          "comments": 15
+        }
+      ],
+      "label_distribution": {},
+      "health_score": 48.4,
+      "trend": "↑ improving",
+      "anomalies": [
+        "🔴 存在 5 个高影响 Bug Issues"
+      ],
+      "scanned_at": "2026-08-13T01:01:45.201213+00:00",
+      "scan_error": ""
+    },
+    {
+      "framework": "haystack",
+      "display_name": "deepset-ai/haystack",
+      "owner": "deepset-ai",
+      "repo": "haystack",
+      "repo_url": "https://github.com/deepset-ai/haystack",
+      "open_issues_count": 66,
+      "closed_issues_count": 0,
+      "new_issues_7d": 7,
+      "new_issues_30d": 25,
+      "closed_issues_7d": 6,
+      "closed_issues_30d": 34,
+      "avg_close_time_hours": 0.0,
+      "critical_issues": [],
+      "bug_count": 0,
+      "top_issues": [
+        {
+          "number": 8482,
+          "title": "OpenAI's Batch API Support",
+          "url": "https://github.com/deepset-ai/haystack/issues/8482",
+          "reactions": 3,
+          "comments": 0
+        }
+      ],
+      "label_distribution": {},
+      "health_score": 65.9,
+      "trend": "→ stable",
+      "anomalies": [],
+      "scanned_at": "2026-08-13T01:02:10.095808+00:00",
+      "scan_error": ""
+    },
+    {
+      "framework": "mcp",
+      "display_name": "modelcontextprotocol/python-sdk",
+      "owner": "modelcontextprotocol",
+      "repo": "python-sdk",
+      "repo_url": "https://github.com/modelcontextprotocol/python-sdk",
+      "open_issues_count": 207,
+      "closed_issues_count": 0,
+      "new_issues_7d": 11,
+      "new_issues_30d": 49,
+      "closed_issues_7d": 44,
+      "closed_issues_30d": 93,
+      "avg_close_time_hours": 0.0,
+      "critical_issues": [
+        {
+          "number": 423,
+          "title": "MCP SSE Server: Received request before initialization was complete",
+          "url": "https://github.com/modelcontextprotocol/python-sdk/issues/423",
+          "labels": [
+            "bug",
+            "ready for work",
+            "P2"
+          ],
+          "reactions": 28,
+          "created_at": "2025-04-03T22:11:23Z"
+        },
+        {
+          "number": 514,
+          "title": "FastMCP server with SSE transport fails to shut down on a signal",
+          "url": "https://github.com/modelcontextprotocol/python-sdk/issues/514",
+          "labels": [
+            "bug",
+            "ready for work",
+            "P3"
+          ],
+          "reactions": 6,
+          "created_at": "2025-04-14T21:46:41Z"
+        },
+        {
+          "number": 1272,
+          "title": "Server hangs when shutting down if a connection is still open",
+          "url": "https://github.com/modelcontextprotocol/python-sdk/issues/1272",
+          "labels": [
+            "bug",
+            "ready for work",
+            "P1"
+          ],
+          "reactions": 6,
+          "created_at": "2025-08-14T15:18:25Z"
+        },
+        {
+          "number": 577,
+          "title": "`RuntimeError: Attempted to exit cancel scope in a different task` when cleaning up multiple MCPClient instances out-of-order",
+          "url": "https://github.com/modelcontextprotocol/python-sdk/issues/577",
+          "labels": [
+            "bug",
+            "ready for work",
+            "P1"
+          ],
+          "reactions": 6,
+          "created_at": "2025-04-24T01:39:22Z"
+        },
+        {
+          "number": 262,
+          "title": "cannot get response from  await session.call_tool()",
+          "url": "https://github.com/modelcontextprotocol/python-sdk/issues/262",
+          "labels": [
+            "bug",
+            "ready for work",
+            "P1"
+          ],
+          "reactions": 6,
+          "created_at": "2025-03-12T03:08:44Z"
+        }
+      ],
+      "bug_count": 63,
+      "top_issues": [
+        {
+          "number": 423,
+          "title": "MCP SSE Server: Received request before initialization was complete",
+          "url": "https://github.com/modelcontextprotocol/python-sdk/issues/423",
+          "reactions": 28,
+          "comments": 25
+        },
+        {
+          "number": 420,
+          "title": "Option to not rewrite the logging configuration",
+          "url": "https://github.com/modelcontextprotocol/python-sdk/issues/420",
+          "reactions": 22,
+          "comments": 11
+        },
+        {
+          "number": 226,
+          "title": "Improving how function docstring gets converted to tool's jsonschema for FastMCP",
+          "url": "https://github.com/modelcontextprotocol/python-sdk/issues/226",
+          "reactions": 16,
+          "comments": 13
+        },
+        {
+          "number": 309,
+          "title": "Synchronous Python Client",
+          "url": "https://github.com/modelcontextprotocol/python-sdk/issues/309",
+          "reactions": 15,
+          "comments": 8
+        },
+        {
+          "number": 235,
+          "title": "Official Adapter Functions for LLM Providers in MCP Python SDK",
+          "url": "https://github.com/modelcontextprotocol/python-sdk/issues/235",
+          "reactions": 18,
+          "comments": 8
+        }
+      ],
+      "label_distribution": {},
+      "health_score": 71.8,
+      "trend": "→ stable",
+      "anomalies": [
+        "🔴 存在 5 个高影响 Bug Issues"
+      ],
+      "scanned_at": "2026-08-13T01:02:35.082911+00:00",
+      "scan_error": ""
+    },
+    {
+      "framework": "pydantic-ai",
+      "display_name": "pydantic/pydantic-ai",
+      "owner": "pydantic",
+      "repo": "pydantic-ai",
+      "repo_url": "https://github.com/pydantic/pydantic-ai",
+      "open_issues_count": 489,
+      "closed_issues_count": 0,
+      "new_issues_7d": 66,
+      "new_issues_30d": 367,
+      "closed_issues_7d": 42,
+      "closed_issues_30d": 232,
+      "avg_close_time_hours": 0.0,
+      "critical_issues": [
+        {
+          "number": 3113,
+          "title": "Create LiteLLMModel to fix thinking parts not being sent to Anthropic on Vertex via LiteLLM with OpenAIChatModel",
+          "url": "https://github.com/pydantic/pydantic-ai/issues/3113",
+          "labels": [
+            "bug"
+          ],
+          "reactions": 2,
+          "created_at": "2025-10-08T13:51:22Z"
+        },
+        {
+          "number": 2288,
+          "title": "MCP embedded resource metadata is not passed to model",
+          "url": "https://github.com/pydantic/pydantic-ai/issues/2288",
+          "labels": [
+            "bug"
+          ],
+          "reactions": 1,
+          "created_at": "2025-07-23T20:20:00Z"
+        },
+        {
+          "number": 3007,
+          "title": "Extract thinking from thinking tags not occurring in individual chunks",
+          "url": "https://github.com/pydantic/pydantic-ai/issues/3007",
+          "labels": [
+            "bug"
+          ],
+          "reactions": 1,
+          "created_at": "2025-09-25T23:36:42Z"
+        },
+        {
+          "number": 1196,
+          "title": "`pydantic_graph`: `asyncio.get_event_loop()` is deprecated since python 3.12",
+          "url": "https://github.com/pydantic/pydantic-ai/issues/1196",
+          "labels": [
+            "bug",
+            "needs-discussion",
+            "v3"
+          ],
+          "reactions": 1,
+          "created_at": "2025-03-21T03:12:35Z"
+        },
+        {
+          "number": 5869,
+          "title": "Anthropic mapper re-renders unsigned/foreign `ThinkingPart`s as literal `<thinking>` text in the prompt — model mimics it and leaks reasoning into user-visible answers",
+          "url": "https://github.com/pydantic/pydantic-ai/issues/5869",
+          "labels": [
+            "bug",
+            "thinking",
+            "anthropic",
+            "pydanty:bug",
+            "cross-model-provider-mapping"
+          ],
+          "reactions": 1,
+          "created_at": "2026-06-11T02:12:08Z"
+        }
+      ],
+      "bug_count": 65,
+      "top_issues": [
+        {
+          "number": 1771,
+          "title": "support batch processing",
+          "url": "https://github.com/pydantic/pydantic-ai/issues/1771",
+          "reactions": 32,
+          "comments": 2
+        },
+        {
+          "number": 2382,
+          "title": "Send custom events from tool function, for AG-UI and `event_stream_handler`",
+          "url": "https://github.com/pydantic/pydantic-ai/issues/2382",
+          "reactions": 23,
+          "comments": 18
+        },
+        {
+          "number": 921,
+          "title": "Prompt management, versioning, and optimization",
+          "url": "https://github.com/pydantic/pydantic-ai/issues/921",
+          "reactions": 23,
+          "comments": 8
+        },
+        {
+          "number": 3365,
+          "title": "Support Anthropic and OpenAI Skills built-in tool",
+          "url": "https://github.com/pydantic/pydantic-ai/issues/3365",
+          "reactions": 19,
+          "comments": 23
+        },
+        {
+          "number": 1452,
+          "title": "Improve \"Ergonomics\" of Graph Streaming",
+          "url": "https://github.com/pydantic/pydantic-ai/issues/1452",
+          "reactions": 11,
+          "comments": 5
+        }
+      ],
+      "label_distribution": {},
+      "health_score": 62.9,
+      "trend": "→ stable",
+      "anomalies": [
+        "⚠️ 本周新增 66 个 Issues，高于常规水平",
+        "🔴 存在 5 个高影响 Bug Issues"
+      ],
+      "scanned_at": "2026-08-13T01:03:00.493566+00:00",
+      "scan_error": ""
+    },
+    {
+      "framework": "langgraph",
+      "display_name": "langchain-ai/langgraph",
+      "owner": "langchain-ai",
+      "repo": "langgraph",
+      "repo_url": "https://github.com/langchain-ai/langgraph",
+      "open_issues_count": 442,
+      "closed_issues_count": 0,
+      "new_issues_7d": 16,
+      "new_issues_30d": 70,
+      "closed_issues_7d": 2,
+      "closed_issues_30d": 11,
+      "avg_close_time_hours": 0.0,
+      "critical_issues": [
+        {
+          "number": 3716,
+          "title": "langgraph-checkpoint-postgres (psycopg.OperationalError: sending query and params failed: SSL error: bad length) encountered across multiple version",
+          "url": "https://github.com/langchain-ai/langgraph/issues/3716",
+          "labels": [
+            "bug",
+            "external"
+          ],
+          "reactions": 12,
+          "created_at": "2025-03-06T12:05:25Z"
+        },
+        {
+          "number": 5672,
+          "title": "Run Cancellation Causes Loss of Streamed State Not Yet Persisted as a Checkpoint",
+          "url": "https://github.com/langchain-ai/langgraph/issues/5672",
+          "labels": [
+            "bug",
+            "pending",
+            "external"
+          ],
+          "reactions": 9,
+          "created_at": "2025-07-25T20:28:38Z"
+        },
+        {
+          "number": 7692,
+          "title": "Feature Request: Driver abstraction for checkpoint-postgres: to build support for asyncpg and other adapters",
+          "url": "https://github.com/langchain-ai/langgraph/issues/7692",
+          "labels": [
+            "bug",
+            "external"
+          ],
+          "reactions": 4,
+          "created_at": "2026-05-03T07:51:14Z"
+        },
+        {
+          "number": 4653,
+          "title": "When invoking a graph of an agent with tools with \"messages\" streaming mode, the tool is executed before returning the generated chunks",
+          "url": "https://github.com/langchain-ai/langgraph/issues/4653",
+          "labels": [
+            "bug",
+            "agents",
+            "external"
+          ],
+          "reactions": 3,
+          "created_at": "2025-05-12T09:00:08Z"
+        },
+        {
+          "number": 6505,
+          "title": "Failed to install `langgraph-cli[inmem]` with `Python 3.14`",
+          "url": "https://github.com/langchain-ai/langgraph/issues/6505",
+          "labels": [
+            "bug",
+            "pending",
+            "external"
+          ],
+          "reactions": 3,
+          "created_at": "2025-11-26T02:17:22Z"
+        }
+      ],
+      "bug_count": 185,
+      "top_issues": [
+        {
+          "number": 3716,
+          "title": "langgraph-checkpoint-postgres (psycopg.OperationalError: sending query and params failed: SSL error: bad length) encountered across multiple version",
+          "url": "https://github.com/langchain-ai/langgraph/issues/3716",
+          "reactions": 12,
+          "comments": 52
+        },
+        {
+          "number": 5672,
+          "title": "Run Cancellation Causes Loss of Streamed State Not Yet Persisted as a Checkpoint",
+          "url": "https://github.com/langchain-ai/langgraph/issues/5672",
+          "reactions": 9,
+          "comments": 30
+        },
+        {
+          "number": 5024,
+          "title": "Reflect `pydantic` and `dataclass` types in final output",
+          "url": "https://github.com/langchain-ai/langgraph/issues/5024",
+          "reactions": 6,
+          "comments": 1
+        },
+        {
+          "number": 3372,
+          "title": "In Langgraph studio the subgraph part is not shown when we invoke the subgraphs in the parent graph's node",
+          "url": "https://github.com/langchain-ai/langgraph/issues/3372",
+          "reactions": 5,
+          "comments": 16
+        },
+        {
+          "number": 5253,
+          "title": "Add support for Python 3.14",
+          "url": "https://github.com/langchain-ai/langgraph/issues/5253",
+          "reactions": 5,
+          "comments": 14
+        }
+      ],
+      "label_distribution": {},
+      "health_score": 25.9,
+      "trend": "→ stable",
+      "anomalies": [
+        "⚠️ 关闭率偏低：本周新增 16，仅关闭 2",
+        "🔴 存在 5 个高影响 Bug Issues",
+        "🐛 Bug 类 Issue 占比达 42%"
+      ],
+      "scanned_at": "2026-08-13T01:03:25.581919+00:00",
+      "scan_error": ""
+    }
+  ]
+}
